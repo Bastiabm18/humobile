@@ -50,11 +50,7 @@
   }
 }
 
-@layer base {
-  html {
-    font-size: 4px;
-  }
-}
+
 
 body {
   background: var(--background);
