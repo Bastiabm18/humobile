@@ -1,0 +1,488 @@
+{
+  "collections": {
+    "regions": {
+      "description": "Almacena las 16 regiones de Chile. Se usa para llenar dropdowns en formularios y validar ubicaciones en eventos y perfiles. Admin puede añadir/editar regiones.",
+      "fields": {
+        "name": "Nombre de la región (ej.: 'Región Metropolitana'). Obligatorio, usado en dropdowns y filtros.",
+        "code": "Código oficial de la región (ej.: '13' para Metropolitana). Útil para ordenar o exportar datos.",
+        "createdAt": "Fecha de creación (ISO 8601). Para auditoría.",
+        "updatedAt": "Fecha de última actualización. Para auditoría."
+      },
+      "example": {
+        "region_rm": {
+          "name": "Región Metropolitana",
+          "code": "13",
+          "createdAt": "2025-10-01T00:00:00Z",
+          "updatedAt": "2025-10-01T00:00:00Z"
+        },
+        "region_v": {
+          "name": "Región de Valparaíso",
+          "code": "05",
+          "createdAt": "2025-10-01T00:00:00Z",
+          "updatedAt": "2025-10-01T00:00:00Z"
+        },
+        "region_biobio": {
+          "name": "Región del Biobío",
+          "code": "08",
+          "createdAt": "2025-10-01T00:00:00Z",
+          "updatedAt": "2025-10-01T00:00:00Z"
+        }
+      },
+      "notes": [
+        "Contiene ~16 documentos, uno por región de Chile.",
+        "Cargado inicialmente desde datos.gob.cl (división político-administrativa).",
+        "Usado en dropdowns de formularios (registro, eventos) y filtros del buscador (/agenda).",
+        "Admin edita vía /admin/locations."
+      ]
+    },
+    "communes": {
+      "description": "Almacena las ~346 comunas de Chile, con coordenadas (lat/lng) para cercanía y referencia a su región. Se usa para dropdowns con buscador y filtros por ubicación.",
+      "fields": {
+        "name": "Nombre de la comuna (ej.: 'Santiago'). Obligatorio, usado en dropdowns y filtros.",
+        "regionId": "ID de la región (ej.: 'region_rm'). Vincula la comuna a su región.",
+        "lat": "Latitud (ej.: -33.4489). Para cálculos de cercanía (GPS).",
+        "lng": "Longitud (ej.: -70.6693). Para cálculos de cercanía.",
+        "createdAt": "Fecha de creación. Para auditoría.",
+        "updatedAt": "Fecha de última actualización. Para auditoría."
+      },
+      "example": {
+        "commune_santiago": {
+          "name": "Santiago",
+          "regionId": "region_rm",
+          "lat": -33.4489,
+          "lng": -70.6693,
+          "createdAt": "2025-10-01T00:00:00Z",
+          "updatedAt": "2025-10-01T00:00:00Z"
+        },
+        "commune_maipu": {
+          "name": "Maipú",
+          "regionId": "region_rm",
+          "lat": -33.5167,
+          "lng": -70.7667,
+          "createdAt": "2025-10-01T00:00:00Z",
+          "updatedAt": "2025-10-01T00:00:00Z"
+        },
+        "commune_vina_del_mar": {
+          "name": "Viña del Mar",
+          "regionId": "region_v",
+          "lat": -33.0155,
+          "lng": -71.5543,
+          "createdAt": "2025-10-01T00:00:00Z",
+          "updatedAt": "2025-10-01T00:00:00Z"
+        },
+        "commune_concepcion": {
+          "name": "Concepción",
+          "regionId": "region_biobio",
+          "lat": -36.8275,
+          "lng": -73.0456,
+          "createdAt": "2025-10-01T00:00:00Z",
+          "updatedAt": "2025-10-01T00:00:00Z"
+        }
+      },
+      "notes": [
+        "Contiene ~346 documentos, uno por comuna.",
+        "Cargado inicialmente desde datos.gob.cl. Lat/lng predefinidos para cercanía (GPS).",
+        "Dropdown con buscador filtra por nombre (ej.: tipear 'Santi' muestra 'Santiago').",
+        "GPS compara lat/lng del usuario con comunas para encontrar la más cercana.",
+        "Admin edita vía /admin/locations."
+      ]
+    },
+    "users": {
+      "description": "Almacena datos básicos de usuarios (artistas, locales, representantes, admin) y su membresía. Usado para autenticación, perfiles y permisos.",
+      "fields": {
+        "name": "Nombre completo (ej.: 'Juan Pérez'). Obligatorio.",
+        "rut": "RUT chileno (ej.: '12345678-9'). Validado con rut.js.",
+        "phone": "Teléfono (ej.: '+56912345678'). Obligatorio.",
+        "email": "Correo electrónico. Obligatorio, usado para login.",
+        "cityId": "ID de comuna (ej.: 'commune_santiago'). Obligatorio para locales, opcional para artistas/representantes.",
+        "regionId": "ID de región (ej.: 'region_rm'). Obligatorio para locales, opcional para otros.",
+        "role": "Rol del usuario: 'artist', 'local', 'representative', 'admin'. Define permisos.",
+        "membership": {
+          "type": "Tipo de membresía: 'free', 'monthly', 'quarterly', 'semiannual', 'annual'.",
+          "value": "Costo en CLP (ej.: 10000 para mensual, 0 para gratuita).",
+          "start": "Fecha de inicio (ISO 8601).",
+          "end": "Fecha de fin (null para gratuita).",
+          "remaining": "Días restantes (null para gratuita)."
+        },
+        "createdAt": "Fecha de creación.",
+        "updatedAt": "Fecha de última actualización."
+      },
+      "example": {
+        "userId1": {
+          "name": "Juan Pérez",
+          "rut": "12345678-9",
+          "phone": "+56912345678",
+          "email": "juan.perez@example.com",
+          "cityId": "commune_santiago",
+          "regionId": "region_rm",
+          "role": "artist",
+          "membership": {
+            "type": "monthly",
+            "value": 10000,
+            "start": "2025-10-01T00:00:00Z",
+            "end": "2025-11-01T00:00:00Z",
+            "remaining": 10
+          },
+          "createdAt": "2025-10-01T10:00:00Z",
+          "updatedAt": "2025-10-01T10:00:00Z"
+        },
+        "userId2": {
+          "name": "Club XYZ",
+          "rut": "98765432-1",
+          "phone": "+56987654321",
+          "email": "contacto@clubxyz.cl",
+          "cityId": "commune_santiago",
+          "regionId": "region_rm",
+          "role": "local",
+          "membership": {
+            "type": "free",
+            "value": 0,
+            "start": "2025-10-01T00:00:00Z",
+            "end": null,
+            "remaining": null
+          },
+          "createdAt": "2025-10-01T10:00:00Z",
+          "updatedAt": "2025-10-01T10:00:00Z"
+        },
+        "userId3": {
+          "name": "Ana Gómez",
+          "rut": "11223344-5",
+          "phone": "+56911223344",
+          "email": "ana.gomez@example.com",
+          "cityId": "commune_vina_del_mar",
+          "regionId": "region_v",
+          "role": "representative",
+          "membership": {
+            "type": "annual",
+            "value": 80000,
+            "start": "2025-01-01T00:00:00Z",
+            "end": "2026-01-01T00:00:00Z",
+            "remaining": 70
+          },
+          "createdAt": "2025-01-01T10:00:00Z",
+          "updatedAt": "2025-01-01T10:00:00Z"
+        }
+      },
+      "notes": [
+        "cityId/regionId obligatorios para locales, opcionales para artistas/representantes.",
+        "membership controla acceso a funciones (ej.: gratuita limitada, pagada completa).",
+        "Pagos via WebPay Plus, aprobados por admin para gratuita.",
+        "Usado en dashboard, perfiles y gestión admin."
+      ]
+    },
+    "profiles": {
+      "description": "Detalles públicos de artistas y locales (bio, ubicación, imagen). Usado para mostrar perfiles y copiar ubicación a eventos.",
+      "fields": {
+        "userId": "ID del usuario asociado (ej.: 'userId1').",
+        "type": "Tipo: 'artist' o 'local'. Define estructura.",
+        "bio": "Descripción (ej.: 'Cantante de rock'). Obligatorio.",
+        "imageUrl": "URL de la imagen en Firebase Storage.",
+        "genres": "Lista de géneros musicales (ej.: ['rock', 'pop']). Solo para artistas.",
+        "location": {
+          "name": "Nombre del lugar (ej.: 'Club XYZ'). Obligatorio para locales.",
+          "address": "Dirección (ej.: 'Calle 123'). Obligatorio para locales.",
+          "cityId": "ID de comuna (ej.: 'commune_santiago'). Obligatorio para locales.",
+          "regionId": "ID de región (ej.: 'region_rm'). Obligatorio para locales.",
+          "country": "País (ej.: 'Chile').",
+          "lat": "Latitud (ej.: -33.4489). Obligatorio para locales.",
+          "lng": "Longitud (ej.: -70.6693). Obligatorio para locales."
+        },
+        "capacity": "Capacidad del local (ej.: 200 personas). Solo para locales.",
+        "createdAt": "Fecha de creación.",
+        "updatedAt": "Fecha de última actualización."
+      },
+      "example": {
+        "profileId1": {
+          "userId": "userId1",
+          "type": "artist",
+          "bio": "Cantante de rock con 10 años de experiencia",
+          "imageUrl": "https://storage.googleapis.com/bucket/profileId1.jpg",
+          "genres": ["rock", "pop"],
+          "createdAt": "2025-10-01T10:00:00Z",
+          "updatedAt": "2025-10-01T10:00:00Z"
+        },
+        "profileId2": {
+          "userId": "userId2",
+          "type": "local",
+          "bio": "Club de música en vivo en el corazón de Santiago",
+          "imageUrl": "https://storage.googleapis.com/bucket/profileId2.jpg",
+          "location": {
+            "name": "Club XYZ",
+            "address": "Calle 123",
+            "cityId": "commune_santiago",
+            "regionId": "region_rm",
+            "country": "Chile",
+            "lat": -33.4489,
+            "lng": -70.6693
+          },
+          "capacity": 200,
+          "createdAt": "2025-10-01T10:00:00Z",
+          "updatedAt": "2025-10-01T10:00:00Z"
+        }
+      },
+      "notes": [
+        "location obligatorio para locales, copiado a eventos al crearlos.",
+        "genres usado en filtros de búsqueda (/agenda).",
+        "imageUrl almacenada en Firebase Storage.",
+        "Creado al registrarse, editable en /dashboard/profile."
+      ]
+    },
+    "events": {
+      "description": "Almacena todos los eventos (individuales y grupales) con ID único. Usado para agendas, buscador y gráficos admin.",
+      "fields": {
+        "eventId": "ID único (ej.: 'uuid-123'). Generado por Firestore.",
+        "title": "Título del evento (ej.: 'Show Juan Pérez'). Obligatorio.",
+        "subtitle": "Subtítulo (ej.: 'Concierto Acústico'). Opcional.",
+        "description": "Descripción detallada. Opcional.",
+        "start": "Fecha/hora de inicio (ISO 8601).",
+        "end": "Fecha/hora de fin.",
+        "status": "Estado: 'confirmed', 'pending', 'available', 'blocked', 'canceled'.",
+        "localId": "ID del local (ej.: 'profileId2'). Opcional, para eventos en locales.",
+        "artistId": "ID del artista (ej.: 'userId1'). Para eventos individuales.",
+        "groupId": "ID del grupo (ej.: 'groupId1'). Para eventos grupales.",
+        "location": {
+          "name": "Nombre del lugar (ej.: 'Club XYZ'). Copiado de profiles.",
+          "address": "Dirección. Copiado de profiles.",
+          "cityId": "ID de comuna (ej.: 'commune_santiago').",
+          "regionId": "ID de región (ej.: 'region_rm').",
+          "country": "País (ej.: 'Chile').",
+          "lat": "Latitud. Copiado o editable.",
+          "lng": "Longitud. Copiado o editable."
+        },
+        "sharedWith": "Lista de userId/groupId con acceso (ej.: ['userId3', 'groupId1']).",
+        "representatives": "Lista de userId que pueden editar (ej.: ['userId3']).",
+        "comment": "Notas (ej.: 'Traer guitarra propia'). Opcional.",
+        "value": "Precio en CLP (ej.: 50000). Para gráficos admin.",
+        "ticketInfo": {
+          "enabled": "Booleano: ¿Vende entradas? (false por ahora).",
+          "price": "Precio por entrada (0 si no habilitado).",
+          "maxTickets": "Total de entradas (0 si no habilitado).",
+          "availableTickets": "Entradas disponibles (0 si no habilitado)."
+        },
+        "restriction": {
+          "age": "Edad mínima (ej.: 18). Opcional.",
+          "type": "Tipo: 'age-restricted', 'public', etc.",
+          "details": "Detalles (ej.: 'Solo mayores de 18')."
+        },
+        "category": "Tipo de evento: 'concert', 'festival', 'private', 'workshop'.",
+        "tags": "Lista de etiquetas (ej.: ['rock', 'acústico']). Para filtros.",
+        "organizerId": "ID del creador (ej.: 'userId1').",
+        "createdAt": "Fecha de creación.",
+        "updatedAt": "Fecha de última actualización."
+      },
+      "example": {
+        "eventId1": {
+          "eventId": "uuid-123",
+          "title": "Show Juan Pérez en Club XYZ",
+          "subtitle": "Concierto Acústico",
+          "description": "Presentación en solitario",
+          "start": "2025-11-01T20:00:00Z",
+          "end": "2025-11-01T22:00:00Z",
+          "status": "confirmed",
+          "localId": "profileId2",
+          "artistId": "userId1",
+          "location": {
+            "name": "Club XYZ",
+            "address": "Calle 123",
+            "cityId": "commune_santiago",
+            "regionId": "region_rm",
+            "country": "Chile",
+            "lat": -33.4489,
+            "lng": -70.6693
+          },
+          "sharedWith": ["userId3", "groupId1"],
+          "representatives": ["userId3"],
+          "comment": "Traer guitarra propia",
+          "value": 50000,
+          "ticketInfo": {
+            "enabled": false,
+            "price": 0,
+            "maxTickets": 0,
+            "availableTickets": 0
+          },
+          "restriction": {
+            "age": 18,
+            "type": "age-restricted",
+            "details": "Solo mayores de 18"
+          },
+          "category": "concert",
+          "tags": ["rock", "acústico"],
+          "organizerId": "userId1",
+          "createdAt": "2025-10-22T10:00:00Z",
+          "updatedAt": "2025-10-22T10:00:00Z"
+        },
+        "eventId2": {
+          "eventId": "uuid-124",
+          "title": "Show Los Rockers en Club XYZ",
+          "subtitle": "Concierto de Rock",
+          "description": "Presentación con banda completa",
+          "start": "2025-11-02T21:00:00Z",
+          "end": "2025-11-02T23:00:00Z",
+          "status": "confirmed",
+          "localId": "profileId2",
+          "groupId": "groupId1",
+          "location": {
+            "name": "Club XYZ",
+            "address": "Calle 123",
+            "cityId": "commune_santiago",
+            "regionId": "region_rm",
+            "country": "Chile",
+            "lat": -33.4489,
+            "lng": -70.6693
+          },
+          "sharedWith": ["userId3"],
+          "representatives": ["userId3"],
+          "comment": "Escenario grande requerido",
+          "value": 100000,
+          "ticketInfo": {
+            "enabled": true,
+            "price": 5000,
+            "maxTickets": 200,
+            "availableTickets": 150
+          },
+          "restriction": {
+            "type": "public"
+          },
+          "category": "concert",
+          "tags": ["rock", "indie"],
+          "organizerId": "userId3",
+          "createdAt": "2025-10-22T10:00:00Z",
+          "updatedAt": "2025-10-22T10:00:00Z"
+        }
+      },
+      "notes": [
+        "Colección de nivel superior, ID único por Firestore.",
+        "location copiado de profiles[localId], validado contra communes/regions.",
+        "artistId o groupId exclusivo por evento.",
+        "ticketInfo preparado para futura venta de entradas.",
+        "Usado en buscador (/agenda), agendas (/dashboard/agenda), gráficos admin."
+      ]
+    },
+    "groups": {
+      "description": "Almacena grupos musicales, sus miembros y representantes. Usado para agendas grupales y colaboraciones.",
+      "fields": {
+        "name": "Nombre del grupo (ej.: 'Los Rockers'). Obligatorio.",
+        "members": "Lista de userId de artistas (ej.: ['userId1']).",
+        "representatives": "Lista de userId de representantes (ej.: ['userId3']).",
+        "bio": "Descripción del grupo. Opcional.",
+        "imageUrl": "URL de la imagen en Firebase Storage.",
+        "genres": "Lista de géneros (ej.: ['rock', 'indie']). Para filtros.",
+        "createdAt": "Fecha de creación.",
+        "updatedAt": "Fecha de última actualización."
+      },
+      "example": {
+        "groupId1": {
+          "name": "Los Rockers",
+          "members": ["userId1", "userId4", "userId5"],
+          "representatives": ["userId3"],
+          "bio": "Banda de rock formada en 2020",
+          "imageUrl": "https://storage.googleapis.com/bucket/groupId1.jpg",
+          "genres": ["rock", "indie"],
+          "createdAt": "2025-10-01T10:00:00Z",
+          "updatedAt": "2025-10-01T10:00:00Z"
+        }
+      },
+      "notes": [
+        "members cargados en /groups/[id] (lazy load).",
+        "representatives pueden confirmar eventos grupales.",
+        "Usado en agendas grupales y buscador."
+      ]
+    },
+    "logs": {
+      "description": "Registra acciones de admin (crear/editar eventos, usuarios). Para auditoría.",
+      "fields": {
+        "userId": "ID del admin que realizó la acción.",
+        "action": "Tipo: 'created_event', 'updated_user', etc.",
+        "eventId": "ID del evento afectado (si aplica).",
+        "userIdAffected": "ID del usuario afectado (si aplica).",
+        "timestamp": "Fecha/hora de la acción (ISO 8601).",
+        "details": "Descripción (ej.: 'Evento creado por Juan Pérez')."
+      },
+      "example": {
+        "logId1": {
+          "userId": "userId1",
+          "action": "created_event",
+          "eventId": "uuid-123",
+          "timestamp": "2025-10-22T10:00:00Z",
+          "details": "Evento creado por Juan Pérez"
+        },
+        "logId2": {
+          "userId": "adminId",
+          "action": "updated_user",
+          "userIdAffected": "userId1",
+          "timestamp": "2025-10-22T10:30:00Z",
+          "details": "Admin cambió rol a artist"
+        }
+      },
+      "notes": [
+        "Solo accesible por admin (/admin/logs).",
+        "Registra cambios para auditoría."
+      ]
+    },
+    "payments": {
+      "description": "Almacena pagos de membresías (WebPay Plus). Usado para historial y gráficos admin.",
+      "fields": {
+        "userId": "ID del usuario que pagó.",
+        "amount": "Monto en CLP (ej.: 10000).",
+        "status": "Estado: 'completed', 'pending', 'failed'.",
+        "date": "Fecha del pago (ISO 8601).",
+        "type": "Tipo: 'membership'.",
+        "membershipType": "Tipo de membresía: 'monthly', 'quarterly', etc."
+      },
+      "example": {
+        "buyOrder123": {
+          "userId": "userId1",
+          "amount": 10000,
+          "status": "completed",
+          "date": "2025-10-01T10:00:00Z",
+          "type": "membership",
+          "membershipType": "monthly"
+        },
+        "buyOrder124": {
+          "userId": "userId3",
+          "amount": 80000,
+          "status": "completed",
+          "date": "2025-01-01T10:00:00Z",
+          "type": "membership",
+          "membershipType": "annual"
+        }
+      },
+      "notes": [
+        "Integrado con WebPay Plus para pagos.",
+        "Accesible por usuario (historial) y admin (gráficos).",
+        "Membresías gratuitas aprobadas por admin no generan pago."
+      ]
+    },
+    "content": {
+      "description": "Almacena contenido estático para páginas 'Acerca de' y 'Casos de Uso'. Editable por admin.",
+      "fields": {
+        "page": "Nombre de la página: 'about', 'examples'.",
+        "title": "Título de la página (ej.: 'Acerca de Nosotros').",
+        "content": "Texto principal (HTML o Markdown).",
+        "images": "Lista de URLs de imágenes en Firebase Storage.",
+        "updatedAt": "Fecha de última actualización."
+      },
+      "example": {
+        "content_about": {
+          "page": "about",
+          "title": "Acerca de Nosotros",
+          "content": "<p>Plataforma para conectar artistas y locales.</p>",
+          "images": ["https://storage.googleapis.com/bucket/about1.jpg"],
+          "updatedAt": "2025-10-01T10:00:00Z"
+        },
+        "content_examples": {
+          "page": "examples",
+          "title": "Ejemplos de Uso",
+          "content": "<p>Ejemplo 1: Artista crea evento...</p>",
+          "images": ["https://storage.googleapis.com/bucket/example1.jpg"],
+          "updatedAt": "2025-10-01T10:00:00Z"
+        }
+      },
+      "notes": [
+        "Editable en /admin/content.",
+        "Usado en páginas públicas /about y /examples.",
+        "Imágenes en Firebase Storage."
+      ]
+    }
+  }
+}

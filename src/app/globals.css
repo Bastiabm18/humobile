@@ -1,0 +1,226 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;     /* TU COLOR BASE */
+    --foreground: #ededed;     /* TU TEXTO CLARO */
+    
+  /* 5 TONOS DERIVADOS DE #0a0a0a */
+    --deep-card: #121212;      /* CARD (más claro que antes) */
+    --deep-hover: #161616;     /* NUEVO: entre card y button */
+    --deep-button: #3a3a3a;    /* BOTÓN CANCELAR */
+    --deep-border: #121212;    /* BORDE */
+    --deep-text: #ffffff;      /* TEXTO SECUNDARIO */
+  }
+}
+
+@layer utilities {
+ /* FONDOS */
+  .bg-base    { background-color: var(--background); }
+  .bg-card    { background-color: var(--deep-card); }
+  .bg-dark-gray   { background-color: var(--deep-hover); }
+  .bg-light-gray  { background-color: var(--deep-button); }
+  .bg-hover  { background-color: var(--deep-text); }
+
+
+  /* TEXTO */
+  .text-main      { color: var(--foreground); }
+  .text-secondary { color: var(--deep-text); }
+
+  /* BORDES */
+  .border-card { border-color: var(--deep-border); }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.boton-brillo {
+  position: relative;
+  overflow: hidden;
+  padding: 15px 30px;
+  background: none;
+  border: none;
+  color: transparent;
+  cursor: pointer;
+}
+
+.rbc-calendar {
+  height: 100% !important;
+  font-size: 0.875rem;
+}
+
+.rbc-month-view,
+.rbc-time-view {
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid #374151;
+}
+
+
+
+.rbc-header {
+  
+  border-bottom: 1px solid #374151;
+  padding: 20px 12px !important; /* Aumenté el padding */
+ 
+  font-weight: 700;
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+.rbc-date-cell {
+  text-align: right;
+  padding: 8px;
+  font-size: 0.9rem;
+}
+
+.rbc-event {
+  border-radius: 8px !important;
+  border: none !important;
+  padding: 6px 10px !important;
+  margin: 4px 8px;
+}
+
+.rbc-day-bg {
+  transition: all 0.2s ease;
+}
+
+.rbc-off-range-bg {
+  background-color: #111827;
+}
+
+.rbc-today {
+  background-color: #1e1b4b !important;
+}
+
+.rbc-date-cell {
+  position: relative;
+  min-height: 100px;
+}
+
+.rbc-day-bg {
+  position: relative;
+}
+
+/* Mejorar la apariencia de los días */
+.rbc-day-bg:hover {
+  background-color: #374151 !important;
+}
+
+/* Agregar a tu global.css */
+/* Para vista SEMANA y DÍA */
+.rbc-time-view {
+  position: relative;
+}
+
+.rbc-time-content {
+  position: relative;
+
+}
+
+.rbc-time-slot {
+  position: relative;
+  min-height: 60px;
+  
+}
+/* ANCHO MÍNIMO DE CADA COLUMNA EN VISTA SEMANA/DÍA */
+.rbc-day-slot,
+.rbc-time-column {
+  min-width: 40px !important;   /* Valor base para móvil */
+}
+
+/* En desktop: forzamos ancho mínimo más grande y cómodo */
+@media (min-width: 768px) {
+  .rbc-day-slot,
+  .rbc-time-column {
+    min-width: 40px !important;   /* AJUSTA ESTE VALOR A TU GUSTO */
+  }
+}
+
+@media (min-width: 1024px) {
+  .rbc-day-slot,
+  .rbc-time-column {
+    min-width: 100px !important;   /* En pantallas grandes queda PERFECTO */
+  }
+}
+
+.rbc-day-slot {
+  position: relative;
+}
+
+.rbc-time-header-group {
+  position: relative;
+}
+
+.event-modal-overlay {
+  z-index: 999999 !important;
+}
+
+
+
+/* Mejorar el hover en todas las vistas */
+.rbc-day-bg:hover,
+.rbc-time-slot:hover {
+  background-color: #374151 !important;
+}
+
+/*clases para scroll personalizado*/
+@layer components {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-black/90 rounded-lg;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-red-800 rounded-lg border-2 border-solid border-black;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-red-600;
+  }
+}
+
+
+.rbc-time-content::-webkit-scrollbar {
+  width: 10px !important;
+}
+
+.rbc-time-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.9) !important;
+  border-radius: 0.5rem !important;
+}
+
+.rbc-time-content::-webkit-scrollbar-thumb {
+  background: #991b1b !important; /* bg-red-800 */
+  border-radius: 0.5rem !important;
+  border: 2px solid #000 !important;
+}
+
+.rbc-time-content::-webkit-scrollbar-thumb:hover {
+  background: #dc2626 !important; /* bg-red-600 */
+}
