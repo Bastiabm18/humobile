@@ -18,6 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Humobile",
   description: "Humobile | Chile",
+  // VIEWPORT NECESARIO PARA EVITAR EL ZOOM AUTOMATICO DE LA PAGINA EN PRODUCTIVO
   viewport: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no",
 };
 

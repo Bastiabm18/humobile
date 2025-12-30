@@ -50,8 +50,10 @@
   }
 }
 
+
 @layer base {
   html {
+    /*IMPORTANTE PARA BAJAR EL EFECTO ZOOM AUTOMATICO CUANDO LANZAMOS LA PAGINA A UN HOST (EN LOCAL LO HACE VER PEQUEÑO HAY QUE AGREGAR 1 ZOM EXTRA Y SE VERA COMO EN PRODUCTIVO )*/
     font-size: 78.125%  !important;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;

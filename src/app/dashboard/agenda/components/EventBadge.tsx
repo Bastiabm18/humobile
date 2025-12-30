@@ -47,7 +47,7 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
            {hasNormal && !hasBlocked && (
             <div className="mb-0.5 flex">
               <div
-                className="text-xs md:text-sm truncate px-2  gap-1 py-1.5 rounded-md bg-sky-600/80 text-white font-semibold shadow-sm hover:bg-sky-900/80 w-full h-8 md:h-15.5 cursor-pointer transition-colors flex items-center justify-center"
+                className="text-xs md:text-sm truncate px-2  gap-1 py-1.5 rounded-md bg-sky-600/80 text-white font-semibold shadow-sm hover:bg-sky-900/80 w-full h-11 md:h-20 cursor-pointer transition-colors flex items-center justify-center"
                 title={`${normalEvents[0].title} (${formatTime(normalEvents[0].start)} - ${formatTime(normalEvents[0].end)})`}
                 onClick={(e) => {
                
@@ -67,7 +67,7 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
         {hasBlocked && !hasNormal && (
           <div className="mb-0.5 flex">
             <div
-              className="text-xs rounded-md bg-red-900/80 hover:bg-red-950/80 text-white font-semibold shadow-sm cursor-pointer items-center justify-center w-full h-8 md:h-15.5 flex "
+              className="text-xs rounded-md bg-red-900/80 hover:bg-red-950/80 text-white font-semibold shadow-sm cursor-pointer items-center justify-center w-full h-12 md:h-20 flex "
               title={`Día bloqueado: ${blockedEvents[0].resource?.blocked_reason || 'Sin motivo'}`}
               onClick={(e) => {
                   e.stopPropagation();
@@ -86,7 +86,7 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
 
         {totalEvents == 1 && (
           <div className="mb-0.5 cursor-pointer flex justify-center">
-            <div className="text-[10px] md:text-sm px-2 py-0.5 w-full items-center justify-center flex rounded-md h-8 md:h-15.5 bg-yellow-600/80 hover:bg-yellow-800/80 text-yellow-100 font-bold"
+            <div className="text-[10px] md:text-sm px-2 py-0.5 w-full items-center justify-center flex rounded-md h-12 md:h-20 bg-yellow-600/80 hover:bg-yellow-800/80 text-yellow-100 font-bold"
               title=''
               onClick={(e)=>{
               e.stopPropagation();

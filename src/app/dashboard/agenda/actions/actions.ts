@@ -472,7 +472,7 @@ const { data: eventosExistentes, error: errorConsulta } = await supabaseAdmin
       }]);
 
           // 3. Si el creador es BANDA
-          if (eventData.id_tipo_artista === 'band') {
+          if (eventData.creator_type === 'band') {
             try {
               console.log('Creador es banda, agregando banda e integrantes como participantes');
 
@@ -521,7 +521,7 @@ const { data: eventosExistentes, error: errorConsulta } = await supabaseAdmin
 
     // si es artista o local y agrega local del listado o personalizado
       const lugarId = eventData.place_profile_id || '';
-      if (lugarId && (eventData.creator_type =='artist' || eventData.creator_type=='band')){
+      if (lugarId && (eventData.creator_type =='artist' )){
         console.log('agregando participante para lugar establecido en la pagina ')
 
        try {
