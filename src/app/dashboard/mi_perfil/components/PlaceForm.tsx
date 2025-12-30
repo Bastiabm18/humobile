@@ -38,6 +38,7 @@ export default function PlaceForm({ defaultValues = {}, onSubmit, onCancel, geoD
     impersonator: defaultValues.impersonator ?? false,
     tribute: defaultValues.tribute ?? false,
     updateAt: defaultValues.updateAt || new Date().toISOString(),
+    perfil_visible: defaultValues.perfil_visible ?? false
   });
 
   const [isMapOpen, setIsMapOpen] = useState(false);

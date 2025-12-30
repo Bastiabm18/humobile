@@ -28,6 +28,7 @@ export default function ArtistForm({ defaultValues = {}, onSubmit, onCancel, geo
     image_url: defaultValues.image_url || '',
     updateAt: defaultValues.updateAt || new Date().toISOString(),
     perfil_visible: defaultValues.perfil_visible ?? false,
+    tipo_perfil: defaultValues.tipo_perfil || 'artista',
   });
 
   const [uploading, setUploading] = useState(false);
