@@ -21,7 +21,7 @@ const redMarkerIcon = new Icon({
   iconUrl: 'data:image/svg+xml;base64,' + btoa(`
     <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
       <path fill="#0369a1" stroke="#0c4a6e" stroke-width="2" d="M20,3C11,3 4,10 4,19c0,13 16,23 16,23s16-10 16-23C36,10 29,3 20,3z"/>
-      <circle fill="#0ea5e9" cx="20" cy="19" r="9"/>H
+      <circle fill="#0ea5e9" cx="20" cy="19" r="9"/>
     </svg>
   `),
   iconSize: [40, 40],
