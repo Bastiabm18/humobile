@@ -7,6 +7,7 @@ import { HiLogout, HiMenu, HiX } from 'react-icons/hi'; // ÍCONOS CORRECTOS
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { getSupabaseBrowser } from '@/lib/supabase/supabase-client';
+import NeonSign from './NeonSign';
 
 const links = [
   { name: 'Inicio', href: '/' },
@@ -159,7 +160,12 @@ const handleLogout = async () => {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="fixed inset-y-0 left-0 w-[100vw] bg-black/60 backdrop-blur-sm z-40 md:hidden shadow-2xl"
             >
+             
               <div className="flex flex-col items-center justify-center h-full space-y-8 text-lg font-medium">
+                 <div className=' h-auto mb-20 flex items-start justify-center'>
+                <NeonSign/>
+              </div>
+              
                 {navLinks.map((link, i) => (
                   <motion.div
                     key={link.name}

@@ -12,6 +12,8 @@ interface LayoutManagerProps {
 export default function LayoutManager({ children }: LayoutManagerProps) {
   const pathname = usePathname();
 
+  
+
   // Esta es la lógica que se ejecutará en CADA cambio de ruta
   const showMainLayout = !pathname.includes('/dashboard');
 

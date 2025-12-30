@@ -119,7 +119,7 @@ export default function PerfilPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black text-white p-4 md:p-8">
-        <div className='w-full items-start justify-center py-5 px-2'>
+        <div className='w-full mt-16 items-start justify-center py-5 px-2'>
                <motion.button
             onClick={() => router.push('/')}
             whileHover={{ scale: 1.05 }}

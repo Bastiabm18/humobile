@@ -34,7 +34,7 @@ const razones = [
   },
   {
     title: "LUGARES ICÓNICOS",
-    description: "Descubre venues legendarios y nuevos spots para música en vivo, con mapas interactivos y recomendaciones basadas en tus gustos.",
+    description: "Descubre lugares legendarios y nuevos spots para música en vivo, con mapas interactivos y recomendaciones basadas en tus gustos.",
   },
   {
     title: "COMUNIDAD MUSICAL",

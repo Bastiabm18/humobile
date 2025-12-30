@@ -98,8 +98,8 @@ export default function EventoPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black text-white p-4 md:p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen  bg-gradient-to-b from-neutral-900 to-black text-white p-4 md:p-8">
+        <div className="max-w-7xl  mx-auto">
           <div className="w-full items-start justify-center py-5 px-2">
             <motion.button
               onClick={() => router.push('/')}
@@ -132,7 +132,7 @@ export default function EventoPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black text-white p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mt-16 mx-auto">
         {/* Botón de volver */}
         <div className="w-full items-start justify-center py-5 px-2">
           <motion.button
