@@ -7,12 +7,13 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { HiChevronLeft, HiChevronRight } from 'react-icons/hi';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const desktopSlides = [
   '/desk_slide_1.jpg',
   '/desk_slide_2.jpg',
-  '/desk_slide_3.PNG',
-  '/desk_slide_4.PNG',
+  '/desk_slide_3.png',
+  '/desk_slide_4.png',
 ];
 
 const mobileSlides = [
@@ -20,6 +21,25 @@ const mobileSlides = [
   '/mobile_slide_3.jpg',
   '/mobile_slide_4.jpg',
   '/mobile_slide_5.jpg',
+];
+
+const razones = [
+  {
+    title: "DESCUBRE TALENTO",
+    description: "Explora artistas emergentes asi como artistas globales, sus agendas exclusivas en Humobile, la plataforma que conecta fans con el futuro de la música.",
+  },
+  {
+    title: "AGENDA EN VIVO",
+    description: "No te pierdas ningún evento: encuentra fechas de presentaciones, tours y shows en tiempo real con notificaciones personalizadas.",
+  },
+  {
+    title: "LUGARES ICÓNICOS",
+    description: "Descubre venues legendarios y nuevos spots para música en vivo, con mapas interactivos y recomendaciones basadas en tus gustos.",
+  },
+  {
+    title: "COMUNIDAD MUSICAL",
+    description: "Únete a fans apasionados, comparte experiencias y crea conexiones en la red definitiva para amantes de la música.",
+  },
 ];
 
 export default function HeroSlider() {
@@ -197,16 +217,42 @@ export default function HeroSlider() {
       </div>
 
       {/* CAPA OSCURA */}
-      <div className="absolute inset-0 bg-black/30 z-10" />
+      <div className="absolute inset-0 bg-black/20 z-10" />
 
-      {/* TEXTO CENTRADO */}
-      <div className="relative z-20 flex flex-col items-center justify-center h-full text-center px-6">
-        <div className='w-auto px-3 py-4 h-auto border border-white'>
-          <h3 className="text-5xl md:text-7xl font-bold text-white tracking-wider">
-            ÚNETE
-          </h3>
-        </div>
-      </div>
+{/* TEXTO CENTRADO DINÁMICO */}
+<div className="relative z-20 flex flex-col items-center justify-center h-full text-center px-6">
+  <AnimatePresence mode="wait">  {/* Para fade out/in suave */}
+    <motion.div
+      key={index} 
+      initial={{ opacity: 0, x: 20 }} 
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -40 }}   
+      transition={{ duration: 0.5, ease: 'easeInOut' }}  
+      className="w-auto md:max-w-3xl max-w-[70vw] px-4 py-6 md:px-8 md:py-8  border-white bg-black/10 backdrop-blur-xs rounded-lg"
+    >
+      {/* Título de la razón */}
+      <h3 className="text-4xl md:text-6xl font-bold text-white tracking-wider mb-4">
+        {razones[index].title}
+      </h3>
+      
+      {/* Descripción corta */}
+      <p className="text-lg md:text-2xl text-white/80 mb-6 max-w-md mx-auto">
+        {razones[index].description}
+      </p>
+      
+      {/* Botón ÚNETE */}
+      <Link href="/login">  {/* Cambiá a /dashboard si es para usuarios logueados */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}  
+          whileTap={{ scale: 0.95 }}
+          className="px-6 py-3 bg-sky-500/70 text-black font-bold rounded-full hover:bg-sky-500/90 transition"
+        >
+          SE PARTE DE HUMOBILE
+        </motion.button>
+      </Link>
+    </motion.div>
+  </AnimatePresence>
+</div>
 
       {/* BOTONES */}
       {slideCount > 1 && (
