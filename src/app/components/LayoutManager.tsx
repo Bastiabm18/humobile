@@ -20,7 +20,7 @@ export default function LayoutManager({ children }: LayoutManagerProps) {
       {/* Renderizado condicional basado en la ruta actual */}
       {showMainLayout && <Navbar />}
       
-      <main className='mt-16'>{children}</main>
+      <main className={`${showMainLayout? '':'mt-16'}`}>{children}</main>
       
     </>
   );
