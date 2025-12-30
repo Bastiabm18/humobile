@@ -52,7 +52,7 @@
 
 @layer base {
   html {
-    font-size: 62.5%  !important;
+    font-size: 78.125%  !important;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
