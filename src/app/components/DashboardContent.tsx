@@ -98,7 +98,7 @@ export default function DashboardContent({ userName, userRole }: DashboardConten
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-neutral-50 via-white to-neutral-100 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 p-6 md:p-8">
+    <div className="relative min-h-screen bg-gradient-to-br  from-neutral-900 via-neutral-800 to-neutral-900 p-6 md:p-8">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-500/10 to-sky-500/10 rounded-full blur-3xl"></div>
@@ -115,10 +115,10 @@ export default function DashboardContent({ userName, userRole }: DashboardConten
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 dark:from-white dark:via-neutral-300 dark:to-neutral-400 bg-clip-text text-transparent">
-                Bienvenido, <span className="text-blue-600 dark:text-blue-400">{userName || 'Usuario'}</span>!
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 bg-clip-text text-transparent">
+                Bienvenido, <span className="text-blue-400">{userName || 'Usuario'}</span>!
               </h1>
-              <p className="text-neutral-600 dark:text-neutral-400 mt-2 text-lg">
+              <p className="text-neutral-400 mt-2 text-lg">
                 Tu panel de control personalizado
               </p>
             </div>
@@ -178,7 +178,7 @@ export default function DashboardContent({ userName, userRole }: DashboardConten
             >
               <Link href={`/${item.path}`} className="block">
                 {/* Card */}
-                <div className="relative h-full bg-gradient-to-br from-white via-white to-neutral-50 dark:from-neutral-800 dark:via-neutral-800 dark:to-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-lg hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
+                <div className="relative h-full bg-gradient-to-b from-neutral-800 via-neutral-800 to-neutral-900 rounded-2xl border border-neutral-700 shadow-lg hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
                   
                   {/* Glow effect */}
                   {hoveredIndex === index && (
@@ -204,7 +204,7 @@ export default function DashboardContent({ userName, userRole }: DashboardConten
                           rotate: hoveredIndex === index ? 0 : 0
                         }}
                         transition={{ type: "spring", stiffness: 200 }}
-                        className="relative flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-white to-neutral-100 dark:from-neutral-700 dark:to-neutral-800 rounded-xl shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300"
+                        className="relative flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-neutral-700 to-neutral-800 rounded-xl shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300"
                       >
                         <div className="text-2xl md:text-3xl bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent">
                           {item.icon}
@@ -222,7 +222,7 @@ export default function DashboardContent({ userName, userRole }: DashboardConten
                           repeat: Infinity,
                           delay: index * 0.2
                         }}
-                        className="absolute -bottom-1 -right-1 flex items-center justify-center w-7 h-7 bg-white dark:bg-neutral-800 rounded-full border-2 border-white dark:border-neutral-800 shadow-md"
+                        className="absolute -bottom-1 -right-1 flex items-center justify-center w-7 h-7 g-neutral-800 rounded-full border-2 border-neutral-800 shadow-md"
                       >
                         <div className="text-sm">
                           {getMenuIcon(index)}
@@ -231,25 +231,25 @@ export default function DashboardContent({ userName, userRole }: DashboardConten
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-lg md:text-xl font-bold text-neutral-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                    <h3 className="text-lg md:text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors duration-300">
                       {item.name}
                     </h3>
 
                     {/* Description */}
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 flex-1">
+                    <p className="text-sm text-neutral-400 mb-4 flex-1">
                       {item.descripcion}
                     </p>
 
                     {/* Action Indicator */}
                     <div className="flex items-center justify-center gap-2 mt-2">
-                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <span className="text-xs font-semibold text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         Explorar
                       </span>
                       <motion.div
                         animate={{ x: hoveredIndex === index ? 5 : 0 }}
                         transition={{ type: "spring", stiffness: 400 }}
                       >
-                        <FaChevronRight className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <FaChevronRight className="text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </motion.div>
                     </div>
 
@@ -291,7 +291,7 @@ export default function DashboardContent({ userName, userRole }: DashboardConten
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="mt-12 p-8 bg-gradient-to-r from-white/60 to-white/40 dark:from-neutral-800/60 dark:to-neutral-800/40 backdrop-blur-sm rounded-2xl border border-neutral-200/50 dark:border-neutral-700/50"
+          className="mt-12 p-8 bg-gradient-to-r from-neutral-800/60 to-neutral-800/40 backdrop-blur-sm rounded-2xl border border-neutral-700/50"
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
@@ -303,18 +303,18 @@ export default function DashboardContent({ userName, userRole }: DashboardConten
                 <BsLightningFill className="text-2xl text-blue-500" />
               </motion.div>
               <div>
-                <h3 className="text-xl font-semibold text-neutral-900 dark:text-white">
+                <h3 className="text-xl font-semibold text-white">
                   Sistema en Tiempo Real
                 </h3>
-                <p className="text-neutral-600 dark:text-neutral-400">
+                <p className="text-neutral-400">
                   Todas las funcionalidades operativas
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <div className="text-2xl font-bold text-neutral-900 dark:text-white">100%</div>
-                <div className="text-sm text-neutral-600 dark:text-neutral-400">Performance</div>
+                <div className="text-2xl font-bold text-white">100%</div>
+                <div className="text-sm text-neutral-400">Performance</div>
               </div>
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
@@ -330,10 +330,10 @@ export default function DashboardContent({ userName, userRole }: DashboardConten
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="mt-8 text-center text-sm text-neutral-500 dark:text-neutral-400"
+          className="mt-8 text-center text-sm text-neutral-400"
         >
           <p>© {new Date().getFullYear()} Dashboard Pro </p>
-          <p className="text-xs mt-1 text-neutral-400 dark:text-neutral-500">
+          <p className="text-xs mt-1 text-neutral-500">
             • BABM •
           </p>
         </motion.div>
