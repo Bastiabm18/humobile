@@ -23,13 +23,15 @@ import {
 import { 
   MdMenuBook, 
   MdOutlinePostAdd,
-  MdOutlineGridView
+  MdOutlineGridView,
+  MdEventAvailable,
+  MdOutlinePersonPin
 } from "react-icons/md";
 import { AiFillSetting } from 'react-icons/ai';
 import { RiCustomerService2Fill, RiDashboardFill } from "react-icons/ri";
 import { HiCube } from "react-icons/hi";
 import { GiCube } from "react-icons/gi";
-import { TbCube } from "react-icons/tb";
+import { TbCube, TbMessageQuestion } from "react-icons/tb";
 import { MENU_ITEMS } from '../constants/menu';
 import { UserRole } from '@/types/role';
 import { BiCalendarCheck, BiCubeAlt } from 'react-icons/bi';
@@ -94,18 +96,16 @@ export default function DashboardContent({ userName, userRole, userMembresia }: 
   // Mapeo de iconos para cada opción del menú
   const getMenuIcon = (index: number) => {
     const iconMap: { [key: string]: ReactElement } = {
-      'inicio': <RiDashboardFill className="text-blue-500 text-4xl" />,
-      'dashboard': <RiDashboardFill className="text-sky-500 text-4xl" />,
-      'eventos': <MdOutlinePostAdd className="text-indigo-500 text-4xl" />,
-      'comments': <FaComment className="text-violet-500 text-4xl" />,
-      'agenda': <BiCalendarCheck className="text-cyan-500 text-4xl" />,
-      'config': <AiFillSetting className="text-blue-400 text-4xl" />,
-      'faq': <FaQuestion className="text-sky-400 text-4xl" />,
-      'perfil': <FaUserCircle className="text-indigo-400 text-4xl" />,
-      'salir': <BsBackspace className="text-blue-500 text-4xl" />,
-      'solicitudes': <CgNotifications className="text-sky-500 text-4xl" />,
-      'support': <RiCustomerService2Fill className="text-indigo-500 text-4xl" />,
-      'guide': <MdMenuBook className="text-violet-500" />
+      'inicio': <FaHome className="text-neutral-500/30 text-4xl" />,
+      'perfiles': <FaUserCircle className="text-neutral-500/30 text-4xl" />,
+      'eventos': <MdEventAvailable className="text-neutral-500/30 text-4xl" />,
+      'agenda': <MdMenuBook  className="text-neutral-500/30 text-4xl" />,
+      'config': <AiFillSetting className="text-neutral-500/30 text-4xl" />,
+      'preguntas frecuentes': <FaQuestion className="text-neutral-400/30 text-4xl" />,
+      'solicitudes': <TbMessageQuestion className="text-neutral-500/30 text-4xl" />,
+      'cuenta': <MdOutlinePersonPin className="text-neutral-400/30 text-4xl" />,
+      'salir': <BsBackspace className="text-neutral-400/30 text-4xl" />,
+
     };
 
     // Buscar por nombre del item
@@ -257,7 +257,7 @@ export default function DashboardContent({ userName, userRole, userMembresia }: 
                         className="relative flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-neutral-700 to-neutral-800 rounded-xl shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300"
                       >
                         <div className="text-2xl md:text-3xl bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent">
-                          {item.icon}
+                          {getMenuIcon(index)}
                         </div>
                       </motion.div>
                       
@@ -275,7 +275,7 @@ export default function DashboardContent({ userName, userRole, userMembresia }: 
                         className="absolute -bottom-1 -right-1 flex items-center justify-center w-7 h-7 g-neutral-800 rounded-full border-2 border-neutral-800 shadow-md"
                       >
                         <div className="text-sm">
-                          {getMenuIcon(index)}
+                          {item.icon}
                         </div>
                       </motion.div>
                     </div>
