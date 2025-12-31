@@ -24,12 +24,12 @@ export interface MenuItem {
 }
 
 export const MENU_ITEMS: MenuItem[] = [
-  { name: 'Inicio',        path: 'dashboard',                descripcion:'Empieza desde 0 ', icon: <FaHome />,                role: ['ADMIN', 'user'] },
-  { name: 'Perfiles',      path: 'dashboard/mi_perfil',      descripcion:'Accede a tus perfiles Humobile ', icon: <FaUserCircle />,          role: ['ADMIN', 'user'] },
-  { name: 'Agenda',        path: 'dashboard/agenda',         descripcion:' Maneja Tus Tiempos ', icon: <MdMenuBook />,            role: ['ADMIN', 'user'] },
-  { name: 'Eventos',       path: 'dashboard/eventos',        descripcion:'Chequea Tus Actividades ', icon: <MdEventAvailable />,      role: ['ADMIN', 'user'] },
-  { name: 'Solicitudes',   path: 'dashboard/solicitudes',    descripcion:' Acepta/Rechaza Fechas o Invitaciones', icon: <TbMessageQuestion  />,    role: ['ADMIN', 'user'] },
-  { name: 'Faq',           path: 'dashboard/faq',            descripcion:' Maneja Preguntas Frecuentes', icon: <FaQuestion />,            role: ['ADMIN', 'user'] },
-  { name: 'Configuración', path: 'dashboard/config',         descripcion:' Setea Tu Humobile', icon: <AiFillSetting />,         role: ['ADMIN', 'user'] },
-  { name: 'Salir',         path: '/',                        descripcion:' Salida ', icon: <BsBackspace />,           role: ['ADMIN', 'user'] },
+  { name: 'Inicio',                path: 'dashboard',                descripcion:'Vuele a empezar ', icon: <FaHome />,                role: ['ADMIN', 'user'] },
+  { name: 'Perfiles',              path: 'dashboard/mi_perfil',      descripcion:'Accede a tus perfiles Humobile ', icon: <FaUserCircle />,          role: ['ADMIN', 'user'] },
+  { name: 'Agenda',                path: 'dashboard/agenda',         descripcion:' Maneja Tus Tiempos ', icon: <MdMenuBook />,            role: ['ADMIN', 'user'] },
+  { name: 'Eventos',               path: 'dashboard/eventos',        descripcion:'Chequea Tus Actividades ', icon: <MdEventAvailable />,      role: ['ADMIN', 'user'] },
+  { name: 'Solicitudes',           path: 'dashboard/solicitudes',    descripcion:' Acepta/Rechaza Fechas o Invitaciones', icon: <TbMessageQuestion  />,    role: ['ADMIN', 'user'] },
+  { name: 'Cuenta ',               path: 'dashboard/cuenta',         descripcion:' Setea Tu Humobile', icon: <AiFillSetting />,         role: ['ADMIN','user'] },
+  { name: 'preguntas frecuentes',  path: 'dashboard/faq',            descripcion:' Maneja Preguntas Frecuentes', icon: <FaQuestion />,            role: ['ADMIN'] },
+  { name: 'Salir',                 path: '/',                        descripcion:' Salida ', icon: <BsBackspace />,           role: ['ADMIN', 'user'] },
 ];

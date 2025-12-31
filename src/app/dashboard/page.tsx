@@ -38,9 +38,12 @@ export default async function DashboardPage() {
       userEmail={userData.email}
       userName={userData.name}
       userRole={userData.role}
-     
+     userMembresia = {userData.membresia}
     >
-      <DashboardContent userName={userData.name} userRole={userData.role} />
+      <DashboardContent
+       userName={userData.name} 
+       userRole={userData.role}
+       userMembresia = {userData.membresia}  />
     </DashboardLayout>
   );
 }

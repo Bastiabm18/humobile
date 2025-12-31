@@ -35,6 +35,7 @@ export default async function Cuenta() {
       userEmail={userData.email} 
       userName={userData.name} 
       userRole={userData.role}
+      userMembresia={userData.membresia}
     >
      <CuentaContent userData={userData} />
     </DashboardLayout>

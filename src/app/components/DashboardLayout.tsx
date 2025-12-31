@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardSidebar from './DashboardSidebar';
 import { FaSignOutAlt } from 'react-icons/fa';
@@ -13,13 +13,34 @@ interface DashboardLayoutProps {
   userEmail?: string;
   userName?: string;
   userRole?: UserRole;
+ userMembresia?: 
+    {
+      nombre_membresia: string;
+      estado_membresia: string;
+      fecha_ini_membresia: string;
+      fecha_fin_membresia: string;
+      precio_membresia: number;
+      id: number;
+
+    }
 }
 
-export default function DashboardLayout({ children, userEmail, userName, userRole }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, userEmail, userName, userRole, userMembresia }: DashboardLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [usuarioMembresia, setUsuarioMembresia] = useState<string | null>(null);
+
   const router = useRouter();
 console.log("User Role in Layout:", userRole);
+
+  useEffect(() => {
+    if (userMembresia) {
+      setUsuarioMembresia(userMembresia.nombre_membresia);
+    }
+  }, [userMembresia]);
+  
+  
+  console.log('membresia layout', usuarioMembresia)
 const currentRole = userRole && USER_ROLES.includes(userRole as any)
   ? userRole as UserRole
   : 'user';
@@ -52,6 +73,7 @@ const currentRole = userRole && USER_ROLES.includes(userRole as any)
         mobileOpen={mobileMenuOpen}
         setMobileOpen={setMobileMenuOpen}
         userRole={currentRole}
+        userMembresia={userMembresia}
       
       />
       

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ReactElement, useState } from 'react';
+import { ReactElement, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaHome, 
@@ -44,17 +44,43 @@ interface SidebarProps {
   mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
   userRole: UserRole;
+  userMembresia?: 
+    {
+      nombre_membresia: string;
+      estado_membresia: string;
+      fecha_ini_membresia: string;
+      fecha_fin_membresia: string;
+      precio_membresia: number;
+      id: number;
+
+    }
+  ;
 }
 
-export default function DashboardSidebar({ collapsed, onToggle, mobileOpen, setMobileOpen, userRole }: SidebarProps) {
+export default function DashboardSidebar({ collapsed, onToggle, mobileOpen, setMobileOpen, userRole, userMembresia }: SidebarProps) {
   const pathname = usePathname();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [usuarioMembresia, setUsuarioMembresia] = useState<string | null>(null);
 
   const router = useRouter();
   // Filtra los items del menú según el rol del usuario
   const menuItems = MENU_ITEMS.filter(item => 
     userRole && item.role.includes(userRole)
   );
+
+  const dias = userMembresia?.fecha_fin_membresia && userMembresia?.fecha_ini_membresia
+    ? Math.ceil((new Date(userMembresia.fecha_fin_membresia).getTime() - new Date(userMembresia.fecha_ini_membresia).getTime()) / (1000 * 3600 * 24))
+    : 0;
+  
+  useEffect(() => {
+    if (userMembresia) {
+      setUsuarioMembresia(userMembresia.nombre_membresia);
+    }
+  }, [userMembresia]);
+  
+  
+  console.log('membresia', usuarioMembresia)
+  
 
   return (
     <>
@@ -174,26 +200,54 @@ export default function DashboardSidebar({ collapsed, onToggle, mobileOpen, setM
             </ul>
 
             {/* Premium Section */}
-            {!collapsed && (
-              <div className="mt-8 mx-3 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-400/10 border border-amber-500/20 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-yellow-500/5"></div>
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-2">
-                    <GiSparkPlug className="text-amber-300 text-lg" />
-                    <span className="text-sm font-bold text-amber-200">Funciones Premium </span>
+             {/* Premium Section Mobile */}
+                { !collapsed && 
+                ( usuarioMembresia != 'PREMIUM'?
+                  (  
+                  <div className="mt-8 mx-3 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-400/10 border border-amber-500/20 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-yellow-500/5"></div>
+                    <div className="relative">
+                      <div className="flex items-center gap-2 mb-2">
+                        <GiSparkPlug className="text-amber-300 text-lg" />
+                        <span className="text-sm font-bold text-amber-200">Funciones Premium </span>
+                      </div>
+                      <p className="text-xs text-amber-100/70">
+                        Desbloquea todas las funciones avanzadas
+                      </p>
+                      <button
+                      onClick={()=>router.push('/dashboard/serPremium')}
+                      className=" cursor-pointer mt-3 gap-2 w-full flex items-center justify-center py-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-semibold shadow-lg shadow-amber-500/25">
+                     <FaCrown size={18}/> Actualiza Ahora
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-xs text-amber-100/70">
-                    Desbloquea todas las funciones avanzadas
-                  </p>
-                  <button 
-                  onClick={()=>router.push('/dashboard/serPremium')}
+                 ):(
+                    <div>
+                            <div className="mt-8 mx-3 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-400/10 border border-amber-500/20 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-yellow-500/5"></div>
+                    <div className="relative">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <GiSparkPlug className="text-amber-300 text-lg" />
+                        <span className="text-sm font-bold text-amber-200">HUMOBILE PRO </span>
+                      </div>
+                      <p className="text-xs text-amber-100/70">
                       
-                  className="cursor-pointer mt-3 w-full flex items-center justify-center gap-3 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-semibold shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all duration-200">
-                   <FaCrown size={24}/>  <p className='text-xl'>Actualiza ahora</p>
-                  </button>
-                </div>
-              </div>
-            )}
+                      </p>
+                      <button
+                      onClick={()=>router.push('/dashboard/cuenta')}
+                      className=" cursor-pointer mt-3 gap-2 w-full flex items-center justify-center py-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-semibold shadow-lg shadow-amber-500/25">
+                     <FaCrown size={18}/> Ver Mi Suscripción
+                      </button>
+                      <div className='w-full flex text-amber-300 px-2 py-4 items-center justify-center '>
+                      
+                        <p>Dias Restantes: {dias}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                    </div>
+                  )
+                )}
           </nav>
 
           {/* Footer */}
@@ -309,6 +363,9 @@ export default function DashboardSidebar({ collapsed, onToggle, mobileOpen, setM
                   </ul>
 
                   {/* Premium Section Mobile */}
+                { !collapsed && 
+                ( usuarioMembresia != 'PREMIUM'?
+                  (  
                   <div className="mt-8 mx-3 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-400/10 border border-amber-500/20 relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-yellow-500/5"></div>
                     <div className="relative">
@@ -326,6 +383,33 @@ export default function DashboardSidebar({ collapsed, onToggle, mobileOpen, setM
                       </button>
                     </div>
                   </div>
+                 ):(
+                    <div>
+                            <div className="mt-8 mx-3 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-400/10 border border-amber-500/20 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-yellow-500/5"></div>
+                    <div className="relative">
+                      <div className="flex items-center gap-2 mb-2">
+                        <GiSparkPlug className="text-amber-300 text-lg" />
+                        <span className="text-sm font-bold text-amber-200">HUMOBILE PRO </span>
+                      </div>
+                      <p className="text-xs text-amber-100/70">
+                      
+                      </p>
+                      <button
+                      onClick={()=>router.push('/dashboard/cuenta')}
+                      className=" cursor-pointer mt-3 gap-2 w-full flex items-center justify-center py-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-semibold shadow-lg shadow-amber-500/25">
+                     <FaCrown size={18}/> Ver Mi Suscripción
+                      </button>
+                       <div className='w-full flex text-amber-300 px-2 py-4 items-center justify-center '>
+                      
+                        <p>Dias Restantes: {dias}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                    </div>
+                  )
+                )}
                 </nav>
 
                 {/* Footer Mobile */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactElement, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
@@ -47,6 +47,17 @@ interface MenuItem {
 interface DashboardContentProps {
   userName?: string | null;
   userRole?: UserRole;
+ userMembresia?: 
+    {
+      nombre_membresia: string;
+      estado_membresia: string;
+      fecha_ini_membresia: string;
+      fecha_fin_membresia: string;
+      precio_membresia: number;
+      id: number;
+
+    }
+  
 }
 
 // Iconos adicionales para cada item del menú
@@ -60,9 +71,21 @@ const additionalIcons = [
   <BiCubeAlt className="text-blue-400" key="cube4" />
 ];
 
-export default function DashboardContent({ userName, userRole }: DashboardContentProps) {
+export default function DashboardContent({ userName, userRole, userMembresia }: DashboardContentProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [activeItem, setActiveItem] = useState<string | null>(null);
+  const [usuarioMembresia, setUsuarioMembresia] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (userMembresia) {
+      setUsuarioMembresia(userMembresia.nombre_membresia);
+    }
+  }, [userMembresia]);
+  
+    const dias = userMembresia?.fecha_fin_membresia && userMembresia?.fecha_ini_membresia
+    ? Math.ceil((new Date(userMembresia.fecha_fin_membresia).getTime() - new Date(userMembresia.fecha_ini_membresia).getTime()) / (1000 * 3600 * 24))
+    : 0;
+  console.log('membresia content', usuarioMembresia)
   const router = useRouter()
   const menuItems = MENU_ITEMS.filter(item => 
     userRole && item.role.includes(userRole)
@@ -115,7 +138,7 @@ export default function DashboardContent({ userName, userRole }: DashboardConten
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 bg-clip-text text-transparent">
+              <h1 className="text-4xl text-gray-200 md:text-5xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 bg-clip-text">
                 Bienvenido, <span className="text-blue-400">{userName || 'Usuario'}</span>!
               </h1>
               <p className="text-neutral-400 mt-2 text-lg">
@@ -123,7 +146,9 @@ export default function DashboardContent({ userName, userRole }: DashboardConten
               </p>
             </div>
             
-            <motion.div
+           { usuarioMembresia!='PREMIUM'? 
+           (
+             <motion.div
                onClick={()=>router.push('/dashboard/serPremium')}
                       
               whileHover={{ scale: 1.05 }}
@@ -135,9 +160,34 @@ export default function DashboardContent({ userName, userRole }: DashboardConten
            
               className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-amber-300/20 animate-pulse"></div>
               <FaCrown className="text-lg relative z-10" />
-              <span className="font-bold text-white relative z-10">Acceso Premium</span>
+              <span className="font-bold text-white relative z-10">Cambia a  Premium</span>
               <DiSpark className="text-xs text-yellow-200 relative z-10 animate-spin-slow" />
             </motion.div>
+           ):(
+            <div>
+               <motion.div
+               onClick={()=>router.push('/dashboard/cuenta')}
+                      
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="cursor-pointer gap-2 w-md md:w-lg inline-flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-400 text-white rounded-xl shadow-lg shadow-amber-500/30 relative overflow-hidden"
+            >
+              {/* Efecto de brillo dorado */}
+              <div
+           
+              className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-amber-300/20 animate-pulse">
+                
+              </div>
+              <FaCrown className="text-lg relative z-10" />
+              <span className="font-bold text-white relative z-10">HUMOBILE PRO</span>
+                <div className=' flex text-gray-100 px-2 py-4 items-center justify-center '>
+                      
+                        <b>Dias Restantes: {dias}
+                        </b>
+                      </div>
+            </motion.div>
+            </div>
+           ) }
           </div>
         </motion.div>
 
