@@ -220,8 +220,8 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
 
   return (
 <div className="mt-8 max-w-5xl mx-auto">
-  <div className="bg-black/40 backdrop-blur-md rounded-2xl border border-red-600/30 shadow-2xl shadow-red-900/40 p-8">
-    <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
+  <div className="bg-black/40 backdrop-blur-md rounded-2xl border border-sky-600/30 shadow-2xl shadow-sky-900/40 p-8">
+    <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-sky-500 to-sky-700 bg-clip-text text-transparent">
       Perfil de Grupo/Banda
     </h2>
 
@@ -230,18 +230,18 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
                     <div className="relative">
                       {preview ? (
                         <div className="relative group">
-                          <img src={preview} alt="Preview" className="w-32 h-32 rounded-full object-cover border-4 border-red-600 shadow-lg" />
+                          <img src={preview} alt="Preview" className="w-32 h-32 rounded-full object-cover border-4 border-sky-600 shadow-lg" />
                           <button
                             type="button"
                             onClick={removeImage}
-                            className="absolute top-0 right-0 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                            className="absolute top-0 right-0 bg-sky-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
                           >
                             <FiX size={16} />
                           </button>
                         </div>
                       ) : (
-                        <div className="w-32 h-32 bg-neutral-800 rounded-full border-4 border-dashed border-red-600/50 flex items-center justify-center">
-                          <FiUploadCloud className="text-red-500" size={40} />
+                        <div className="w-32 h-32 bg-neutral-800 rounded-full border-4 border-dashed border-sky-600/50 flex items-center justify-center">
+                          <FiUploadCloud className="text-sky-500" size={40} />
                         </div>
                       )}
                     </div>
@@ -251,7 +251,7 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
                         px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2
                         ${uploading 
                           ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
-                          : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg'
+                          : 'bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white shadow-lg'
                         }
                       `}>
                         {uploading ? 'Subiendo...' : preview ? 'Cambiar Foto' : 'Subir Foto de Perfil'}
@@ -284,7 +284,7 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
           value={form.band_name}
           onChange={handleChange}
           required
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all"
+          className="px-5 py-4 bg-neutral-900/80 border border-sky-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-900/30 transition-all"
         />
 
         <input
@@ -294,7 +294,7 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
           value={form.style}
           onChange={handleChange}
           required
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all"
+          className="px-5 py-4 bg-neutral-900/80 border border-sky-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-900/30 transition-all"
         />
 
         <input
@@ -304,7 +304,7 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
           value={form.music_type}
           onChange={handleChange}
           required
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all"
+          className="px-5 py-4 bg-neutral-900/80 border border-sky-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-900/30 transition-all"
         />
 
         <div className="flex items-center gap-3">
@@ -313,7 +313,7 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
             name="is_tribute"
             checked={form.is_tribute}
             onChange={handleChange}
-            className="w-6 h-6 text-red-600 bg-neutral-900 border-red-600/50 rounded focus:ring-red-500"
+            className="w-6 h-6 text-sky-600 bg-neutral-900 border-sky-600/50 rounded focus:ring-sky-500"
           />
           <label className="text-lg text-gray-300 font-medium">¿Es tributo?</label>
         </div>
@@ -326,7 +326,7 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
             value={form.contact_phone}
             onChange={handleChange}
             required
-            className="w-full px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all"
+            className="w-full px-5 py-4 bg-neutral-900/80 border border-sky-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-900/30 transition-all"
           />
         </div>
       </div>
@@ -337,7 +337,7 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
           value={form.countryId}
           onChange={e => handleGeoChange('countryId', e.target.value)}
           required
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all appearance-none cursor-pointer"
+          className="px-5 py-4 bg-neutral-900/80 border border-sky-600/40 rounded-xl text-white focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-900/30 transition-all appearance-none cursor-pointer"
         >
           <option value="">Selecciona País *</option>
           {geoData.paises.map(p => (
@@ -350,7 +350,7 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
           onChange={e => handleGeoChange('regionId', e.target.value)}
           required
           disabled={!form.countryId || filteredRegiones.length === 0}
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
+          className="px-5 py-4 bg-neutral-900/80 border border-sky-600/40 rounded-xl text-white focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
         >
           <option value="">Selecciona Región *</option>
           {filteredRegiones.map(r => (
@@ -363,7 +363,7 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
           onChange={e => handleGeoChange('cityId', e.target.value)}
           required
           disabled={!form.regionId || filteredComunas.length === 0}
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
+          className="px-5 py-4 bg-neutral-900/80 border border-sky-600/40 rounded-xl text-white focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
         >
           <option value="">Selecciona Comuna *</option>
           {filteredComunas.map(c => (
@@ -381,7 +381,7 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
           name="photo_url"
           value={form.photo_url}
           onChange={handleChange}
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white placeholder-gray-500 text-white focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all"
+          className="px-5 py-4 bg-neutral-900/80 border border-sky-600/40 rounded-xl text-white placeholder-gray-500 text-white focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-900/30 transition-all"
         />
 
         <input
@@ -390,7 +390,7 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
           name="video_url"
           value={form.video_url}
           onChange={handleChange}
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all"
+          className="px-5 py-4 bg-neutral-900/80 border border-sky-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-900/30 transition-all"
         />
       </div>
 
@@ -398,7 +398,7 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
       <div className="flex gap-5 pt-8">
         <button
           type="submit"
-          className="flex-1 py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl font-bold text-lg text-white transition-all transform hover:scale-105 shadow-lg shadow-red-900/60"
+          className="flex-1 py-4 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 rounded-xl font-bold text-lg text-white transition-all transform hover:scale-105 shadow-lg shadow-sky-900/60"
         >
           Crear Banda
         </button>

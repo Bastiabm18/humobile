@@ -111,25 +111,25 @@ const handleSubmit = async (e: React.FormEvent) => {
         exit={{ opacity: 0, scale: 0.9, y: 30 }}
         className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
       >
-        <div className="bg-neutral-900 border border-green-600/40 rounded-2xl shadow-2xl shadow-green-900/60 max-w-md w-full">
+        <div className="bg-neutral-900 border border-sky-600/40 rounded-2xl  max-w-md w-full">
           
           {/* Header */}
-          <div className="bg-gradient-to-r from-green-900/60 to-black p-6 border-b border-green-600/30">
+          <div className="bg-gradient-to-r from-sky-900/60 to-black p-6 border-b border-sky-600/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="bg-green-600 p-3 rounded-xl">
+                <div className="bg-sky-600 p-3 rounded-xl">
                   <HiPaperAirplane className="w-8 h-8 text-white" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white">Invitacion {nombreBanda}</h2>
-                  <p className="text-green-400 text-sm">Envía una solicitud para que sean parte del grupo</p>
+                  <p className="text-sky-400 text-sm">Envía una solicitud para que sean parte del grupo</p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-green-900/60 rounded-xl transition"
+                className="p-2 hover:bg-sky-900/60 rounded-xl transition"
               >
-                <HiX className="w-6 h-6 text-green-400" />
+                <HiX className="w-6 h-6 text-sky-400" />
               </button>
             </div>
           </div>
@@ -138,7 +138,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Nombre del Grupo */}
             <div>
-              <label className="block text-green-300 font-medium mb-2">
+              <label className="block text-sky-300 font-medium mb-2">
              De :  {nombreBanda}
               </label>
             
@@ -148,7 +148,7 @@ const handleSubmit = async (e: React.FormEvent) => {
              
   {/* NUEVO: Selector de perfiles visibles */}
   <div>
-    <label className="block text-green-300 font-medium mb-2">
+    <label className="block text-sky-300 font-medium mb-2">
       <div className="flex items-center gap-2">
         <HiUser className="w-5 h-5" />
        Para:
@@ -156,8 +156,8 @@ const handleSubmit = async (e: React.FormEvent) => {
     </label>
     
     {loadingPerfiles ? (
-      <div className="bg-black/50 border border-green-600/30 rounded-xl px-4 py-3 flex items-center gap-3">
-        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-green-500"></div>
+      <div className="bg-black/50 border border-sky-600/30 rounded-xl px-4 py-3 flex items-center gap-3">
+        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-sky-500"></div>
         <span className="text-gray-400">Cargando perfiles...</span>
       </div>
     ) : (
@@ -165,7 +165,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         name="id_perfil"
         value= {formData.id_perfil}
         onChange={handleChange}
-        className="w-full bg-black border border-green-600/30 rounded-xl px-4 py-3 text-white"
+        className="w-full bg-black border border-sky-600/30 rounded-xl px-4 py-3 text-white"
         required
       >
         {perfilesVisibles.length === 0 ? (
@@ -186,7 +186,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
             {/* Tipo de Invitación */}
             <div>
-              <label className="block text-green-300 font-medium mb-2">
+              <label className="block text-sky-300 font-medium mb-2">
                 Tipo de invitación
               </label>
               <input
@@ -195,7 +195,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 value={formData.invitacion}
                 onChange={handleChange}
                 placeholder="Ej: Invitación como guitarrista"
-                className="w-full bg-black/50 border border-green-600/30 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full bg-black/50 border border-sky-600/30 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                 required
               />
 
@@ -218,7 +218,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
             {/* Descripción */}
             <div>
-              <label className="block text-green-300 font-medium mb-2">
+              <label className="block text-sky-300 font-medium mb-2">
                 Descripción/Mensaje
               </label>
               <textarea
@@ -227,13 +227,13 @@ const handleSubmit = async (e: React.FormEvent) => {
                 onChange={handleChange}
                 placeholder="Cuéntales por qué quieres unirte a la banda..."
                 rows={4}
-                className="w-full bg-black/50 border border-green-600/30 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                className="w-full bg-black/50 border border-sky-600/30 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"
                 required
               />
             </div>
 
             {/* Footer - Botones */}
-            <div className="flex gap-4 pt-4 border-t border-green-600/30">
+            <div className="flex gap-4 pt-4 border-t border-sky-600/30">
               <button
                 type="button"
                 onClick={onClose}
@@ -245,7 +245,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl font-medium text-white transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-sky-500 to-emerald-600 hover:from-sky-600 hover:to-emerald-700 rounded-xl font-medium text-white transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>

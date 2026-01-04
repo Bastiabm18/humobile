@@ -241,9 +241,9 @@ const handleLocationSelect = (lat: number, lng: number) => {
   return (
     <>
     <div className="mt-8 max-w-5xl mx-auto">
-  <div className="bg-black/40 backdrop-blur-md rounded-2xl border border-red-600/30 shadow-2xl shadow-red-900/40 p-8">
+  <div className="bg-black/40 backdrop-blur-md rounded-2xl border border-blue-600/30 shadow-2xl shadow-blue-900/40 p-8">
     
-    <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
+    <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent">
       Crear Perfil de Local
     </h2>
 
@@ -253,18 +253,18 @@ const handleLocationSelect = (lat: number, lng: number) => {
                             <div className="relative">
                               {preview ? (
                                 <div className="relative group">
-                                  <img src={preview} alt="Preview" className="w-32 h-32 rounded-full object-cover border-4 border-red-600 shadow-lg" />
+                                  <img src={preview} alt="Preview" className="w-32 h-32 rounded-full object-cover border-4 border-blue-600 shadow-lg" />
                                   <button
                                     type="button"
                                     onClick={removeImage}
-                                    className="absolute top-0 right-0 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                                    className="absolute top-0 right-0 bg-blue-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
                                   >
                                     <FiX size={16} />
                                   </button>
                                 </div>
                               ) : (
-                                <div className="w-32 h-32 bg-neutral-800 rounded-full border-4 border-dashed border-red-600/50 flex items-center justify-center">
-                                  <FiUploadCloud className="text-red-500" size={40} />
+                                <div className="w-32 h-32 bg-neutral-800 rounded-full border-4 border-dashed border-blue-600/50 flex items-center justify-center">
+                                  <FiUploadCloud className="text-blue-500" size={40} />
                                 </div>
                               )}
                             </div>
@@ -274,7 +274,7 @@ const handleLocationSelect = (lat: number, lng: number) => {
                                 px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2
                                 ${uploading 
                                   ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
-                                  : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg'
+                                  : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg'
                                 }
                               `}>
                                 {uploading ? 'Subiendo...' : preview ? 'Cambiar Foto' : 'Subir Foto de Perfil'}
@@ -306,7 +306,7 @@ const handleLocationSelect = (lat: number, lng: number) => {
           name="photo_url"
           value={form.photo_url}
           onChange={handleChange}
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white placeholder-gray-500 text-white focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all"
+          className="px-5 py-4 bg-neutral-900/80 border border-blue-600/40 rounded-xl text-white placeholder-gray-500 text-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-900/30 transition-all"
         />
         <input
           name="place_name"
@@ -314,7 +314,7 @@ const handleLocationSelect = (lat: number, lng: number) => {
           onChange={handleChange}
           placeholder="Nombre del local *"
           required
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all"
+          className="px-5 py-4 bg-neutral-900/80 border border-blue-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-900/30 transition-all"
         />
         <input
           name="address"
@@ -322,7 +322,7 @@ const handleLocationSelect = (lat: number, lng: number) => {
           onChange={handleChange}
           placeholder="Dirección *"
           required
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all"
+          className="px-5 py-4 bg-neutral-900/80 border border-blue-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-900/30 transition-all"
         />
         <input
           name="phone"
@@ -330,14 +330,14 @@ const handleLocationSelect = (lat: number, lng: number) => {
           onChange={handleChange}
           placeholder="Teléfono *"
           required
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all"
+          className="px-5 py-4 bg-neutral-900/80 border border-blue-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-900/30 transition-all"
         />
         <select
           name="place_type"
           value={form.place_type}
           onChange={handleChange}
           required
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all appearance-none cursor-pointer"
+          className="px-5 py-4 bg-neutral-900/80 border border-blue-600/40 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-900/30 transition-all appearance-none cursor-pointer"
         >
           <option value="">Tipo de local *</option>
           <option value="pub">Pub</option>
@@ -355,7 +355,7 @@ const handleLocationSelect = (lat: number, lng: number) => {
           value={form.countryId}
           onChange={handleChange}
           required
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all appearance-none"
+          className="px-5 py-4 bg-neutral-900/80 border border-blue-600/40 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-900/30 transition-all appearance-none"
         >
           <option value="">País *</option>
           {geoData.paises.map(p => (
@@ -369,7 +369,7 @@ const handleLocationSelect = (lat: number, lng: number) => {
           onChange={handleChange}
           disabled={!form.countryId}
           required
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
+          className="px-5 py-4 bg-neutral-900/80 border border-blue-600/40 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
         >
           <option value="">Región *</option>
           {filteredRegiones.map(r => (
@@ -383,7 +383,7 @@ const handleLocationSelect = (lat: number, lng: number) => {
           onChange={handleChange}
           disabled={!form.regionId}
           required
-          className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-white focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
+          className="px-5 py-4 bg-neutral-900/80 border border-blue-600/40 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
         >
           <option value="">Comuna *</option>
           {filteredComunas.map(c => (
@@ -393,20 +393,20 @@ const handleLocationSelect = (lat: number, lng: number) => {
       </div>
 
       {/* UBICACIÓN EN MAPA */}
-      <div className="pt-6 border-t border-red-600/30">
+      <div className="pt-6 border-t border-blue-600/30">
         <h3 className="text-xl font-bold text-white mb-4">Ubicación exacta (clic en el mapa) *</h3>
         <div className="grid md:grid-cols-3 gap-6 items-end">
           <input
             value={form.lat.toFixed(6)}
             readOnly
             placeholder="Latitud"
-            className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-gray-300 focus:outline-none"
+            className="px-5 py-4 bg-neutral-900/80 border border-blue-600/40 rounded-xl text-gray-300 focus:outline-none"
           />
           <input
             value={form.lng.toFixed(6)}
             readOnly
             placeholder="Longitud"
-            className="px-5 py-4 bg-neutral-900/80 border border-red-600/40 rounded-xl text-gray-300 focus:outline-none"
+            className="px-5 py-4 bg-neutral-900/80 border border-blue-600/40 rounded-xl text-gray-300 focus:outline-none"
           />
           <button
             type="button"
@@ -417,7 +417,7 @@ const handleLocationSelect = (lat: number, lng: number) => {
           </button>
         </div>
         {form.lat === 0 && form.lng === 0 && (
-          <p className="mt-3 text-red-400 font-medium flex items-center gap-2">
+          <p className="mt-3 text-blue-400 font-medium flex items-center gap-2">
             Debes seleccionar la ubicación exacta en el mapa
           </p>
         )}
@@ -434,7 +434,7 @@ const handleLocationSelect = (lat: number, lng: number) => {
                 name={type}
                 checked={form[type]}
                 onChange={handleChange}
-                className="w-6 h-6 text-red-600 bg-neutral-900 border-red-600/50 rounded focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-black transition-all"
+                className="w-6 h-6 text-blue-600 bg-neutral-900 border-blue-600/50 rounded focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black transition-all"
               />
               <span className="text-lg text-gray-200 capitalize">
                 {type === 'singer' ? 'Cantante' :
@@ -453,7 +453,7 @@ const handleLocationSelect = (lat: number, lng: number) => {
       <div className="flex gap-5 pt-8">
         <button
           type="submit"
-          className="flex-1 py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl font-bold text-lg text-white transition-all transform hover:scale-105 shadow-lg shadow-red-900/60"
+          className="flex-1 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl font-bold text-lg text-white transition-all transform hover:scale-105 shadow-lg shadow-blue-900/60"
         >
           Guardar Local
         </button>

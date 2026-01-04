@@ -46,7 +46,7 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
         className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 overflow-y-auto"
       >
         <div
-          className="bg-neutral-900 border border-red-600/40 rounded-2xl shadow-2xl shadow-red-900/60 w-full
+          className="bg-neutral-900 border border-blue-600/40 rounded-2xl shadow-2xl  w-full
                      max-w-4xl 
                      max-h-full          
                      md:max-h-[95vh]     
@@ -62,8 +62,8 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-red-900/80 to-black flex items-center justify-center">
-                <HiUser className="w-24 h-24 md:w-32 md:h-32 text-red-500/50" />
+              <div className="w-full h-full bg-gradient-to-br from-blue-900/80 to-black flex items-center justify-center">
+                <HiUser className="w-24 h-24 md:w-32 md:h-32 text-blue-500/50" />
               </div>
             )}
 
@@ -74,7 +74,7 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
                   {profile.type === "band" && (data.band_name || "Banda")}
                   {profile.type === "place" && (data.place_name || "Local")}
                 </h2>
-                <p className="text-lg md:text-2xl text-red-400 font-medium drop-shadow-lg">
+                <p className="text-lg md:text-2xl text-blue-400 font-medium drop-shadow-lg">
                   {profile.type === "artist" && "Perfil de Artista"}
                   {profile.type === "band" && "Perfil de Banda"}
                   {profile.type === "place" && "Perfil de Local"}
@@ -83,9 +83,9 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
 
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-3 bg-black/60 hover:bg-red-900/80 rounded-xl transition backdrop-blur-sm"
+                className="absolute top-4 right-4 p-3 bg-black/60 hover:bg-blue-900/80 rounded-xl transition backdrop-blur-sm"
               >
-                <HiX className="w-7 h-7 text-red-400" />
+                <HiX className="w-7 h-7 text-blue-400" />
               </button>
             </div>
           </div>
@@ -101,10 +101,10 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm mb-1">Teléfono</p>
-                  <p className="text-2xl font-bold text-red-400">{data.phone || "—"}</p>
+                  <p className="text-2xl font-bold text-blue-400">{data.phone || "—"}</p>
                 </div>
                 <div className="md:col-span-2 flex items-center gap-3">
-                  <FaMapPin className="w-6 h-6 text-red-400" />
+                  <FaMapPin className="w-6 h-6 text-blue-400" />
                   <p className="text-xl text-white">
                     {data.cityName || data.cityId || "Ubicación no especificada"}, Chile
                   </p>
@@ -122,7 +122,7 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm mb-1">Estilo musical</p>
-                    <p className="text-2xl font-bold text-red-400">{data.style}</p>
+                    <p className="text-2xl font-bold text-blue-400">{data.style}</p>
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm mb-1">Tipo de música</p>
@@ -155,10 +155,10 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm mb-1">Teléfono</p>
-                    <p className="text-2xl font-bold text-red-400">{data.contact_phone}</p>
+                    <p className="text-2xl font-bold text-blue-400">{data.contact_phone}</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <FaMapPin className="w-6 h-6 text-red-400" />
+                    <FaMapPin className="w-6 h-6 text-blue-400" />
                     <p className="text-xl text-white">
                       {data.cityName || data.cityId || "Sin ubicación"}, Chile
                     </p>
@@ -166,7 +166,7 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
                 </div>
 
                 {videoUrl ? (
-                  <div className="aspect-video rounded-xl overflow-hidden border border-red-600/40">
+                  <div className="aspect-video rounded-xl overflow-hidden border border-blue-600/40">
                     <iframe
                       src={videoUrl.replace("watch?v=", "embed/")}
                       title="Video"
@@ -175,8 +175,8 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
                     />
                   </div>
                 ) : (
-                  <div className="bg-black/60 border border-red-600/30 rounded-xl p-12 flex flex-col items-center gap-4">
-                    <HiVideoCamera className="w-16 h-16 text-red-600/50" />
+                  <div className="bg-black/60 border border-blue-600/30 rounded-xl p-12 flex flex-col items-center gap-4">
+                    <HiVideoCamera className="w-16 h-16 text-blue-600/50" />
                     <p className="text-xl text-gray-400">No hay video disponible</p>
                   </div>
                 )}
@@ -193,7 +193,7 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm mb-1">Tipo de local</p>
-                    <p className="text-xl font-bold text-red-400">
+                    <p className="text-xl font-bold text-blue-400">
                       {data.place_type === "pub" ? "Pub" :
                        data.place_type === "bar" ? "Bar" :
                        data.place_type === "event_center" ? "Centro de eventos" :
@@ -206,10 +206,10 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm mb-1">Teléfono</p>
-                    <p className="text-2xl font-bold text-red-400">{data.phone}</p>
+                    <p className="text-2xl font-bold text-blue-400">{data.phone}</p>
                   </div>
                   <div className="md:col-span-2 flex items-center gap-3">
-                    <FaMapPin className="w-6 h-6 text-red-400" />
+                    <FaMapPin className="w-6 h-6 text-blue-400" />
                     <p className="text-xl text-white">
                       {data.cityName || data.cityId || "Sin ubicación"}, Chile
                     </p>
@@ -217,7 +217,7 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
                 </div>
 
                 {videoUrl ? (
-                  <div className="aspect-video rounded-xl overflow-hidden border border-red-600/40">
+                  <div className="aspect-video rounded-xl overflow-hidden border border-blue-600/40">
                     <iframe
                       src={videoUrl.replace("watch?v=", "embed/")}
                       title="Video del local"
@@ -226,8 +226,8 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
                     />
                   </div>
                 ) : (
-                  <div className="bg-black/60 border border-red-600/30 rounded-xl p-12 flex flex-col items-center gap-4">
-                    <HiVideoCamera className="w-16 h-16 text-red-600/50" />
+                  <div className="bg-black/60 border border-blue-600/30 rounded-xl p-12 flex flex-col items-center gap-4">
+                    <HiVideoCamera className="w-16 h-16 text-blue-600/50" />
                     <p className="text-xl text-gray-400">No hay video del local</p>
                   </div>
                 )}
