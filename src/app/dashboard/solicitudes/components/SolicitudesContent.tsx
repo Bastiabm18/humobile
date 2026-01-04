@@ -215,16 +215,16 @@ console.log(solicitudes);
     
   const solicitudesFiltradas = filtro === "todos" ? solicitudes : solicitudes.filter((s) => s.tipo === filtro);
 
-  const handleAceptar = async (id: string, id_banda:string,tipo_invitacion:string) => {
+  const handleAceptar = async (id: string, id_banda:string,origen_invitacion:string) => {
     const solicitud = solicitudes.find(s => s.id === id);
     if (!solicitud) return;
     
-    console.log(id, id_banda,tipo_invitacion );
+    console.log('id_soliitud=',id,'id_banda=', id_banda,origen_invitacion );
     const resultado = await aceptarSolicitud({ 
       id_solicitud: id,
       respuesta_solicitud: true,
       motivo: solicitud.tipo_invitacion,
-      tipo: solicitud.tipo,
+      tipo: origen_invitacion,
       id_banda: solicitud.id_banda ,
       id_artista: solicitud.id_perfil
     });

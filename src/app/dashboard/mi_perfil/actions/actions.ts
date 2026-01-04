@@ -2,7 +2,7 @@
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
 import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile } from '@/types/profile'; 
-import { InvitacionData } from '../components/InvitarModal';
+import { InvitacionData } from '@/types/profile';
 
 // ===========================================
 // 1. CARGA DE DATOS GEOGRÁFICOS (PAÍS, REGIÓN, COMUNA)

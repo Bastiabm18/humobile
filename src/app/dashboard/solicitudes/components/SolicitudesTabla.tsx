@@ -33,6 +33,7 @@ export default function SolicitudesTabla({
 }: SolicitudesTablaProps) {
   const solicitudesFiltradas = filtro === "todos" ? solicitudes : solicitudes.filter((s) => s.tipo === filtro);
 
+  console.log(solicitudesFiltradas)
   const getTipoConfig = (tipo: "grupo" | "evento" | "booking") => {
     switch (tipo) {
       case "grupo":
@@ -166,7 +167,7 @@ export default function SolicitudesTabla({
                               <HiXCircle size={24}/>
                             </button>
                             <button
-                              onClick={() => onAceptar(s.id, s.id_banda, s.tipo_invitacion)}
+                              onClick={() => onAceptar(s.id, s.id_banda, s.origen_tabla)}
                               title="aceptar"
                               className="px-2.5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg font-medium transition transform hover:scale-105 shadow-lg"
                             >

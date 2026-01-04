@@ -153,6 +153,18 @@ export interface eventoCompleto {
   integrantes: any[];
 }
 
+
+export interface InvitacionData {
+  id_perfil:string;
+  id_banda:string;
+  fecha_invitacion:string;
+  fecha_vencimiento:string;
+  nombre_banda: string;
+  invitacion: string;
+  descripcion: string;
+  tabla_origen:string;
+}
+
 export type UserWithMembership = {
  
   role: string;
@@ -250,4 +262,5 @@ export interface SolicitudRespuesta {
   created_at: string;
   nombre_artista?: string;
   nombre_banda?: string;
+  origen_tabla: string;
 }

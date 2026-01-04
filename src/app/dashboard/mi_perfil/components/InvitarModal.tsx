@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { HiX, HiPaperAirplane, HiUser  } from 'react-icons/hi';
 import { enviarSolicitud, getPerfilesVisibles } from '../actions/actions';
 import { format } from 'date-fns';
+import { InvitacionData } from '@/types/profile';
 
 interface InvitarModalProps {
   isOpen: boolean;
@@ -15,15 +16,6 @@ interface InvitarModalProps {
   id_banda: string;
 }
 
-export interface InvitacionData {
-  id_perfil:string;
-  id_banda:string;
-  fecha_invitacion:string;
-  fecha_vencimiento:string;
-  nombre_banda: string;
-  invitacion: string;
-  descripcion: string;
-}
 
 export default function InvitarModal({ isOpen, onClose, onEnviar, nombreBanda, id_banda }: InvitarModalProps) {
 
@@ -39,6 +31,7 @@ export default function InvitarModal({ isOpen, onClose, onEnviar, nombreBanda, i
     nombre_banda: nombreBanda,
     invitacion: '',
     descripcion: '',
+    tabla_origen:'solicitud'
   });
   const [loading, setLoading] = useState(false);
     // NUEVO: Estado para perfiles visibles

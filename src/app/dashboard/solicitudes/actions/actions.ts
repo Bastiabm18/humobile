@@ -58,7 +58,7 @@ export async function aceptarSolicitud ({ id_solicitud,respuesta_solicitud,motiv
    try {
     const supabase = getSupabaseAdmin();
     
-    if (motivo == ''){
+    if (tipo === 'solicitud'){
 
         const { data, error } = await supabase
               .from('solicitud')
