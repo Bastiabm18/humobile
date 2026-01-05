@@ -110,7 +110,7 @@ export default function ProfileManager({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={handleCancel}
-              className="fixed inset-0  bg-black/70 backdrop-blur-md z-40"
+              className="fixed inset-0 w-full h-full  bg-black/20 backdrop-blur-md z-40"
             />
 
             {/* Modal Container */}
@@ -119,9 +119,9 @@ export default function ProfileManager({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed h-[90vh] inset-0 z-50 flex items-center justify-center p-4"
+              className="fixed  inset-0 z-50 flex items-center justify-center p-4"
             >
-              <div className="bg-neutral-800/90 backdrop-blur-xl border border-neutral-700/50 rounded-2xl shadow-2xl shadow-black/50 w-full max-w-[99vw] max-h-[90vh] overflow-y-scroll custom-scrollbar">
+              <div className="bg-neutral-800/30 h-[99vh] backdrop-blur-xl border border-neutral-700/50 rounded-2xl shadow-2xl shadow-black/50 w-full max-w-[99vw] max-h-[90vh] overflow-y-scroll custom-scrollbar">
                 
                 {/* Modal Header */}
                 <div className="bg-gradient-to-r from-neutral-900 to-neutral-800 border-b border-neutral-700/50 p-6 flex items-center justify-between">
@@ -161,7 +161,7 @@ export default function ProfileManager({
                 </div>
 
                 {/* Modal Content - Aquí renderizamos el formulario que ya existe */}
-                <div className="overflow-y-scroll max-h-[calc(90vh-120px)] custom-scrollbar">
+                <div className="overflow-y-scroll max-h-[80vh] custom-scrollbar">
                   
                   {/* Artist Form - Envolvemos el componente existente */}
                   {selectedType === 'artist' && (

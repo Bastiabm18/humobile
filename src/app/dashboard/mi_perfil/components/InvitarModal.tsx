@@ -228,7 +228,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 placeholder="Cuéntales por qué quieres unirte a la banda..."
                 rows={4}
                 className="w-full bg-black/50 border border-sky-600/30 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"
-                required
+                
               />
             </div>
 

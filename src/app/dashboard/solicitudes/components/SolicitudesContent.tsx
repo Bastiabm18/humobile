@@ -78,9 +78,9 @@ function SolicitudModal({
         exit={{ opacity: 0, scale: 0.9, y: 30 }}
         className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
       >
-        <div className="bg-neutral-900 border border-red-600/40 rounded-2xl shadow-2xl shadow-red-900/60 max-w-2xl w-full">
+        <div className="bg-neutral-900 border border-blue-600/40 rounded-2xl shadow-2xl shadow-blue-900/60 max-w-2xl w-full">
           {/* Header */}
-          <div className="bg-gradient-to-r from-red-900/60 to-black p-6 border-b border-red-600/30">
+          <div className="bg-gradient-to-r from-blue-900/60 to-black p-6 border-b border-blue-600/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className={`${tipoConfig.color} p-4 rounded-xl`}>
@@ -88,14 +88,14 @@ function SolicitudModal({
                 </div>
                 <div>
                   <h2 className="text-3xl font-bold text-white">{solicitud.titulo}</h2>
-                  <p className="text-red-400 text-lg">{tipoConfig.label}</p>
+                  <p className="text-blue-400 text-lg">{tipoConfig.label}</p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-red-900/60 rounded-xl transition"
+                className="p-2 hover:bg-blue-900/60 rounded-xl transition"
               >
-                <HiX className="w-7 h-7 text-red-400" />
+                <HiX className="w-7 h-7 text-blue-400" />
               </button>
             </div>
           </div>
@@ -109,17 +109,17 @@ function SolicitudModal({
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Duración</p>
-                <p className="text-2xl font-bold text-red-400">{horas} horas</p>
+                <p className="text-2xl font-bold text-blue-400">{horas} horas</p>
               </div>
             </div>
 
             <div>
               <p className="text-gray-400 text-sm mb-3">Fecha y horario</p>
-              <div className="bg-black/50 border border-red-600/30 rounded-xl p-6 text-center">
+              <div className="bg-black/50 border border-blue-600/30 rounded-xl p-6 text-center">
                 <p className="text-3xl font-bold text-white">
                   {format(solicitud.fechaInicio, "EEEE dd MMMM yyyy", { locale: es })}
                 </p>
-                <p className="text-2xl text-red-400 mt-3">
+                <p className="text-2xl text-blue-400 mt-3">
                   {format(solicitud.fechaInicio, "HH:mm")} → {format(solicitud.fechaFin, "HH:mm")} hs
                 </p>
               </div>
@@ -137,14 +137,14 @@ function SolicitudModal({
 
           {/* Footer - Botones */}
           {solicitud.estado === "pendiente" && (
-            <div className="bg-black/70 border-t border-red-600/30 p-6 flex justify-end gap-4">
+            <div className="bg-black/70 border-t border-blue-600/30 p-6 flex justify-end gap-4">
               <button
                 onClick={() => {
                   onRechazar(solicitud.id);
                   onClose();
                 }}
                 title="rechazar"
-                className="px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-bold text-lg transition transform hover:scale-105 shadow-lg shadow-red-900/60"
+                className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-xl font-bold text-lg transition transform hover:scale-105 shadow-lg shadow-blue-900/60"
               >
                 <HiXCircle size={24} />
               </button>
@@ -279,7 +279,7 @@ console.log(solicitudes);
     switch (estado) {
       case "pendiente": return { color: "text-yellow-400", icon: HiClock };
       case "aceptada": return { color: "text-green-400", icon: HiCheckCircle };
-      case "rechazada": return { color: "text-red-400", icon: HiXCircle };
+      case "rechazada": return { color: "text-blue-400", icon: HiXCircle };
       case "expirada": return { color: "text-gray-500", icon: HiExclamationCircle };
     }
   };
@@ -415,7 +415,7 @@ console.log(solicitudes);
 
         {/* Título */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-          <h1 className="text-5xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-700">
+          <h1 className="text-5xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700">
             Mis Solicitudes
           </h1>
           <p className="text-gray-300 text-lg">Gestiona invitaciones a grupos, eventos y otros</p>
@@ -428,7 +428,7 @@ console.log(solicitudes);
               key={f}
               onClick={() => setFiltro(f === "todos" ? "todos" : f)}
               className={`px-6 py-3 rounded-full font-medium transition-all flex items-center gap-2 ${
-                filtro === f ? "bg-red-600 shadow-lg shadow-red-600/50" : "bg-gray-800 hover:bg-gray-700"
+                filtro === f ? "bg-blue-600 shadow-lg shadow-blue-600/50" : "bg-gray-800 hover:bg-gray-700"
               }`}
             >
               {f === "grupo" && <HiUserGroup />}
@@ -442,7 +442,7 @@ console.log(solicitudes);
         {/* Tabla */}
           {loading ? (
             <div className="text-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500 mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
               <p className="mt-4 text-gray-400">Cargando solicitudes...</p>
             </div>
           ) : (
