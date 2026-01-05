@@ -10,8 +10,8 @@ import ProfileViewModal from './ProfileViewModal';
 import { FaUser, FaGuitar } from 'react-icons/fa';
 import { BiUserX } from 'react-icons/bi';
 import { BsCalendar3 } from 'react-icons/bs';
-import InvitarModal, { InvitacionData } from './InvitarModal';
-
+import InvitarModal from './InvitarModal';
+import { InvitacionData } from '@/types/profile';
 interface Props {
   profiles: Profile[];
   onRefresh: () => void;
