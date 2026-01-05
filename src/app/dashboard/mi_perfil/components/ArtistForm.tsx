@@ -278,6 +278,16 @@ export default function ArtistForm({ defaultValues = {}, onSubmit, onCancel, geo
               className="w-full px-5 py-4 bg-neutral-900/80 border border-sky-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-900/30 transition-all"
             />
           </div>
+          <div>
+            <input
+              type="mail"
+              placeholder="Artista@correo.com "
+              value={form.email}
+              onChange={e => setForm({ ...form, email: e.target.value })}
+              required
+              className="w-full px-5 py-4 bg-neutral-900/80 border border-sky-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-900/30 transition-all"
+            />
+          </div>
 
           <div>
             <select

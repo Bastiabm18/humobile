@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { HiX, HiLockClosed, HiCalendar } from 'react-icons/hi';
 import { blockDateRange, createDateBlock } from '../actions/actions';
+import RespuestaModal from './RespuestaModal';
 
 interface Profile {
   id: string;
@@ -29,6 +30,14 @@ export default function BlockDateModal({ open, onClose, profile, initialDate }: 
   const [endDateTime, setEndDateTime] = useState('');
   const [loading, setLoading] = useState(false);
 
+
+    // estados para el modal de respuesta para el back
+  
+   const [modalState, setModalState] = useState({
+      isOpen: false,
+      mensaje: '',
+      esExito: true
+    });
   console.log('perfil usuario :', perfil);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,18 +66,27 @@ export default function BlockDateModal({ open, onClose, profile, initialDate }: 
     setLoading(false);
 
     if (result.success) {
-      alert('Día/rango bloqueado ');
-      onClose();
+       setModalState({
+          isOpen: true,
+          mensaje: 'Bloqueo creado exitosamente',
+          esExito: true
+        });
+      //onClose();
       // opcional: refresh del calendario
       
     } else {
-      alert('ocurrio un error : ' + result.error);
+       setModalState({
+          isOpen: true,
+          mensaje: result?.error || 'Error desconocido al crear el evento',
+          esExito: false
+        });
     }
   };
 
   if (!open) return null;
 
   return (
+    <>
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-card rounded-2xl border border-neutral-700 w-full max-w-md">
         {/* Header */}
@@ -162,5 +180,13 @@ export default function BlockDateModal({ open, onClose, profile, initialDate }: 
         </form>
       </div>
     </div>
+ <RespuestaModal
+        isOpen={modalState.isOpen}
+        mensaje={modalState.mensaje}
+        esExito={modalState.esExito}
+        onClose={onClose}
+        onAceptar={onClose}
+      />
+    </>
   );
 }

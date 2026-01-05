@@ -63,7 +63,7 @@ export default function RespuestaModal({
               {/* Icono indicador (opcional) */}
               {esExito ? (
                 <div className="w-12 h-12 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-                 <IoThumbsUp size={28} className='text-sky-700'/>
+                 <IoThumbsUp size={28} className='text-green-700'/>
                 </div>
               ) : (
                 <div className="w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
@@ -82,7 +82,7 @@ export default function RespuestaModal({
                   onClick={handleAceptar}
                   className={`px-6 py-3 rounded-lg font-medium text-white transition-colors ${
                     esExito 
-                      ? 'bg-sky-600 hover:bg-sky-700' 
+                      ? 'bg-green-600 hover:bg-green-700' 
                       : 'bg-red-700 hover:bg-red-800'
                   }`}
                 >

@@ -131,7 +131,7 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
         {/* EVENTOS BLOQUEOS-*/}
         {blockedEvents.length >= 1 && blockedEvents.slice(0, hasNormal ? 1 : 2).map((event, index) => (
            <div
-              className="text-xs rounded-md bg-red-900/80 hover:bg-red-950/80 text-white font-semibold shadow-sm cursor-pointer items-center justify-center w-full h-7.5 md:h-12.5 flex "
+              className="text-xs rounded-md mb-0.5 bg-red-900/80 hover:bg-red-950/80 text-white font-semibold shadow-sm cursor-pointer items-center justify-center w-full h-7.5 md:h-12.5 flex "
               title={`Día bloqueado: ${blockedEvents[0].resource?.blocked_reason || 'Sin motivo'}`}
               onClick={(e) => {
                   e.stopPropagation();

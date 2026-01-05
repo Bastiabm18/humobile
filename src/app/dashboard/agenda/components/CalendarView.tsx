@@ -101,7 +101,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string,
 
   // Componente para el selector de fecha flotante
   const FloatingDateSelector = () => {
-     const years = Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - 5 + i);
+     const years = Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - 3 + i);
      const months = [
        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
@@ -112,7 +112,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string,
       {/* Botón flotante para mostrar selectores */}
       <button
         onClick={() => setShowDateSelectors(!showDateSelectors)}
-        className="absolute  top-4 right-4 z-40 flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded-lg border border-neutral-700 shadow-lg transition-all"
+        className="absolute  top-0 right-4 z-40 flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded-lg border border-neutral-700 shadow-lg transition-all"
       >
         <HiCalendar size={16} />
         <span className="hidden sm:inline">
@@ -139,7 +139,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string,
                     setDate(newDate);
                     setShowDateSelectors(false);
                   }}
-                  className={`p-2 text-xs rounded-lg transition-all ${date.getMonth() === index ? 'bg-blue-600 text-white' : 'bg-neutral-700 hover:bg-neutral-600 text-neutral-200'}`}
+                  className={`p-2 text-xs rounded-lg transition-all ${date.getMonth() === index ? 'bg-sky-600 text-white' : 'bg-neutral-700 hover:bg-neutral-600 text-neutral-200'}`}
                 >
                   {month.substring(0, 3)}
                 </button>
@@ -156,7 +156,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string,
                 newDate.setFullYear(parseInt(e.target.value));
                 setDate(newDate);
               }}
-              className="w-full bg-neutral-700 border border-neutral-600 rounded-lg px-3 py-2 text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-neutral-700 border border-neutral-600 rounded-lg px-3 py-2 text-neutral-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
             >
               {years.map(year => (
                 <option key={year} value={year}>
@@ -171,7 +171,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string,
               setDate(new Date());
               setShowDateSelectors(false);
             }}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors"
+            className="w-full bg-sky-600 hover:bg-sky-700 text-white py-2 rounded-lg font-medium transition-colors"
           >
             Ir al Mes Actual
           </button>
@@ -400,7 +400,7 @@ const CustomToolbar = (toolbar: any) => {
       };
     
       return (
-        <div className="rbc-toolbar flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
+        <div className=" flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
           <div className="flex items-center gap-2 order-2 md:order-1">
             <button
               className="rbc-btn rbc-btn-group bg-neutral-800 hover:bg-neutral-700 px-3 py-1.5 rounded-lg"
@@ -409,7 +409,7 @@ const CustomToolbar = (toolbar: any) => {
               ←
             </button>
             <button
-              className="rbc-btn bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-lg font-medium"
+              className="rbc-btn bg-sky-600 hover:bg-sky-700 px-4 py-1.5 rounded-lg font-medium"
               onClick={goToToday}
             >
               Hoy
@@ -428,19 +428,19 @@ const CustomToolbar = (toolbar: any) => {
       
           <div className="flex items-center gap-1 order-3">
             <button
-              className={`rbc-btn ${toolbar.view === 'month' ? 'bg-blue-600' : 'bg-neutral-800 hover:bg-neutral-700'} px-3 py-1.5 rounded-lg text-sm`}
+              className={`rbc-btn ${toolbar.view === 'month' ? 'bg-sky-600' : 'bg-neutral-800 hover:bg-neutral-700'} px-3 py-1.5 rounded-lg text-sm`}
               onClick={() => toolbar.onView('month')}
             >
               Mes
             </button>
             <button
-              className={`rbc-btn ${toolbar.view === 'week' ? 'bg-blue-600' : 'bg-neutral-800 hover:bg-neutral-700'} px-3 py-1.5 rounded-lg text-sm`}
+              className={`rbc-btn ${toolbar.view === 'week' ? 'bg-sky-600' : 'bg-neutral-800 hover:bg-neutral-700'} px-3 py-1.5 rounded-lg text-sm`}
               onClick={() => toolbar.onView('week')}
             >
               Semana
             </button>
             <button
-              className={`rbc-btn ${toolbar.view === 'day' ? 'bg-blue-600' : 'bg-neutral-800 hover:bg-neutral-700'} px-3 py-1.5 rounded-lg text-sm`}
+              className={`rbc-btn ${toolbar.view === 'day' ? 'bg-sky-600' : 'bg-neutral-800 hover:bg-neutral-700'} px-3 py-1.5 rounded-lg text-sm`}
               onClick={() => toolbar.onView('day')}
             >
               Día
@@ -450,24 +450,6 @@ const CustomToolbar = (toolbar: any) => {
       );
       };
 
-  // Estilos personalizados para los eventos en el calendario
-  const eventStyleGetter = (event: CalendarEvent) => {
-    const backgroundColor = event.status === 'confirmed' ? '#4f46e5' : 
-                           event.status === 'pending' ? '#f59e0b' : '#6b7280';
-    
-    return {
-      style: {
-        backgroundColor,
-        borderRadius: '8px',
-        opacity: 0.9,
-        color: 'white',
-        border: '0px',
-        display: 'block',
-        padding: '2px 5px',
-      },
-      className: 'hover:opacity-100 hover:scale-[1.02] transition-all cursor-pointer'
-    };
-  };
 
   return (
     <>
@@ -506,7 +488,7 @@ const CustomToolbar = (toolbar: any) => {
             dateCellWrapper: CustomDateCellWrapper,
             timeSlotWrapper: CustomTimeSlotWrapper,
             header: ({ label }: any) => (
-              <div className="rbc-header text-center">
+              <div className=" text-md md:text-xl md:text-center">
                 {label}
               </div>
             ),

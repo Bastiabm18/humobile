@@ -391,6 +391,7 @@ export default function DayTimelineModal({ events,profile, date, isOpen, onClose
             onClose={() => {
               setShowBloquearPeriodoModal(false);
               setNewEventDate(null);
+              
             }}
           />
         )}
