@@ -91,6 +91,7 @@ export async function createBandProfile(userId: string, data: BandData) {
         id_pais: data.countryId,
         foto_url: data.photo_url,
         video_url: data.video_url,
+        email:data.email
     };
     
      const { error } = await supabaseAdmin.from('ProfileBand').insert([mappedData]);
@@ -125,6 +126,7 @@ export async function createPlaceProfile(userId: string, data: PlaceData) {
         mail_humorista: data.comedian,
         mail_dobles: data.impersonator,
         mail_tributo: data.tribute,
+        email:data.email
 
     };
 

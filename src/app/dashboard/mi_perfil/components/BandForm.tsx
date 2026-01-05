@@ -28,7 +28,7 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
     countryId:  defaultValues.countryId || '',
     regionId: defaultValues.regionId ||'',
     cityId:  defaultValues.cityId || '',
-    
+    email: defaultValues.email || '',
     // URLs
     photo_url: defaultValues.photo_url || '',
     video_url: defaultValues.video_url || '',
@@ -324,6 +324,17 @@ export default function BandForm({ defaultValues, onSubmit, onCancel, geoData }:
             placeholder="Teléfono de contacto *"
             name="contact_phone"
             value={form.contact_phone}
+            onChange={handleChange}
+            required
+            className="w-full px-5 py-4 bg-neutral-900/80 border border-sky-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-900/30 transition-all"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <input
+            type="mail"
+            placeholder="banda@correo.com "
+            name="email"
+            value={form.email}
             onChange={handleChange}
             required
             className="w-full px-5 py-4 bg-neutral-900/80 border border-sky-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-900/30 transition-all"

@@ -46,6 +46,7 @@ export interface BandData {
   updateAt: string;
   integrante: [];
   tipo_perfil:string;
+  email?:string;
 }
 
 export interface PlaceData {
@@ -68,6 +69,7 @@ export interface PlaceData {
     tribute: boolean;
     updateAt: string;
   perfil_visible: boolean;
+  email?:string;
 }
 
 export interface Profile {

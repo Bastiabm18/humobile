@@ -126,6 +126,7 @@ export const getProfilesPublic = async (): Promise<Profile[]> => {
                 countryId: p.Pais.nombre_pais,
                 photo_url: p.foto_url,
                 video_url: p.video_url,
+                email: p.email,
             } as BandData,
         })));
     }
@@ -156,6 +157,7 @@ export const getProfilesPublic = async (): Promise<Profile[]> => {
                  comedian: p.mail_humorista,
                  impersonator: p.mail_dobles,
                  tribute: p.mail_tributo,
+                 email: p.email,
             } as PlaceData,
         })));
     }

@@ -38,7 +38,8 @@ export default function PlaceForm({ defaultValues = {}, onSubmit, onCancel, geoD
     impersonator: defaultValues.impersonator ?? false,
     tribute: defaultValues.tribute ?? false,
     updateAt: defaultValues.updateAt || new Date().toISOString(),
-    perfil_visible: defaultValues.perfil_visible ?? false
+    perfil_visible: defaultValues.perfil_visible ?? false,
+    email:defaultValues.email || ''
   });
 
   const [isMapOpen, setIsMapOpen] = useState(false);
@@ -332,6 +333,15 @@ const handleLocationSelect = (lat: number, lng: number) => {
           required
           className="px-5 py-4 bg-neutral-900/80 border border-blue-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-900/30 transition-all"
         />
+
+             <input
+          name="email"
+          value={form.email}
+          onChange={handleChange}
+          placeholder="Local@correo.cl"
+          required
+          className="px-5 py-4 bg-neutral-900/80 border border-blue-600/40 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-900/30 transition-all"
+        />
         <select
           name="place_type"
           value={form.place_type}
@@ -346,6 +356,8 @@ const handleLocationSelect = (lat: number, lng: number) => {
           <option value="disco">Disco</option>
           <option value="other">Otro</option>
         </select>
+
+          
       </div>
 
       {/* SELECTORES GEOGRÁFICOS */}
