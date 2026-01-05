@@ -38,7 +38,7 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
     const totalEvents = blockedEvents.length + normalEvents.length;
     
     return (
-      <div className="absolute bottom-1 left-0 right-0 px-0.5 z-30">
+      <div className="absolute  bottom-1 left-0 right-0 px-0.5 z-20">
         {/* INDICADOR DE CRUCE (si hay ambos tipos) */}
 
     {totalEvents == 1 && ( 
@@ -109,10 +109,10 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
      {totalEvents == 2 && (
       <div>
 
-        {normalEvents.length >= 2 && normalEvents.slice(0, hasBlocked ? 1 : 2).map((event, index) => (
+        {normalEvents.length >=1 && normalEvents.slice(0, hasBlocked ? 1 : 2).map((event, index) => (
           <div
             key={event.id || index}
-            className={ "text-xs mb-0.5 truncate h-5.5 md:h-10.5  px-1.5 py-1 rounded-md bg-sky-600/80 text-white font-semibold shadow-sm hover:bg-sky-900/80 cursor-pointer transition-colors flex items-center justify-center" }
+            className={ "text-xs mb-0.5 truncate h-7.5 md:h-12.5  px-1.5 py-1 rounded-md bg-sky-600/80 text-white font-semibold shadow-sm hover:bg-sky-900/80 cursor-pointer transition-colors flex items-center justify-center" }
             title={`${event.title} (${formatTime(event.start)} - ${formatTime(event.end)})`}
             onClick={(e) => {
                  e.stopPropagation();
@@ -131,7 +131,7 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
         {/* EVENTOS BLOQUEOS-*/}
         {blockedEvents.length >= 1 && blockedEvents.slice(0, hasNormal ? 1 : 2).map((event, index) => (
            <div
-              className="text-xs rounded-md bg-red-900/80 hover:bg-red-950/80 text-white font-semibold shadow-sm cursor-pointer items-center justify-center w-full h-5 md:h-10.5 flex "
+              className="text-xs rounded-md bg-red-900/80 hover:bg-red-950/80 text-white font-semibold shadow-sm cursor-pointer items-center justify-center w-full h-7.5 md:h-12.5 flex "
               title={`Día bloqueado: ${blockedEvents[0].resource?.blocked_reason || 'Sin motivo'}`}
               onClick={(e) => {
                   e.stopPropagation();
@@ -148,9 +148,9 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
           
         ))}
 
-        {totalEvents == 2 && (
+        {totalEvents >= 2 && (
             <div className="mb-0.5 cursor-pointer flex justify-center">
-            <div className="text-[10px] md:text-sm px-2 py-0.5 w-full items-center justify-center flex rounded-md md:h-10.5 bg-yellow-600/80 hover:bg-yellow-800/80 text-yellow-100 font-bold"
+            <div className="text-[10px] md:text-sm px-2 py-0.5 w-full items-center justify-center flex rounded-md h-7.5 md:h-14 bg-yellow-600/80 hover:bg-yellow-800/80 text-yellow-100 font-bold"
               title=''
               onClick={(e)=>{
               e.stopPropagation();
@@ -177,7 +177,7 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
         {normalEvents.length >= 2 && normalEvents.slice(0, hasBlocked ? 1 : 2).map((event, index) => (
           <div
             key={event.id || index}
-            className={ "text-xs mb-0.5 truncate h-5.5 md:h-10.5  px-1.5 py-1 rounded-md bg-sky-600/80 text-white font-semibold shadow-sm hover:bg-sky-900/80 cursor-pointer transition-colors flex items-center justify-center" }
+            className={ "text-xs mb-0.5 truncate h-7.5 md:h-12.5  px-1.5 py-1 rounded-md bg-sky-600/80 text-white font-semibold shadow-sm hover:bg-sky-900/80 cursor-pointer transition-colors flex items-center justify-center" }
             title={`${event.title} (${formatTime(event.start)} - ${formatTime(event.end)})`}
             onClick={(e) => {
                  e.stopPropagation();
@@ -196,7 +196,7 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
         {/* EVENTOS BLOQUEOS-*/}
         {blockedEvents.length >= 1 && blockedEvents.slice(0, hasNormal ? 1 : 2).map((event, index) => (
            <div
-              className="text-xs rounded-md bg-red-900/80 hover:bg-red-950/80 text-white font-semibold shadow-sm cursor-pointer items-center justify-center w-full h-5.5 md:h-10.5 flex "
+              className="text-xs rounded-md bg-red-900/80 hover:bg-red-950/80 text-white font-semibold shadow-sm cursor-pointer items-center justify-center w-full h-7.5 md:h-12.5 flex "
               title={`Día bloqueado: ${blockedEvents[0].resource?.blocked_reason || 'Sin motivo'}`}
               onClick={(e) => {
                   e.stopPropagation();
@@ -215,7 +215,7 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
 
         {totalEvents == 3 && (
             <div className="mb-0.5 cursor-pointer flex justify-center">
-            <div className="text-[10px] md:text-sm px-2 py-0.5 w-full items-center justify-center flex rounded-md md:h-10.5 bg-yellow-600/80 hover:bg-yellow-800/80 text-yellow-100 font-bold"
+            <div className="text-[10px] md:text-sm px-2 py-0.5 w-full items-center justify-center flex rounded-md h-7.5 md:h-12.5 bg-yellow-600/80 hover:bg-yellow-800/80 text-yellow-100 font-bold"
               title=''
               onClick={(e)=>{
               e.stopPropagation();
@@ -239,7 +239,7 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
 
           { totalEvents > 3 && (
           <div className="mb-0.5 cursor-pointer flex justify-center">
-            <div className="text-[10px] md:text-sm px-2 py-0.5 w-full items-center justify-center flex rounded-md h-18 md:h-32.5 bg-yellow-600/80 hover:bg-yellow-800/80 text-yellow-100 font-bold"
+            <div className="text-[10px] md:text-xl px-2 py-0.5 w-full items-center justify-center flex rounded-md h-23.5 md:h-40.5 bg-yellow-600/80 hover:bg-yellow-800/80 text-yellow-100 font-bold"
               title=''
               onClick={(e)=>{
                e.stopPropagation();

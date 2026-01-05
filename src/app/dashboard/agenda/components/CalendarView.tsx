@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { Calendar as BigCalendar, dateFnsLocalizer, Views, View } from 'react-big-calendar';
 import { format, startOfWeek, getDay, isSameDay, isSameMonth, isWithinInterval } from 'date-fns';
+import { HiChevronDown, HiCalendar } from 'react-icons/hi';
 import { es } from 'date-fns/locale';
 import { HiPlus, HiLockClosed, HiCog } from 'react-icons/hi';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -52,6 +53,8 @@ export default function CalendarView({ profileId, perfil }: { profileId: string,
   const [selectedBlock, setSelectedBlock] = useState<CalendarEvent | null>(null);
   const [desbloquearModalOpen, setDesbloquearModalOpen] = useState(false);
 
+  const [showDateSelectors, setShowDateSelectors] = useState(false);
+
   useEffect(() => {
     fetchEvents();
   }, [profile.id, profile.type]);
@@ -96,6 +99,89 @@ export default function CalendarView({ profileId, perfil }: { profileId: string,
     fetchEvents();
   };
 
+  // Componente para el selector de fecha flotante
+  const FloatingDateSelector = () => {
+     const years = Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - 5 + i);
+     const months = [
+       'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+     ];
+
+    return (
+    <>
+      {/* Botón flotante para mostrar selectores */}
+      <button
+        onClick={() => setShowDateSelectors(!showDateSelectors)}
+        className="absolute  top-4 right-4 z-40 flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded-lg border border-neutral-700 shadow-lg transition-all"
+      >
+        <HiCalendar size={16} />
+        <span className="hidden sm:inline">
+          {date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+        </span>
+        <span className="sm:hidden">
+          {date.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })}
+        </span>
+        <HiChevronDown size={16} className={`transition-transform ${showDateSelectors ? 'rotate-180' : ''}`} />
+      </button>
+
+      {/* Panel de selectores (se muestra al hacer click) */}
+      {showDateSelectors && (
+        <div className="absolute top-16 right-4 z-30 bg-neutral-800/95 backdrop-blur-sm p-4 rounded-xl border border-neutral-700 shadow-2xl w-64">
+          <div className="mb-3">
+            <label className="block text-sm text-neutral-300 mb-1">Seleccionar Mes</label>
+            <div className="grid grid-cols-3 gap-2">
+              {months.map((month, index) => (
+                <button
+                  key={month}
+                  onClick={() => {
+                    const newDate = new Date(date);
+                    newDate.setMonth(index);
+                    setDate(newDate);
+                    setShowDateSelectors(false);
+                  }}
+                  className={`p-2 text-xs rounded-lg transition-all ${date.getMonth() === index ? 'bg-blue-600 text-white' : 'bg-neutral-700 hover:bg-neutral-600 text-neutral-200'}`}
+                >
+                  {month.substring(0, 3)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <label className="block text-sm text-neutral-300 mb-1">Seleccionar Año</label>
+            <select
+              value={date.getFullYear()}
+              onChange={(e) => {
+                const newDate = new Date(date);
+                newDate.setFullYear(parseInt(e.target.value));
+                setDate(newDate);
+              }}
+              className="w-full bg-neutral-700 border border-neutral-600 rounded-lg px-3 py-2 text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {years.map(year => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            onClick={() => {
+              setDate(new Date());
+              setShowDateSelectors(false);
+            }}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors"
+          >
+            Ir al Mes Actual
+          </button>
+        </div>
+      )}
+    </>
+    );
+  };
+
+  
 
   // Función para obtener eventos de un día específico
   const getEventsForDate = (date: Date): CalendarEvent[] => {
@@ -300,6 +386,70 @@ const CustomTimeSlotWrapper = ({ children, value }: any) => {
   );
 };
 
+const CustomToolbar = (toolbar: any) => {
+      const goToBack = () => {
+        toolbar.onNavigate('PREV');
+      };
+    
+      const goToNext = () => {
+        toolbar.onNavigate('NEXT');
+      };
+    
+      const goToToday = () => {
+        toolbar.onNavigate('TODAY');
+      };
+    
+      return (
+        <div className="rbc-toolbar flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
+          <div className="flex items-center gap-2 order-2 md:order-1">
+            <button
+              className="rbc-btn rbc-btn-group bg-neutral-800 hover:bg-neutral-700 px-3 py-1.5 rounded-lg"
+              onClick={goToBack}
+            >
+              ←
+            </button>
+            <button
+              className="rbc-btn bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-lg font-medium"
+              onClick={goToToday}
+            >
+              Hoy
+            </button>
+            <button
+              className="rbc-btn rbc-btn-group bg-neutral-800 hover:bg-neutral-700 px-3 py-1.5 rounded-lg"
+              onClick={goToNext}
+            >
+              →
+            </button>
+          </div>
+      
+          <div className="text-lg font-semibold text-white order-1 md:order-2">
+            {toolbar.label}
+          </div>
+      
+          <div className="flex items-center gap-1 order-3">
+            <button
+              className={`rbc-btn ${toolbar.view === 'month' ? 'bg-blue-600' : 'bg-neutral-800 hover:bg-neutral-700'} px-3 py-1.5 rounded-lg text-sm`}
+              onClick={() => toolbar.onView('month')}
+            >
+              Mes
+            </button>
+            <button
+              className={`rbc-btn ${toolbar.view === 'week' ? 'bg-blue-600' : 'bg-neutral-800 hover:bg-neutral-700'} px-3 py-1.5 rounded-lg text-sm`}
+              onClick={() => toolbar.onView('week')}
+            >
+              Semana
+            </button>
+            <button
+              className={`rbc-btn ${toolbar.view === 'day' ? 'bg-blue-600' : 'bg-neutral-800 hover:bg-neutral-700'} px-3 py-1.5 rounded-lg text-sm`}
+              onClick={() => toolbar.onView('day')}
+            >
+              Día
+            </button>
+          </div>
+        </div>
+      );
+      };
+
   // Estilos personalizados para los eventos en el calendario
   const eventStyleGetter = (event: CalendarEvent) => {
     const backgroundColor = event.status === 'confirmed' ? '#4f46e5' : 
@@ -322,6 +472,8 @@ const CustomTimeSlotWrapper = ({ children, value }: any) => {
   return (
     <>
       <div className="h-[600px] md:h-[750px] lg:h-[850px] bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70">
+        
+        <FloatingDateSelector/>
         <BigCalendar
           localizer={localizer}
           events={[]}
@@ -350,6 +502,7 @@ const CustomTimeSlotWrapper = ({ children, value }: any) => {
          //   alert(`Evento: ${event.title}`);
          // }}
           components={{
+             toolbar: CustomToolbar,
             dateCellWrapper: CustomDateCellWrapper,
             timeSlotWrapper: CustomTimeSlotWrapper,
             header: ({ label }: any) => (
