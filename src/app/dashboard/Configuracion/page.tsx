@@ -12,6 +12,7 @@ const SUPERADMIN_ROLES = process.env.NEXT_PUBLIC_SUPERADMIN
 export default async function AgendaPage() {
   let userData = null;
 
+  console.log('config - SUPERADMIN_ROLES →', SUPERADMIN_ROLES)
   try {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('supabaseAuthSession')?.value;
