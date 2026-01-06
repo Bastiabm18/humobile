@@ -7,6 +7,8 @@ import PerfilesCarruseles from "./components/PerfilesCarruseles";
 import EventosCarrusel from "./components/EventosCarrusel";
 import PermisoUbicacion from "./components/PermisoUbicacion";
 import LugareCercanosMap from "./components/MultipleLocationMap";
+import PreguntaFrecuenteComponente from "./components/Pregunta_frecuente";
+import PreguntaFrecuente from "./components/Pregunta_frecuente";
 
 export default function Home() {
 
@@ -35,6 +37,9 @@ export default function Home() {
 <section id="QuienesSomos" className="w-full h-full flex ">
   <QuienesSomos />
 
+</section>
+<section className="max-w-screen flex items-center justify-center">
+  <PreguntaFrecuente/>
 </section>
 
 <section  id="Footer" className="w-full h-full flex ">

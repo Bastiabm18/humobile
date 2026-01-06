@@ -128,7 +128,7 @@ export default function CarruselEventosBase({
         )}
 
         {/* Carrusel - Contenedor con overflow visible */}
-        <div className="relative">
+        <div className="relative px-4 py-8">
           <div
             ref={carruselRef}
             className="

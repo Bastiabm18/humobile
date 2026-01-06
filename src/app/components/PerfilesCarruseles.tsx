@@ -41,7 +41,7 @@ export default async function PerfilesComponent() {
     //console.log('lugares ',lugares)
 
   return (
-    <div className=" max-w-screen space-y-12">
+    <div className=" min-w-screen max-w-screen">
       <CarruselBase
         items={artistas}
         title="Artistas"

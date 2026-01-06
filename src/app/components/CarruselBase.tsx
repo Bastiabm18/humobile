@@ -114,7 +114,7 @@ const CarruselBase: React.FC<CarruselProps> = ({ items, title, icon }) => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8">
+    <div className="w-full max-w-[95vw] mx-auto px-4 py-8">
       {/* Header - Izquierda */}
       <div className="flex items-center gap-3 mb-6">
         <div className="text-sky-500">{icon}</div>

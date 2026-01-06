@@ -2,6 +2,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { MdEmojiPeople } from 'react-icons/md';
 
 export default function QuienesSomos() {
   return (
@@ -12,8 +13,9 @@ export default function QuienesSomos() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-100px' }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
-        className="text-4xl md:text-5xl font-bold text-center text-gray-400 mb-12"
+        className="text-4xl md:text-5xl flex items-center justify-center font-bold text-center text-gray-400 mb-12"
       >
+        <MdEmojiPeople size={32} className='text-sky-600'/>
         Quiénes Somos
       </motion.h1>
 

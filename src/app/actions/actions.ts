@@ -2,7 +2,7 @@
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
 import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, CalendarEvent } from '@/types/profile'; 
-
+import { pregunta_frecuente } from '@/types/externo';
 // ===========================================
 // 1. CARGA DE DATOS GEOGRÁFICOS (PAÍS, REGIÓN, COMUNA)
 // ===========================================
@@ -599,6 +599,50 @@ export async function getEventsPorEstado():Promise<CalendarEvent[]>{
     
   } catch (error: any) {
     console.error('Error en getEventsByProfile:', error);
+    throw error;
+  }
+}
+
+export async function getPreguntasFrecuentes(): Promise<pregunta_frecuente[]> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    // FUNCION EN POSTGRESQL
+    const { data: faqsData, error } = await supabaseAdmin
+      .rpc('get_pregunta_frecuente');
+
+    if (error) {
+      console.error('Error en la función PostgreSQL get_pregunta_frecuente:', error);
+      console.error('Detalles del error:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      throw new Error(`Error al obtener preguntas frecuentes: ${error.message}`);
+    }
+
+    if (!faqsData || faqsData.length === 0) {
+      console.log(' No se encontraron preguntas frecuentes activas');
+      return [];
+    }
+
+    console.log(`Se obtuvieron ${faqsData.length} preguntas frecuentes`);
+    
+    // Mapeamos los datos a nuestro tipo FAQ
+    const preguntasFrecuentes: pregunta_frecuente[] = faqsData.map((faq: any) => ({
+      id: faq.id,
+      pregunta: faq.pregunta,
+      respuesta: faq.respuesta,
+      estado: faq.estado,
+      created_at: faq.created_at,
+      updated_at: faq.updated_at
+    }));
+
+    return preguntasFrecuentes;
+    
+  } catch (error: any) {
+    console.error(' Error en getPreguntasFrecuentes:', error);
     throw error;
   }
 }
