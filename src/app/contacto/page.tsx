@@ -125,7 +125,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 p-4 md:p-8">
+    <div className="min-h-screen py-20 bg-neutral-50 dark:bg-neutral-900 p-4 md:p-8">
       {/* Modal de Contacto */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">

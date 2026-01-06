@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { getSupabaseBrowser } from '@/lib/supabase/supabase-client';
 import NeonSign from './NeonSign';
+import { FaX } from 'react-icons/fa6';
 
 const links = [
   { name: 'Inicio', href: '/' },
@@ -160,7 +161,11 @@ const handleLogout = async () => {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="fixed inset-y-0 left-0 w-[100vw] bg-black/60 backdrop-blur-sm z-50 md:hidden shadow-2xl"
             >
-             
+              <div 
+              onClick={() => setOpen(false)}
+              className=' absolute right-6 top-6'>
+                <FaX size={24} className='text-red-400/60'/>
+              </div>
               <div className="flex flex-col items-center justify-center h-full z-50 space-y-8 text-lg font-medium">
                  <div className=' h-auto mb-20 flex items-start justify-center'>
                 <NeonSign/>
@@ -189,13 +194,13 @@ const handleLogout = async () => {
                     transition={{ delay: 7 * 0.1 }}
                      // O simplemente <button> si quitas motion
                       onClick={handleLogout} // AHORA sí llamas a la función
-                      className="flex items-center text-sm font-medium text-red-400 hover:text-red-500 transition-colors"
+                      className="flex items-center text-md font-medium text-red-400 hover:text-red-500 transition-colors"
                       aria-label="Cerrar Sesión"
                       disabled={loading}
                       // ... (otras props de motion) ...
                   >
-                      <HiLogout className="h-4 w-4 mr-1" />
-                      Salir
+                      <HiLogout className="h-5 w-5 mr-2" />
+                         Cerrar sesión
                   </motion.button>
                   )}
               </div>

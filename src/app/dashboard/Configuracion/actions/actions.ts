@@ -240,5 +240,122 @@ export async function getUsuarios(): Promise<User[]> {
   }
 }
 
+export async function bloquearUsuario(id: string): Promise<void> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    const { error } = await supabaseAdmin
+      .from('User')
+      .update({ 
+        estado: 'bloqueado',
+        "updatedAt": new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error al bloquear usuario:', error);
+      throw new Error(`Error al bloquear usuario: ${error.message}`);
+    }
+
+    console.log('Usuario bloqueado:', id);
+    
+  } catch (error: any) {
+    console.error('Error en bloquearUsuario:', error);
+    throw error;
+  }
+}
+
+export async function activarUsuario(id: string): Promise<void> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    const { error } = await supabaseAdmin
+      .from('User')
+      .update({ 
+        estado: 'activo',
+        "updatedAt": new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error al activar usuario:', error);
+      throw new Error(`Error al activar usuario: ${error.message}`);
+    }
+
+    console.log('Usuario activado:', id);
+    
+  } catch (error: any) {
+    console.error('Error en activarUsuario:', error);
+    throw error;
+  }
+}
+
+export async function eliminarUsuario(id: string): Promise<void> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    // Primero verificamos si el usuario existe
+    const { data: usuario, error: errorBusqueda } = await supabaseAdmin
+      .from('User')
+      .select('id, supabase_id')
+      .eq('id', id)
+      .single();
+
+    if (errorBusqueda || !usuario) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    // Eliminar usuario (esto eliminará en cascada los perfiles por las FK)
+    const { error } = await supabaseAdmin
+      .from('User')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error al eliminar usuario:', error);
+      throw new Error(`Error al eliminar usuario: ${error.message}`);
+    }
+
+    console.log('Usuario eliminado permanentemente:', id);
+    
+  } catch (error: any) {
+    console.error('Error en eliminarUsuario:', error);
+    throw error;
+  }
+}
+
+export async function actualizarUsuario(
+  id: string, 
+  datos: Partial<{
+    name: string;
+    role: string;
+    phone: string;
+    estado: string;
+  }>
+): Promise<void> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    const { error } = await supabaseAdmin
+      .from('User')
+      .update({ 
+        ...datos,
+        "updatedAt": new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error al actualizar usuario:', error);
+      throw new Error(`Error al actualizar usuario: ${error.message}`);
+    }
+
+    console.log('Usuario actualizado:', id);
+    
+  } catch (error: any) {
+    console.error('Error en actualizarUsuario:', error);
+    throw error;
+  }
+}
+
 
 
