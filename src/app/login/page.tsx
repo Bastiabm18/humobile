@@ -37,7 +37,7 @@ export default function LoginPage() {
         className="w-full max-w-md"
       >
         {/* Cuadro envolvente grande (sombra, fondo oscuro) */}
-        <div className="bg-card rounded-2xl p-8 shadow-2xl ">
+        <div className="bg-neutral-800 rounded-2xl p-8 shadow-2xl ">
           
           {/* Cuadro interno claro */}
           <div className="bg-neutral-700 rounded-xl p-6 space-y-6 border border-gray-700">
