@@ -15,7 +15,7 @@ export default function Home() {
   
   
   return (
-  <div className="bg-neutral-950 w-full overflow-x-hidden h-full flex flex-col items-center justify-center gap-5 custom-scrollbar">
+  <div className=" w-full overflow-x-hidden h-full flex flex-col items-center justify-center gap-5 custom-scrollbar">
   {/* Modal de permisos - Client Component */}
       <PermisoUbicacion />
 

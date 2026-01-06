@@ -36,7 +36,7 @@ export default function RootLayout({
         >
         <AuthProvider>
         <LayoutManager>
-        <div className="-mt-16">
+        <div className="-mt-16 bg-neutral-950">
         {children}
         </div>
         </LayoutManager>

@@ -22,7 +22,7 @@ const NeonSign = () => {
 };
   return (
     <motion.div
-      className=" " // Aumenté el tamaño para que se vea mejor
+      className="bg-neutral-900 " // Aumenté el tamaño para que se vea mejor
       style={neonEffect}
       // --- Animación de Parpadeo ---
       // Animamos la opacidad para simular un parpadeo o una conexión inestable.

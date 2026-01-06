@@ -162,7 +162,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex bg-neutral-900 justify-center items-center h-screen">
         <Spinner />
       </div>
     );
