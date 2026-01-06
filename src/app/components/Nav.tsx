@@ -149,7 +149,7 @@ const handleLogout = async () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black z-30 md:hidden"
+              className="fixed inset-0 bg-black z-50 md:hidden"
               onClick={() => setOpen(false)}
             />
 
@@ -158,10 +158,10 @@ const handleLogout = async () => {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed inset-y-0 left-0 w-[100vw] bg-black/60 backdrop-blur-sm z-40 md:hidden shadow-2xl"
+              className="fixed inset-y-0 left-0 w-[100vw] bg-black/60 backdrop-blur-sm z-50 md:hidden shadow-2xl"
             >
              
-              <div className="flex flex-col items-center justify-center h-full space-y-8 text-lg font-medium">
+              <div className="flex flex-col items-center justify-center h-full z-50 space-y-8 text-lg font-medium">
                  <div className=' h-auto mb-20 flex items-start justify-center'>
                 <NeonSign/>
               </div>

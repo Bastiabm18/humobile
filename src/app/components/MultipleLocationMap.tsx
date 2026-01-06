@@ -1,4 +1,4 @@
-// components/AllLocationsMap.tsx
+// components/LugareCercanosMap.tsx
 'use client';
 
 import { useEffect, useMemo } from 'react';
@@ -7,7 +7,7 @@ import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 
-// Fix del ícono por defecto de Leaflet (una sola vez)
+// Fix del ícono por defecto de Leaflet
 import L from 'leaflet';
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -16,7 +16,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-// Marcador rojo personalizado (BRUTAL)
+// Marcador personalizado
 const redMarkerIcon = new Icon({
   iconUrl: 'data:image/svg+xml;base64,' + btoa(`
     <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
@@ -30,7 +30,7 @@ const redMarkerIcon = new Icon({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-// Ajusta el zoom para ver todos los puntos
+// Ajusta el zoom
 function FitBounds({ locations }: { locations: any[] }) {
   const map = useMap();
   useEffect(() => {
@@ -41,7 +41,42 @@ function FitBounds({ locations }: { locations: any[] }) {
   return null;
 }
 
-// TUS 8 UBICACIONES (podes cambiarlas o agregar 100 más)
+// Componente para resetear z-index de Leaflet
+function ResetLeafletZIndex() {
+  const map = useMap();
+
+  useEffect(() => {
+    // Resetear z-index de los contenedores principales de Leaflet
+    const leafletContainer = map.getContainer();
+    const leafletPane = leafletContainer.querySelector('.leaflet-pane');
+    const leafletMapPane = leafletContainer.querySelector('.leaflet-map-pane');
+    
+    if (leafletPane) {
+      (leafletPane as HTMLElement).style.zIndex = '0';
+    }
+    if (leafletMapPane) {
+      (leafletMapPane as HTMLElement).style.zIndex = '0';
+    }
+    
+    // También los popups y controles
+    setTimeout(() => {
+      const popups = leafletContainer.querySelectorAll('.leaflet-popup');
+      const controls = leafletContainer.querySelectorAll('.leaflet-control');
+      
+      popups.forEach(popup => {
+        (popup as HTMLElement).style.zIndex = '20';
+      });
+      
+      controls.forEach(control => {
+        (control as HTMLElement).style.zIndex = '10';
+      });
+    }, 100);
+  }, [map]);
+
+  return null;
+}
+
+// TUS UBICACIONES
 const locations = [
   {
     lat: -36.820135,
@@ -115,7 +150,7 @@ const locations = [
   }
 ];
 
-export default function AllLocationsMap() {
+export default function LugareCercanosMap() {
   const center = useMemo(() => {
     if (locations.length === 0) return [-36.827, -73.050] as [number, number];
     const avgLat = locations.reduce((a, b) => a + b.lat, 0) / locations.length;
@@ -127,23 +162,28 @@ export default function AllLocationsMap() {
   const tileUrl = `https://api.mapbox.com/styles/v1/mapbox/navigation-night-v1/tiles/{z}/{x}/{y}?access_token=${accessToken}`;
 
   return (
-    <div className="bg-neutral-900/90 border w-[90vw] border-sky-600/40 rounded-md overflow-hidden shadow-md shadow-sky-900/60">
+    <div className="bg-neutral-900/90 w-[90vw] rounded-md overflow-hidden p-5 relative z-0"> {/* z-0 aquí */}
       {/* HEADER */}
-      <div className=" p-5 border-b border-sky-600/30">
+      <div className="p-5">
         <h2 className="text-2xl md:text-3xl font-black text-white flex items-center gap-4">
           <FaMapMarkerAlt className="text-sky-500" />
-           Cerca de ti
+          Cerca de ti
           <span className="text-sky-600 font-bold text-lg rounded-full bg-gray-300 px-1 ml-2">{locations.length}</span>
         </h2>
       </div>
 
-      {/* MAPA */}
-      <div className="h-96 md:h-screen max-h-[700px]">
+      {/* MAPA con z-index controlado */}
+      <div className="h-96 md:h-screen max-h-[700px] relative z-0"> {/* z-0 aquí también */}
         <MapContainer
           center={center}
           zoom={5}
-          style={{ height: '100%', width: '100%' }}
-          
+          style={{ 
+            height: '100%', 
+            width: '100%',
+            position: 'relative',
+            zIndex: '0' // Forzar z-index
+          }}
+          className="leaflet-container-custom"
         >
           <TileLayer
             attribution='© OpenStreetMap © Mapbox'
@@ -154,6 +194,7 @@ export default function AllLocationsMap() {
           />
 
           <FitBounds locations={locations} />
+          <ResetLeafletZIndex />
 
           {locations.map((loc, i) => (
             <Marker key={i} position={[loc.lat, loc.lng]} icon={redMarkerIcon}>

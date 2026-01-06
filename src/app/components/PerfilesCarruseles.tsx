@@ -38,6 +38,8 @@ export default async function PerfilesComponent() {
       type:'lugar'
     }));
 
+    console.log('ugares ',lugares)
+
   return (
     <div className=" max-w-screen space-y-12">
       <CarruselBase
