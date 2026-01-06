@@ -142,7 +142,7 @@ export default function DashboardContent({ userName, userRole, userMembresia }: 
                 Bienvenido, <span className="text-blue-400">{userName || 'Usuario'}</span>!
               </h1>
               <p className="text-neutral-400 mt-2 text-lg">
-                Tu panel de control personalizado
+                A tu panel de control Humobile
               </p>
             </div>
             

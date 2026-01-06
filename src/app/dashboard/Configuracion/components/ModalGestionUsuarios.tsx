@@ -18,7 +18,7 @@ import {
   FaExclamationTriangle,
   FaUserCog
 } from 'react-icons/fa';
-import { getUsuarios } from '../actions/actions';
+import { activarUsuario, bloquearUsuario, eliminarUsuario, getUsuarios } from '../actions/actions';
 import { User} from '@/types/profile';
 import ModalConfirmacionUsuario from './ModalConfirmacionUsuario';
 
@@ -148,17 +148,15 @@ export default function ModalGestionUsuarios({
       // Aquí llamarías a las funciones correspondientes según la acción
       switch (modalConfirmacion.accion) {
         case 'eliminar':
-          // await eliminarUsuario(modalConfirmacion.usuario.id);
+         await eliminarUsuario(modalConfirmacion.usuario.id);
           break;
         case 'bloquear':
-          // await bloquearUsuario(modalConfirmacion.usuario.id);
+          await bloquearUsuario(modalConfirmacion.usuario.id);
           break;
         case 'activar':
-          // await activarUsuario(modalConfirmacion.usuario.id);
+         await activarUsuario(modalConfirmacion.usuario.id);
           break;
-        case 'editar':
-          // await editarUsuario(modalConfirmacion.usuario.id, datos);
-          break;
+       
       }
       
       // Recargar usuarios después de la acción
@@ -241,22 +239,22 @@ export default function ModalGestionUsuarios({
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     {/* Estadísticas */}
                   <div className="flex flex-wrap gap-3">
-  <div className="px-3 py-1 bg-neutral-700 border border-blue-600 rounded">
+  <div className="px-3 py-1 bg-neutral-700 border border-blue-600 rounded-xl">
     <span className="text-blue-300 font-medium">
       Total: {totalUsuarios}
     </span>
   </div>
-  <div className="px-3 py-1 bg-neutral-700 border border-emerald-600 rounded">
+  <div className="px-3 py-1 bg-neutral-700 border border-emerald-600 rounded-xl">
     <span className="text-emerald-300 font-medium">
       Activos: {usuariosActivos}
     </span>
   </div>
-  <div className="px-3 py-1 bg-neutral-700 border border-red-600 rounded">
+  <div className="px-3 py-1 bg-neutral-700 border border-red-600 rounded-xl">
     <span className="text-red-300 font-medium">
       Bloqueados: {usuariosBloqueados}
     </span>
   </div>
-  <div className="px-3 py-1 bg-neutral-700 border border-purple-600 rounded">
+  <div className="px-3 py-1 bg-neutral-700 border border-purple-600 rounded-xl">
     <span className="text-purple-300 font-medium">
       Perfiles: {totalPerfiles}
     </span>
@@ -388,7 +386,7 @@ export default function ModalGestionUsuarios({
                       </p>
                     </div>
                   ) : (
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto custom-scrollbar">
                   <table className="w-full min-w-full">
   <thead>
     <tr className="border-b border-neutral-700">
@@ -549,29 +547,25 @@ export default function ModalGestionUsuarios({
         
         {/* Acciones */}
         <td className="py-3 px-4">
-          <div className="flex gap-1">
+          <div className="flex gap-2">
             {/* Botón Ver Detalles */}
             <button
               onClick={() => setUsuarioSeleccionado(usuario)}
-              className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-900/30 rounded"
+              className=" border p-3 bg-blue-900/50  text-blue-400 hover:text-blue-300 hover:bg-blue-900/30 rounded-xl"
               title="Ver detalles completos"
             >
               <FaEye />
             </button>
             
-            {/* Botón Editar */}
-            <button
-              onClick={() => abrirModalConfirmacion(usuario, 'editar')}
-              className="p-2 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/30 rounded"
-              title="Editar usuario"
-            >
-              <FaUserEdit />
-            </button>
+
             
             {/* Botón Gestionar Perfiles */}
             <button
-              onClick={() => {/* Función para gestionar perfiles */}}
-              className="p-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 rounded"
+              onClick={() =>{
+               
+                console.log(usuario);
+              } }
+              className=" border p-3 bg-indigo-900/50 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 rounded-xl"
               title="Gestionar perfiles"
             >
               <FaUserCog />
@@ -581,7 +575,7 @@ export default function ModalGestionUsuarios({
             {usuario.estado === 'activo' ? (
               <button
                 onClick={() => abrirModalConfirmacion(usuario, 'bloquear')}
-                className="p-2 text-amber-400 hover:text-amber-300 hover:bg-amber-900/30 rounded"
+                className=" border p-3 bg-amber-900/50 text-amber-400 hover:text-amber-300 hover:bg-amber-900/30 rounded-xl"
                 title="Bloquear usuario"
               >
                 <FaBan />
@@ -589,7 +583,7 @@ export default function ModalGestionUsuarios({
             ) : (
               <button
                 onClick={() => abrirModalConfirmacion(usuario, 'activar')}
-                className="p-2 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/30 rounded"
+                className=" border p-3 bg-emerald-900/50  text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/30 rounded-xl"
                 title="Activar usuario"
               >
                 <FaUserCheck />
@@ -599,7 +593,7 @@ export default function ModalGestionUsuarios({
             {/* Botón Eliminar */}
             <button
               onClick={() => abrirModalConfirmacion(usuario, 'eliminar')}
-              className="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/30 rounded"
+              className=" border p-3 bg-red-900/50  text-red-400 hover:text-red-300 hover:bg-red-900/30 rounded-xl"
               title="Eliminar usuario permanentemente"
             >
               <FaTrash />
