@@ -106,7 +106,7 @@ export default function DashboardSidebar({ collapsed, onToggle, mobileOpen, setM
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center shadow-lg">
                     <b>H</b>
                   </div>
-                  <h1 className="text-3xl font-bold ">
+                  <h1 className="text-3xl text-gray-300 font-bold ">
                     HUMOBILE
                   </h1>
                 </div>
@@ -114,7 +114,7 @@ export default function DashboardSidebar({ collapsed, onToggle, mobileOpen, setM
               </div>
             ) : (
               <div className="relative">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center shadow-lg">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center shadow-lg">
                   <b>H</b>
                 </div>
               </div>

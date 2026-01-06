@@ -9,6 +9,7 @@ import { FaMapMarkerAlt } from 'react-icons/fa';
 
 // Fix del ícono por defecto de Leaflet
 import L from 'leaflet';
+import { useUbicacion } from '../hooks/useUbicacion';
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -157,6 +158,10 @@ export default function LugareCercanosMap() {
     const avgLng = locations.reduce((a, b) => a + b.lng, 0) / locations.length;
     return [avgLat, avgLng] as [number, number];
   }, []);
+
+  const ubicacion =  useUbicacion();
+  
+  console.log('mapa ubicacion: ',ubicacion?.latitud,ubicacion?.longitud);
 
   const accessToken = 'pk.eyJ1IjoiYXZlZ2FwNDEiLCJhIjoiY2tibWtpdGttMGl1NjJybjhjNTVxaGtpcyJ9.dLbDgSiWkdlq8SyzhREO7A';
   const tileUrl = `https://api.mapbox.com/styles/v1/mapbox/navigation-night-v1/tiles/{z}/{x}/{y}?access_token=${accessToken}`;

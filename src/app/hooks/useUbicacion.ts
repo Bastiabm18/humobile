@@ -8,7 +8,7 @@ interface Ubicacion {
   longitud: number;
 }
 
-export function useUbicacionSimple() {
+export function useUbicacion() {
   const [ubicacion, setUbicacion] = useState<Ubicacion | null>(null);
 
   useEffect(() => {
@@ -24,8 +24,8 @@ export function useUbicacionSimple() {
         
         // Imprimir en consola
         console.log('📍 Ubicación cargada de localStorage:');
-        console.log('Latitud:', datos.latitud);
-        console.log('Longitud:', datos.longitud);
+       // console.log('Latitud:', datos.latitud);
+       // console.log('Longitud:', datos.longitud);
       } catch (error) {
         console.error('❌ Error al parsear ubicación:', error);
       }

@@ -20,7 +20,7 @@ export default function CarruselEvento({ evento, onClick }: CarruselEventoProps)
     if (onClick) onClick(evento);
   };
 
-  console.log(evento);
+ // console.log(evento);
 
   const getCategoryColor = () => {
     switch (evento.category) {

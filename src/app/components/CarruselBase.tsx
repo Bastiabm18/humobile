@@ -26,7 +26,7 @@ const CarruselBase: React.FC<CarruselProps> = ({ items, title, icon }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
    const router = useRouter();
 
-   console.log(items)
+  // console.log(items)
     // Función para codificar ID en base64url (URL-safe)
   const encodeId = (id: string): string => {
     // btoa para navegador, Buffer para Node

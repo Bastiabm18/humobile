@@ -23,7 +23,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { user,logout,loading } = useAuth();
   const router = useRouter();
-  console.log('Usuario en Navbar:', user);
+ // console.log('Usuario en Navbar:', user);
 
 const handleLogout = async () => {
     try {

@@ -38,7 +38,7 @@ export default async function PerfilesComponent() {
       type:'lugar'
     }));
 
-    console.log('ugares ',lugares)
+    //console.log('lugares ',lugares)
 
   return (
     <div className=" max-w-screen space-y-12">
