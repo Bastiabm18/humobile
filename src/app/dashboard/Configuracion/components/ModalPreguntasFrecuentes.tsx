@@ -380,7 +380,7 @@ export default function ModalPreguntasFrecuentes({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 50 }}
             className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
-                      w-[95vw] max-w-4xl max-h-[90vh] 
+                      w-[95vw]  max-h-[95vh] 
                       bg-neutral-800 rounded-xl border border-neutral-700 
                       z-50 overflow-hidden"
           >
