@@ -30,7 +30,6 @@ export const MENU_ITEMS: MenuItem[] = [
   { name: 'Eventos',               path: 'dashboard/eventos',        descripcion:'Chequea Tus Actividades ', icon: <MdEventAvailable className='text-4xl text-sky-500/80' />,      role: ['ADMIN', 'user'] },
   { name: 'Solicitudes',           path: 'dashboard/solicitudes',    descripcion:' Acepta/Rechaza Fechas o Invitaciones', icon: <TbMessageQuestion className='text-4xl text-indigo-500/80'  />,    role: ['ADMIN', 'user'] },
   { name: 'Cuenta',                path: 'dashboard/cuenta',         descripcion:' Setea Tu Humobile', icon: <MdOutlinePersonPin className='text-4xl text-green-500/80' />,         role: ['ADMIN','user'] },
-  { name: 'preguntas frecuentes',  path: 'dashboard/faq',            descripcion:' Maneja Preguntas Frecuentes', icon: <FaQuestion className='text-4xl text-blue-500/80' />,            role: ['ADMIN'] },
-  { name: 'Configuracion',         path: 'dashboard/MasterConfig',   descripcion:'Only Mr Cabrera Derek', icon: <AiFillSetting className='text-4xl text-blue-500/80' />,            role: ['ADMIN'] },
+  { name: 'Configuracion',         path: 'dashboard/Configuracion',   descripcion:'Panel Admin', icon: <AiFillSetting className='text-4xl text-blue-500/80' />,            role: ['ADMIN'] },
   { name: 'Salir',                 path: '/',                        descripcion:' Salida ', icon: <BsBackspace className='text-4xl text-red-500/80' />,           role: ['ADMIN', 'user'] },
 ];

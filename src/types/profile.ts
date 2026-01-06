@@ -167,6 +167,28 @@ export interface InvitacionData {
   tabla_origen:string;
 }
 
+export interface User{
+
+  id: string;
+  supabase_id: string;
+  name: string;
+  role: string;
+  email: string;
+  telefono: string;
+  createdAt: string;
+  updatedAt: string;
+  membresia: string;
+  perfiles: string;
+  perfil_artista: number;
+  perfil_banda: number;
+  perfil_lugar: number;
+  estado: string;
+  membership_precio: number;
+  membership_inicio: string | null;
+  membership_fin: string | null;
+  membership_estado: string;
+}
+
 export type UserWithMembership = {
  
   role: string;
@@ -179,6 +201,7 @@ export type UserWithMembership = {
   membership_fin: string | null;
   membership_estado: string;
 };
+
 
 // types/calendar.ts
 export interface CalendarEvent {
