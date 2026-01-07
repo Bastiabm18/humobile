@@ -572,14 +572,17 @@ const CustomToolbar = (toolbar: any) => {
           onClose={() => {
             setEventModalOpen(false);
             setSelectedEvent(null);
+            
           }}
+          profile={profile}
+          onEventUpdated={fetchEvents}
         />
       )}
 
         {/* MODAL DE LÍNEA DE TIEMPO PARA MÚLTIPLES EVENTOS */}
       {timelineModalOpen && selectedDayForTimeline && (
         <DayTimelineModal
-          events={dayEventsForTimeline}
+        
           profile={profile}
           date={selectedDayForTimeline}
           isOpen={timelineModalOpen}
@@ -588,6 +591,7 @@ const CustomToolbar = (toolbar: any) => {
             setDayEventsForTimeline([]);
             setSelectedDayForTimeline(null);
           }}
+           onEventUpdated={fetchEvents}
         />
       )}
 

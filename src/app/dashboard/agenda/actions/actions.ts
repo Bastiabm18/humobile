@@ -1,7 +1,7 @@
 'use server'; 
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
-import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, BlockDateRangeParams, evento, CalendarEvent } from '@/types/profile'; 
+import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, BlockDateRangeParams, evento, CalendarEvent, eventoCompleto } from '@/types/profile'; 
 import { revalidatePath } from 'next/cache';
 
 
@@ -253,7 +253,7 @@ export async function getEventsByProfile(profileId: string, profileType: 'artist
         description: evento.description || '',
         category: evento.category || '',
         status: evento.status || '',
-        
+          tipo: evento.creator_type || '',
         // Todos los datos originales en resource
         resource: {
           // Mapear campos en español a inglés para tu interfaz
@@ -289,7 +289,9 @@ export async function getEventsByProfile(profileId: string, profileType: 'artist
           nombre_artista: evento.nombre_artista || '',
           
           // Agregar campos originales para referencia
-          _datos_originales: evento
+          _datos_originales: evento,
+        
+          
         }
       };
     });
@@ -302,6 +304,226 @@ export async function getEventsByProfile(profileId: string, profileType: 'artist
   } catch (error: any) {
     console.error('Error en getEventsByProfile:', error);
     throw error;
+  }
+}
+export async function getEventoById(id_evento: string): Promise<eventoCompleto | null> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    // Llamar a la función PostgreSQL obtener_evento_completo
+    const { data, error } = await supabaseAdmin
+      .rpc('obtener_evento_completo', {
+        p_evento_id: id_evento
+      })
+      .single() as { data: eventoCompleto; error: any }; // .single() porque esperamos un solo evento
+    
+    if (error) {
+      console.error('❌ Error en la función PostgreSQL obtener_evento_completo:', error);
+      console.error('Detalles del error:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      throw new Error(`Error al obtener el evento: ${error.message}`);
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    // Verificar estructura del evento
+    console.log('📊 Estructura del evento completo:', Object.keys(data));
+    console.log('📈 Participantes del evento:', {
+      total_participantes: data.participantes?.length || 0,
+      total_artistas: data.artistas?.length || 0,
+      total_bandas: data.bandas?.length || 0,
+      total_lugares: data.lugares?.length || 0
+    });
+
+    // Convertir a la interfaz eventoCompleto
+    const eventoCompletoData: eventoCompleto = {
+      // Campos de events
+      id: data.id,
+      creator_profile_id: data.creator_profile_id,
+      creator_type: data.creator_type as 'artist' | 'band' | 'place',
+      title: data.title,
+      description: data.description || '',
+      place_profile_id: data.place_profile_id,
+      custom_place_name: data.custom_place_name,
+      address: data.address,
+      organizer_name: data.organizer_name || '',
+      organizer_contact: data.organizer_contact,
+      ticket_link: data.ticket_link,
+      instagram_link: data.instagram_link,
+      flyer_url: data.flyer_url,
+      category: data.category,
+      status: data.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+      fecha_hora_ini: data.fecha_hora_ini,
+      fecha_hora_fin: data.fecha_hora_fin,
+      is_blocked: data.is_blocked || false,
+      blocked_reason: data.blocked_reason,
+      id_artista: data.id_artista,
+      id_tipo_artista: data.id_tipo_artista,
+      nombre_artista: data.nombre_artista,
+      
+      // Arrays (ya vienen como JSONB desde PostgreSQL)
+      participantes: Array.isArray(data.participantes) ? data.participantes : [],
+      artistas: Array.isArray(data.artistas) ? data.artistas : [],
+      bandas: Array.isArray(data.bandas) ? data.bandas : [],
+      lugares: Array.isArray(data.lugares) ? data.lugares : [],
+      integrantes: Array.isArray(data.integrantes) ? data.integrantes : []
+    };
+
+    return eventoCompletoData;
+    
+  } catch (error: any) {
+    console.error('Error en getEventoCompleto:', error);
+    throw error;
+  }
+}
+
+export async function getEventsByDiaYPerfilId(
+  fecha: Date, 
+  perfilId: string
+): Promise<CalendarEvent[]> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    // Formatear fecha a YYYY-MM-DD
+    const fechaStr = fecha.toISOString().split('T')[0];
+    
+    // Llamar a la función PostgreSQL
+    const { data: eventosDB, error } = await supabaseAdmin
+      .rpc('obtener_eventos_por_dia', {
+        p_fecha: fechaStr,
+        p_perfil_id: perfilId
+      });
+    
+    if (error) {
+      console.error('❌ Error en obtener_eventos_por_dia:', error);
+      throw new Error(`Error al obtener eventos del día: ${error.message}`);
+    }
+
+    if (!eventosDB || eventosDB.length === 0) {
+      return [];
+    }
+
+    console.log(`📊 Eventos encontrados para ${fechaStr}:`, eventosDB.length);
+
+    // Convertir a CalendarEvent[]
+    const calendarEvents: CalendarEvent[] = eventosDB.map((evento: any) => {
+      const fechaIni = new Date(evento.fecha_hora_ini);
+      const fechaFin = new Date(evento.fecha_hora_fin);
+      
+      return {
+        id: evento.id,
+        title: evento.title,
+        start: fechaIni,
+        end: fechaFin,
+        description: evento.description || '',
+        category: evento.category || '',
+        status: evento.status || '',
+        tipo: evento.creator_type === 'artist' ? 'artist' : 
+              evento.creator_type === 'band' ? 'band' : 
+              evento.creator_type === 'place' ? 'place' : '',
+        
+        resource: {
+          creator_profile_id: evento.creator_profile_id,
+          creator_type: evento.creator_type as 'artist' | 'band' | 'place',
+          fecha_hora_ini: fechaIni,
+          fecha_hora_fin: fechaFin,
+          place_profile_id: evento.place_profile_id || '',
+          custom_place_name: evento.custom_place_name || '',
+          address: evento.address || '',
+          organizer_name: evento.organizer_name || '',
+          organizer_contact: evento.organizer_contact || '',
+          ticket_link: evento.ticket_link || '',
+          instagram_link: evento.instagram_link || '',
+          flyer_url: evento.flyer_url || '',
+          category: evento.category || '',
+          status: evento.status || '',
+          created_at: evento.created_at,
+          updated_at: evento.updated_at,
+          is_blocked: evento.is_blocked || false,
+          blocked_reason: evento.blocked_reason || ''
+        }
+      };
+    });
+
+    return calendarEvents;
+    
+  } catch (error: any) {
+    console.error('Error en getEventsByDayAndProfile:', error);
+    throw error;
+  }
+}
+
+
+export async function deleteEvent(eventId: string, perfilId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    // 1. Primero verificar que el perfil es el creador del evento
+    const { data: evento, error: eventoError } = await supabaseAdmin
+      .from('events')
+      .select('creator_profile_id')
+      .eq('id', eventId)
+      .single();
+    
+    if (eventoError) {
+      console.error('Error obteniendo evento:', eventoError);
+      return { 
+        success: false, 
+        error: 'Evento no encontrado' 
+      };
+    }
+    
+    if (!evento || evento.creator_profile_id !== perfilId) {
+      return { 
+        success: false, 
+        error: 'No tienes permisos para eliminar este evento. Solo el creador puede eliminarlo.' 
+      };
+    }
+    
+    // 2. Eliminar las participaciones primero
+    const { error: deleteParticipacionesError } = await supabaseAdmin
+      .from('participacion_evento')
+      .delete()
+      .eq('evento_id', eventId);
+    
+    if (deleteParticipacionesError) {
+      console.error('Error eliminando participaciones:', deleteParticipacionesError);
+      // Podemos continuar o lanzar error según tu política
+    }
+    
+    // 3. Eliminar el evento
+    const { error: deleteEventError } = await supabaseAdmin
+      .from('events')
+      .delete()
+      .eq('id', eventId);
+    
+    if (deleteEventError) {
+      console.error('Error eliminando evento:', deleteEventError);
+      return { 
+        success: false, 
+        error: `Error al eliminar el evento: ${deleteEventError.message}` 
+      };
+    }
+    
+    return { 
+      success: true,
+   
+    };
+    
+  } catch (error: any) {
+    console.error('Error en deleteEvent:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Error desconocido al eliminar el evento' 
+    };
   }
 }
 
@@ -858,3 +1080,305 @@ export const getProfiles = async (userId: string): Promise<Profile[]> => {
     
     return allProfiles;
 };
+
+export async function updateEvent(eventData: any) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    // Validar campos obligatorios
+    if (!eventData.id) {
+      return { 
+        success: false, 
+        error: 'ID del evento es requerido' 
+      };
+    }
+
+    if (!eventData.title || !eventData.fecha_hora_ini || !eventData.fecha_hora_fin) {
+      return { 
+        success: false, 
+        error: 'Título, fecha de inicio y fecha de fin son obligatorios' 
+      };
+    }
+
+    // Validar que la fecha de fin sea posterior a la de inicio
+    if (eventData.fecha_hora_fin <= eventData.fecha_hora_ini) {
+      return { 
+        success: false, 
+        error: 'La fecha de fin debe ser posterior a la fecha de inicio' 
+      };
+    }
+
+    // Verificar que no existan conflictos de fecha con otros eventos del mismo creador
+    const { data: eventosExistentes, error: errorConsulta } = await supabaseAdmin
+      .from('participacion_evento')
+      .select(`
+        evento_id,
+        events!inner(
+          id,
+          title,
+          fecha_hora_ini,
+          fecha_hora_fin
+        )
+      `)
+      .eq('perfil_id', eventData.creator_profile_id)
+      .neq('evento_id', eventData.id) // Excluir el evento actual
+      .filter('events.fecha_hora_ini', 'lt', eventData.fecha_hora_fin.toISOString())
+      .filter('events.fecha_hora_fin', 'gt', eventData.fecha_hora_ini.toISOString());
+          
+    if (errorConsulta) {
+      console.error('Error al verificar eventos existentes:', errorConsulta);
+      return { 
+        success: false, 
+        error: 'Error al verificar disponibilidad de fechas' 
+      };
+    }
+
+    if (eventosExistentes && eventosExistentes.length > 0) {
+      return { 
+        success: false, 
+        error: 'Ya tienes eventos programados en ese rango de fechas. Por favor, selecciona otras fechas.' 
+      };
+    }
+
+    // Verificar si place_profile_id es válido (solo si no es null/empty)
+    let validPlaceProfileId = null;
+    if (eventData.place_profile_id) {
+      try {
+        const { data: placeProfile, error: placeError } = await supabaseAdmin
+          .from('ProfilePlace')
+          .select('id')
+          .eq('id', eventData.place_profile_id)
+          .single();
+
+        if (placeError) {
+          console.log('place_profile_id no encontrado en ProfilePlace, usando null');
+          validPlaceProfileId = null;
+        } else {
+          validPlaceProfileId = eventData.place_profile_id;
+        }
+      } catch (error) {
+        console.error('Error validando place_profile_id:', error);
+        validPlaceProfileId = null;
+      }
+    }
+
+    // Obtener el evento actual para comparar cambios
+    const { data: eventoActual, error: errorEventoActual } = await supabaseAdmin
+      .from('events')
+      .select('*')
+      .eq('id', eventData.id)
+      .single();
+
+    if (errorEventoActual) {
+      console.error('Error obteniendo evento actual:', errorEventoActual);
+      return { 
+        success: false, 
+        error: 'No se pudo obtener el evento actual' 
+      };
+    }
+
+    // Preparar datos para actualizar
+    const updateData = {
+      title: eventData.title.trim(),
+      id_artista: eventData.id_artista || null,
+      id_tipo_artista: eventData.id_tipo_artista || null,
+      nombre_artista: eventData.nombre_artista?.trim() || '',
+      description: eventData.description?.trim() || null,
+      fecha_hora_ini: eventData.fecha_hora_ini.toISOString(),
+      fecha_hora_fin: eventData.fecha_hora_fin.toISOString(),
+      place_profile_id: validPlaceProfileId,
+      custom_place_name: eventData.custom_place_name?.trim() || null,
+      address: eventData.address?.trim() || null,
+      organizer_name: eventData.organizer_name?.trim() || null,
+      organizer_contact: eventData.organizer_contact?.trim() || null,
+      ticket_link: eventData.ticket_link?.trim() || null,
+      instagram_link: eventData.instagram_link?.trim() || null,
+      flyer_url: eventData.flyer_url?.trim() || null,
+      category: eventData.category || 'show',
+      updated_at: new Date().toISOString(),
+    };
+
+    console.log('Actualizando evento ID:', eventData.id);
+    console.log('Datos a actualizar:', updateData);
+
+    // 1. Actualizar el evento principal
+    const { data: updatedEvent, error: updateError } = await supabaseAdmin
+      .from('events')
+      .update(updateData)
+      .eq('id', eventData.id)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('Error actualizando evento en Supabase:', updateError);
+      return { 
+        success: false, 
+        error: updateError.message || 'Error desconocido al actualizar el evento' 
+      };
+    }
+
+    // 2. Manejar actualizaciones en participacion_evento
+    await manejarActualizacionParticipaciones(supabaseAdmin, eventData, eventoActual);
+
+    return { 
+      success: true, 
+      evento: updatedEvent,
+      message: 'Evento actualizado exitosamente' 
+    };
+    
+  } catch (error: any) {
+    console.error('Error en updateEvent:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Error interno del servidor' 
+    };
+  }
+}
+
+// Función auxiliar para manejar las actualizaciones en participacion_evento
+async function manejarActualizacionParticipaciones(supabaseAdmin: any, eventData: any, eventoActual: any) {
+  try {
+    console.log('Manejando actualizaciones de participaciones...');
+
+    // Caso 1: LOCAL actualiza artista/banda
+    if (eventData.creator_type === 'place') {
+      await manejarLocalActualizaArtista(supabaseAdmin, eventData, eventoActual);
+    }
+    
+    // Caso 2: ARTISTA actualiza lugar
+    else if (eventData.creator_type === 'artist') {
+      await manejarArtistaActualizaLugar(supabaseAdmin, eventData, eventoActual);
+    }
+    
+    // Caso 3: BANDA - mantener la participación del creador
+    else if (eventData.creator_type === 'band') {
+      // La banda creadora siempre debe estar como participante
+      await asegurarParticipacionCreador(supabaseAdmin, eventData);
+    }
+
+  } catch (error) {
+    console.error('Error en manejarActualizacionParticipaciones:', error);
+    // No lanzamos el error para no afectar la actualización principal
+  }
+}
+
+async function manejarLocalActualizaArtista(supabaseAdmin: any, eventData: any, eventoActual: any) {
+  console.log('Local actualizando artista...');
+  
+  // Eliminar participaciones anteriores de artistas (si existen)
+  const { error: deleteError } = await supabaseAdmin
+    .from('participacion_evento')
+    .delete()
+    .eq('evento_id', eventData.id)
+    .neq('perfil_id', eventData.creator_profile_id); // Mantener al creador
+
+  if (deleteError) {
+    console.error('Error eliminando participaciones anteriores:', deleteError);
+  }
+
+  // Si hay nuevo artista, agregarlo
+  if (eventData.id_artista) {
+    console.log(`Agregando nuevo artista ${eventData.nombre_artista} (${eventData.id_artista})`);
+    
+    await supabaseAdmin
+      .from('participacion_evento')
+      .insert([{
+        evento_id: eventData.id,
+        perfil_id: eventData.id_artista,
+        estado: 'pendiente'
+      }]);
+
+    // Si es banda, agregar también los integrantes
+    if (eventData.id_tipo_artista === 'band') {
+      const { data: integranteData } = await supabaseAdmin
+        .from('integrante')
+        .select('id_artista')
+        .eq('id_banda', eventData.id_artista)
+        .eq('estado', 'activo');
+
+      if (integranteData && integranteData.length > 0) {
+        console.log(`Agregando ${integranteData.length} integrantes`);
+        
+        const participaciones = integranteData.map((integrante: { id_artista: any; }) => ({
+          evento_id: eventData.id,
+          perfil_id: integrante.id_artista,
+          estado: 'pendiente'
+        }));
+
+        await supabaseAdmin
+          .from('participacion_evento')
+          .insert(participaciones);
+      }
+    }
+  }
+}
+
+async function manejarArtistaActualizaLugar(supabaseAdmin: any, eventData: any, eventoActual: any) {
+  console.log('Artista actualizando lugar...');
+  
+  // Eliminar participaciones anteriores de lugares (si existen)
+  const { data: participantesAnteriores } = await supabaseAdmin
+    .from('participacion_evento')
+    .select('perfil_id')
+    .eq('evento_id', eventData.id);
+
+  if (participantesAnteriores) {
+    // Buscar participantes que son lugares (no el creador)
+    for (const participante of participantesAnteriores) {
+      if (participante.perfil_id !== eventData.creator_profile_id) {
+        // Verificar si es un lugar
+        const { data: perfil } = await supabaseAdmin
+          .from('ProfilePlace')
+          .select('id')
+          .eq('id', participante.perfil_id)
+          .single();
+
+        if (perfil) {
+          // Es un lugar, eliminarlo
+          await supabaseAdmin
+            .from('participacion_evento')
+            .delete()
+            .eq('evento_id', eventData.id)
+            .eq('perfil_id', participante.perfil_id);
+        }
+      }
+    }
+  }
+
+  // Agregar nuevo lugar si existe
+  if (eventData.place_profile_id) {
+    console.log(`Agregando nuevo lugar ${eventData.custom_place_name} (${eventData.place_profile_id})`);
+    
+    await supabaseAdmin
+      .from('participacion_evento')
+      .insert([{
+        evento_id: eventData.id,
+        perfil_id: eventData.place_profile_id,
+        estado: 'pendiente'
+      }]);
+  }
+}
+
+async function asegurarParticipacionCreador(supabaseAdmin: any, eventData: any) {
+  console.log('Asegurando participación del creador...');
+  
+  // Verificar si el creador ya está como participante
+  const { data: participacionExistente } = await supabaseAdmin
+    .from('participacion_evento')
+    .select('id')
+    .eq('evento_id', eventData.id)
+    .eq('perfil_id', eventData.creator_profile_id)
+    .single();
+
+  if (!participacionExistente) {
+    console.log('Agregando creador como participante');
+    
+    await supabaseAdmin
+      .from('participacion_evento')
+      .insert([{
+        evento_id: eventData.id,
+        perfil_id: eventData.creator_profile_id,
+        estado: 'pendiente'
+      }]);
+  }
+}

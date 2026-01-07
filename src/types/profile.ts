@@ -216,7 +216,7 @@ export interface CalendarEvent {
   category?: string;
   status?: string;
   allDay?: boolean;
-  
+  tipo:string;
   // Objeto con todos los datos originales
   resource: {
     creator_profile_id: string;

@@ -63,7 +63,7 @@ export default function DesbloquearModal({ event, isOpen, onClose, onBlockDelete
     try {
       const result = await eliminarBloqueo(event.id);
       if (result.success) {
-        alert('Bloqueo eliminado exitosamente');
+        //alert('Bloqueo eliminado exitosamente');
         if (onBlockDeleted) {
           onBlockDeleted();
         }

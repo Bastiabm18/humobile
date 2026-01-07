@@ -6,28 +6,59 @@ import { FaCheckCircle, FaLock, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUser, 
 import { HiX, HiChevronRight } from 'react-icons/hi';
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import EventModal from './EventModal'; // Importa el modal de evento individual
 import CrearEventoModal from './CrearEventoModal';
 import BlockDateModal from './BlockDateModal';
+import { getEventsByDiaYPerfilId } from '../actions/actions';
 
 interface DayTimelineModalProps {
-  events: CalendarEvent[];
+ 
   profile:Profile;
   date: Date;
   isOpen: boolean;
   onClose: () => void;
+  onEventUpdated?: () => void;
 }
 
-export default function DayTimelineModal({ events,profile, date, isOpen, onClose }: DayTimelineModalProps) {
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+export default function DayTimelineModal({ profile, date, isOpen, onClose, onEventUpdated }: DayTimelineModalProps) {
+ const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
-  const [perfil, setPerfil] = useState<Profile | null>(null);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [showCrearEventoModal, setShowCrearEventoModal] = useState(false);
   const [showBloquearPeriodoModal, setShowBloquearPeriodoModal] = useState(false);
   const [newEventDate, setNewEventDate] = useState<Date | null>(null);
-  
+  console.log(date,profile)
+
+    useEffect(() => {
+    if (isOpen && profile?.id) {
+      fetchEventosParaElDia();
+      console.log('linea emporal',events)
+    } else {
+      // Reset al cerrar
+      setEvents([]);
+      setError(null);
+    }
+  }, [isOpen, date, profile?.id]);
+
+    const fetchEventosParaElDia = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const eventosDelDia = await getEventsByDiaYPerfilId(date, profile.id);
+      setEvents(eventosDelDia);
+      
+    } catch (err: any) {
+      console.error('Error cargando eventos del día:', err);
+      setError(err.message || 'Error al cargar los eventos del día');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!isOpen || events.length === 0) return null;
 
   // Ordenar eventos por hora de inicio
@@ -87,6 +118,8 @@ export default function DayTimelineModal({ events,profile, date, isOpen, onClose
     return format(date, "EEEE d 'de' MMMM 'de' yyyy", { locale: es });
   };
 
+  console.log('eventos loco',events)
+
   // Vista móvil
   const MobileView = () => (
     <div className="md:hidden">
@@ -132,7 +165,7 @@ export default function DayTimelineModal({ events,profile, date, isOpen, onClose
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
         <div className="relative bg-neutral-900 rounded-xl shadow-2xl w-full md:max-w-4xl max-h-[95vh] min-h-[95vh] overflow-hidden border border-neutral-700">
           {/* Encabezado */}
           <div className="sticky top-0 z-10 flex items-center justify-between p-6 border-b border-neutral-700 bg-neutral-900">
@@ -366,6 +399,11 @@ export default function DayTimelineModal({ events,profile, date, isOpen, onClose
           onClose={() => {
             setShowEventModal(false);
             setSelectedEvent(null);
+          }}
+          profile={profile as any}
+           onEventUpdated={() => {
+            // Refrescar eventos del día
+            fetchEventosParaElDia();
           }}
         />
       )}
