@@ -605,7 +605,9 @@ const handleConfirmAction = async () => {
                 onClose={() => {
                   setIsModalOpen(false);
                   setSelectedEvent(null);
+
                 }}
+                profile={profile as any}
               />
 
            <ConfirmModal />
