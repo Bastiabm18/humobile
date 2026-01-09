@@ -151,73 +151,97 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
       </div>
      )}
 
-{totalEvents == 2 && (
-  <div>
-    {/* Eventos normales */}
-    {normalEvents.length >=1 && normalEvents.slice(0, hasBlocked ? 1 : 2).map((event, index) => (
-      <div
-        key={event.id || index}
-        className="text-xs md:text-sm mb-0.5 truncate px-1.5 py-1 rounded-md bg-sky-700/50 text-white font-medium hover:bg-sky-800 cursor-pointer transition-colors flex items-center justify-center h-7.5 md:h-12.5 group border-l-2 border-sky-500"
-        title={`${event.title} (${formatTime(event.start)} - ${formatTime(event.end)})`}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (onEventClick) {
-            onEventClick(normalEvents[0]);
-          }
-          console.log('Evento clickeado:', event);
-        }}
-      >
-        <div className="flex items-center gap-1">
-          <span className='hidden md:flex truncate'>{formatEventTitle(event.title)}</span>
-          <FaCheckCircle size={10} className="text-white/90" />
-        </div>
-      </div>
-    ))}
+              {totalEvents == 2 && (
+                <div>
+                  {/* Eventos normales */}
+                  {normalEvents.length >=1 && normalEvents.slice(0, hasBlocked ? 1 : 2).map((event, index) => (
+                    <div
+                      key={event.id || index}
+                      className="text-xs md:text-sm mb-0.5 truncate px-1.5 py-1 rounded-md bg-sky-700/50 text-white font-medium hover:bg-sky-800 cursor-pointer transition-colors flex items-center justify-center h-7.5 md:h-12.5 group border-l-2 border-sky-500"
+                      title={`${event.title} (${formatTime(event.start)} - ${formatTime(event.end)})`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onEventClick) {
+                          onEventClick(normalEvents[0]);
+                        }
+                        console.log('Evento clickeado:', event);
+                      }}
+                    >
+                                {/* Contenido principal */}
+                      <div className="flex items-center md:items-start gap-1.5 w-full min-w-0 px-1">
+                        {/* Imagen/Ícono */}
+                        <div className='hidden  md:flex flex-shrink-0 pt-0.5'>
+                          {normalEvents[0].resource?.flyer_url !== '' ? (
+                            <img
+                              alt="flyer"
+                              src={normalEvents[0].resource.flyer_url}
+                              className='object-cover w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/30'
+                            />
+                          ) : (
+                            <FaCheckCircle size={18} className="md:mt-1" />
+                          )}
+                        </div>
+                        
+                        {/* Contenido de texto */}
+                        <div className="flex-1 min-w-0">
+                          {/* Título */}
+                          <div className="truncate text-white/95 font-medium mb-0.5">
+                            {normalEvents[0].title}
+                          </div>
+                          
+                          {/* Hora - solo en desktop */}
+                          <div className="hidden md:flex text-xs text-white/70">
+                            {formatTime(normalEvents[0].start)} - {formatTime(normalEvents[0].end)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
 
-    {/* Eventos bloqueados */}
-    {blockedEvents.length >= 1 && blockedEvents.slice(0, hasNormal ? 1 : 2).map((event, index) => (
-      <div
-        key={event.id || index}
-        className="text-xs md:text-sm mb-0.5 rounded-md bg-red-900 hover:bg-red-950 text-white font-medium shadow-sm cursor-pointer items-center justify-center w-full h-7.5 md:h-12.5 flex border-l-2 border-red-600"
-        title={`Día bloqueado: ${blockedEvents[0].resource?.blocked_reason || 'Sin motivo'}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (onBlockClick) {
-            onBlockClick(blockedEvents[0]);
-          } else {
-            console.log('Bloqueo clickeado:', blockedEvents[0]);
-          }
-        }}
-      >
-        <HiLockClosed size={14} className='text-red-300' />
-      </div>
-    ))}
+                  {/* Eventos bloqueados */}
+                  {blockedEvents.length >= 1 && blockedEvents.slice(0, hasNormal ? 1 : 2).map((event, index) => (
+                    <div
+                      key={event.id || index}
+                      className="text-xs md:text-sm mb-0.5 rounded-md bg-red-900 hover:bg-red-950 text-white font-medium shadow-sm cursor-pointer items-center justify-center w-full h-7.5 md:h-12.5 flex border-l-2 border-red-600"
+                      title={`Día bloqueado: ${blockedEvents[0].resource?.blocked_reason || 'Sin motivo'}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onBlockClick) {
+                          onBlockClick(blockedEvents[0]);
+                        } else {
+                          console.log('Bloqueo clickeado:', blockedEvents[0]);
+                        }
+                      }}
+                    >
+                      <HiLockClosed size={14} className='text-red-300' />
+                    </div>
+                  ))}
 
-    {/* Contador cuando totalEvents >= 2 */}
-    {totalEvents >= 2 && (
-      <div className="mb-0.5 cursor-pointer flex justify-center">
-        <div 
-          className="text-[10px] md:text-sm px-2 py-0.5 w-full items-center justify-center flex rounded-md h-7.5 md:h-14 bg-yellow-600/50 hover:bg-yellow-700 text-yellow-50 font-bold border-l-2 border-yellow-500"
-          title={`${totalEvents} eventos en este día`}
-          onClick={(e)=>{
-            e.stopPropagation();
-            if (onMultipleEventsClick) {
-              onMultipleEventsClick(events, date);
-            } else {
-              console.log('Múltiples eventos:', events);
-            }
-          }}
-        >
-          <div className="flex flex-col items-center justify-center">
-            <span className="text-sm md:text-lg font-bold">
-              {totalEvents}+
-            </span>
-          </div>
-        </div>
-      </div>
-    )}
-  </div>
-)}
+                  {/* Contador cuando totalEvents >= 2 */}
+                  {totalEvents >= 2 && (
+                    <div className="mb-0.5 cursor-pointer flex justify-center">
+                      <div 
+                        className="text-[10px] md:text-sm px-2 py-0.5 w-full items-center justify-center flex rounded-md h-7.5 md:h-14 bg-yellow-600/50 hover:bg-yellow-700 text-yellow-50 font-bold border-l-2 border-yellow-500"
+                        title={`${totalEvents} eventos en este día`}
+                        onClick={(e)=>{
+                          e.stopPropagation();
+                          if (onMultipleEventsClick) {
+                            onMultipleEventsClick(events, date);
+                          } else {
+                            console.log('Múltiples eventos:', events);
+                          }
+                        }}
+                      >
+                        <div className="flex flex-col items-center justify-center">
+                          <span className="text-sm md:text-lg font-bold">
+                            {totalEvents}+
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
 {totalEvents == 3 && (
   <div>
@@ -236,10 +260,34 @@ export default function EventBadge({ events,profile, date, view, slotTime, onEve
             console.log('Evento clickeado:', event);
           }}
         >
-          <div className="flex items-center gap-1">
-            <span className='hidden md:flex truncate'>{formatEventTitle(event.title)}</span>
-            <FaCheckCircle size={10} className="text-white/90" />
-          </div>
+                      {/* Contenido principal */}
+                      <div className="flex items-center md:items-start gap-1.5 w-full min-w-0 px-1">
+                        {/* Imagen/Ícono */}
+                        <div className='hidden  md:flex flex-shrink-0 pt-0.5'>
+                          {normalEvents[0].resource?.flyer_url !== '' ? (
+                            <img
+                              alt="flyer"
+                              src={normalEvents[0].resource.flyer_url}
+                              className='object-cover w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/30'
+                            />
+                          ) : (
+                            <FaCheckCircle size={18} className="md:mt-1" />
+                          )}
+                        </div>
+                        
+                        {/* Contenido de texto */}
+                        <div className="flex-1 min-w-0">
+                          {/* Título */}
+                          <div className="truncate text-white/95 font-medium mb-0.5">
+                            {normalEvents[0].title}
+                          </div>
+                          
+                          {/* Hora - solo en desktop */}
+                          <div className="hidden md:flex text-xs text-white/70">
+                            {formatTime(normalEvents[0].start)} - {formatTime(normalEvents[0].end)}
+                          </div>
+                        </div>
+                      </div>
         </div>
       ))}
 
