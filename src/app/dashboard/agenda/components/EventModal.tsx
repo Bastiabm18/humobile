@@ -34,12 +34,14 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
   const [eventData, setEventData] = useState<eventoCompleto | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'participantes' | 'detalles'>('info');
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [esCreador, setEsCreador] = useState(false);
   console.log(profile)
   useEffect(() => {
     if (isOpen && event?.id) {
+         setInitialLoading(true);
       fetchEventData();
       if (event.resource.creator_profile_id === profile.id){
           setEsCreador(true)
@@ -51,6 +53,7 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
       setEventData(null);
       setError(null);
       setActiveTab('info');
+        setInitialLoading(true); 
     }
   }, [isOpen, event?.id]);
 
@@ -58,6 +61,7 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
     if (!event?.id) return;
     
     setLoading(true);
+     setInitialLoading(true); 
     setError(null);
     try {
       // IMPORTANTE: Asegúrate que getEventoById devuelva eventoCompleto
@@ -68,6 +72,7 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
       setError(err.message || 'Error al cargar el evento');
     } finally {
       setLoading(false);
+        setInitialLoading(false);
     }
   };
   console.log(eventData)
@@ -117,7 +122,7 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
 
   if (!isOpen) return null;
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <div className="fixed inset-0 flex z-40 items-center justify-center p-4 bg-black/80">
         <div className=" flex justify-center items-center rounded-xl w-[60vw] h-[40vh] p-8">
@@ -132,14 +137,18 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
 
   if (error || !eventData) {
     return (
-      <div className="fixed inset-0 flex z-40 items-center justify-center p-4 bg-black/80">
-        <div className=" flex justify-center items-center rounded-xl w-[60vw] h-[40vh] p-8">
-          <div className="flex flex-col items-center justify-center gap-3">
-            <NeonSign/>
-            <FaSpinner className=' animate-spin' />
-        </div>
+   <div className="fixed inset-0 flex z-40 items-center justify-center p-4 bg-black/80">
+      <div className="flex flex-col items-center justify-center gap-3 bg-neutral-900 rounded-xl p-8">
+        <div className="text-red-400 text-xl mb-2">❌ Error</div>
+        <p className="text-white mb-4">{error}</p>
+        <button 
+          onClick={onClose}
+          className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white"
+        >
+          Cerrar
+        </button>
       </div>
-      </div>
+    </div>
     );
   }
 
