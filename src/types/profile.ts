@@ -1,5 +1,5 @@
 // types/profile.ts
-export type ProfileType = 'artist' | 'band' | 'place';
+export type ProfileType = 'artist' | 'band' | 'place'|'representative'|'producer';
 
 // Tipos para la data geográfica
 export interface GeoItem {
@@ -155,6 +155,41 @@ export interface eventoCompleto {
   integrantes: any[];
 }
 
+// Interfaz principal que representa la tabla 'perfil'
+export interface Perfil {
+  // IDENTIFICACIÓN
+  id_perfil: string;
+  usuario_id: string;
+  tipo_perfil: 'artista' | 'banda' | 'local' | 'productor' | 'representante';
+  
+  // DATOS BÁSICOS COMUNES
+  nombre: string;
+  email: string | null;
+  direccion: string | null;
+  lat: number | null;
+  lon: number | null;
+  telefono_contacto: string | null;
+  imagen_url: string | null;
+  video_url: string | null;
+  perfil_visible: boolean;
+  
+  // UBICACIÓN (IDs)
+  id_comuna: string;
+  id_region: string;
+  id_pais: string;
+  
+  // METADATOS
+  creado_en: string;
+  actualizado_en: string;
+  
+  // DATOS ESPECÍFICOS POR TIPO (JSONB)
+  artista_data: Record<string, any>;  // JSON object
+  banda_data: Record<string, any>;    // JSON object
+  local_data: Record<string, any>;    // JSON object
+  productor_data: Record<string, any>; // JSON object
+  representante_data: Record<string, any>; // JSON object
+}
+
 
 export interface InvitacionData {
   id_perfil:string;
@@ -243,6 +278,7 @@ export interface CalendarEvent {
 export interface AceptarRechazarEvento{
   id_evento:string;
   motivo:string;
+  id_perfil:string;
 
 }
 

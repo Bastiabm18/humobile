@@ -3,6 +3,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+    --deep-card: #f8fafc;
+  --deep-hover: #f1f5f9;
+  --deep-button: #e2e8f0;
+  --deep-border: #e5e7eb;
+  --deep-text: #4b5563;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -43,12 +48,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
 
 
 @layer base {
@@ -233,4 +232,32 @@ body {
 
 .rbc-time-content::-webkit-scrollbar-thumb:hover {
   background: #dc2626 !important; /* bg-red-600 */
+}
+
+/* FORZAR COLOR DE TEXTO VISIBLE EN AMBOS MODOS */
+.rbc-date-cell {
+  color: rgb(201, 201, 201) !important;
+}
+
+.rbc-header {
+  color: rgb(44, 159, 174) !important;
+}
+
+.rbc-off-range .rbc-date-cell {
+  color: #6b7280 !important;
+  opacity: 0.7;
+}
+
+@media (prefers-color-scheme: dark) {
+  .rbc-date-cell {
+    color: rgb(201, 201, 201) !important;
+  }
+  
+  .rbc-header {
+    color: rgb(44, 159, 174) !important;
+  }
+  
+  .rbc-off-range .rbc-date-cell {
+    color: #9ca3af !important;
+  }
 }

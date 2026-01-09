@@ -36,10 +36,16 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
   const [activeTab, setActiveTab] = useState<'info' | 'participantes' | 'detalles'>('info');
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
+  const [esCreador, setEsCreador] = useState(false);
+  console.log(profile)
   useEffect(() => {
     if (isOpen && event?.id) {
       fetchEventData();
+      if (event.resource.creator_profile_id === profile.id){
+          setEsCreador(true)
+      }else{
+          setEsCreador(false)
+      }
     } else {
       // Resetear cuando se cierra
       setEventData(null);
@@ -64,6 +70,8 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
       setLoading(false);
     }
   };
+  console.log(eventData)
+  console.log('es creador?', esCreador)
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -569,7 +577,9 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
                 ID: <span className="text-gray-300 font-mono">{eventData.id.substring(0, 12)}...</span>
               </div>
               <div className="flex gap-3">
-                <button
+    { esCreador && (
+      <>
+                  <button
                   onClick={() => setShowEditModal(true)}
                   className="px-4 py-2 text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors flex items-center gap-2"
                 >
@@ -583,6 +593,12 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
                     <FaTrashAlt className="text-sm" />
                     Eliminar
                   </button>
+      </>
+  
+  
+  )
+
+    }
   
                 <button
                   onClick={onClose}

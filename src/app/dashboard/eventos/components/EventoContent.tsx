@@ -170,12 +170,12 @@ export default function AgendaContent({
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors"
           >
             <FaArrowLeft className="text-sm" />
-            <span>Volver al Inicio</span>
+            <span>Volver a perfiles</span>
           </motion.button>
           </div>
           <EventosTable profile={selectedProfile} 
-          onCreateEvent={() => setShowCreateModal(true)}
-        onBlockDate={() => setShowBlockModal(true)}/>
+            onCreateEvent={() => setShowCreateModal(true)}
+            onBlockDate={() => setShowBlockModal(true)}/>
 
           {showCreateModal && (
         <CrearEventoModal

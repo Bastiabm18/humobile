@@ -185,7 +185,7 @@ export default function AgendaContent({
     <div className="relative z-10 ">  
 
       {/*DIV CONTENEDOR DEL CALENDARIO  */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 mt-4">
       
   
             <motion.button
@@ -194,17 +194,17 @@ export default function AgendaContent({
             
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-700 text-neutral-300 hover:bg-neutral-600 transition-colors"
           >
             <FaArrowLeft className="text-sm" />
-            <span>Volver al Inicio</span>
+            <span>Volver a perfiles</span>
           </motion.button>
       </div>
       
 <div className="
   relative 
   w-full 
-  h-[20vh] 
+  h-[30vh] 
   rounded-2xl 
   overflow-hidden 
   group 

@@ -255,122 +255,141 @@ export async function rechazarSolicitud ({ id_solicitud,motivo,tipo}: AceptarRec
 }
 
 export const getProfiles = async (userId: string): Promise<Profile[]> => {
-    const supabaseAdmin = getSupabaseAdmin();
-    
-    // 1. Ejecutar consultas concurrentemente en las tres tablas, filtrando por user_id
-    const [artistsRes, bandsRes, placesRes] = await Promise.all([
-        // Incluimos todas las columnas necesarias para el mapeo
-      supabaseAdmin.from('ProfileArtist').select(`
-            *, 
-            id_profile, 
-            "createdAt",
-            Pais(nombre_pais),     
-            Region(nombre_region), 
-            Comuna(nombre_comuna) 
-        `).eq('user_id', userId),
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  // 1. Consulta única a la tabla perfil
+  const { data, error } = await supabaseAdmin
+    .from('perfil')
+    .select(`
+      *,
+      Pais(nombre_pais),
+      Region(nombre_region),
+      Comuna(nombre_comuna)
+    `)
+    .eq('usuario_id', userId)
+    .order('creado_en', { ascending: false });
 
-        supabaseAdmin.from('ProfileBand').select(`
-            *, 
-            id_profile,
-             "createdAt",
-             Pais(nombre_pais),     
-             Region(nombre_region), 
-             Comuna(nombre_comuna) 
-             `).eq('user_id', userId),
-        supabaseAdmin.from('ProfilePlace').select(` 
-             *,
-             id_profile,
-              "createdAt",
-                Pais(nombre_pais),     
-             Region(nombre_region), 
-             Comuna(nombre_comuna) 
-             `).eq('user_id', userId),
-    ]);
+  // 2. Manejo de errores
+  if (error) {
+    console.error("Error fetching profiles:", error);
+    throw new Error(`Fallo al obtener perfiles: ${error.message}`);
+  }
 
-    // 2. Manejo de errores
-    if (artistsRes.error || bandsRes.error || placesRes.error) {
-        console.error("Error fetching profiles:", artistsRes.error || bandsRes.error || placesRes.error);
-        throw new Error(`Fallo al obtener perfiles: ${artistsRes.error?.message || bandsRes.error?.message || placesRes.error?.message}`);
-    }
+  if (!data) return [];
 
-    let allProfiles: Profile[] = [];
+  // 3. Mapear cada perfil según su tipo
+  const allProfiles: Profile[] = data.map((p: any) => {
+    // Datos base comunes
+    const baseData = {
+      countryId: p.Pais?.nombre_pais || '',
+      regionId: p.Region?.nombre_region || '',
+      cityId: p.Comuna?.nombre_comuna || '',
+      perfil_visible: p.perfil_visible || true,
+      email: p.email || '',
+      updateAt: p.actualizado_en || p.creado_en
+    };
 
-    // 3. Mapeo y tipado de perfiles de Artista (¡CORREGIDO!)
-    if (artistsRes.data) {
-        allProfiles = allProfiles.concat(artistsRes.data.map(p => ({
-            // Usamos el ID correcto de la tabla de artista
-            id: p.id_profile, 
-            type: 'artist' as ProfileType,
-            created_at: p.createdAt, // Usamos el campo de fecha correcto
-            data: {
-                // Mapeo explícito de DB -> Interfaz ArtistData
-                name: p.nombre_artistico,
-                phone: p.telefono_contacto,
-                email: p.email,
-                countryId: p.Pais.nombre_pais,
-                regionId: p.Region.nombre_region,
-                cityId: p.Comuna.nombre_comuna,
-                 image_url: p.image_url,
-            } as ArtistData, 
-        })));
-    }
+    // Según el tipo de perfil, construir la data específica
+    switch (p.tipo_perfil) {
+      case 'artista':
+        return {
+          id: p.id_perfil,
+          type: 'artist' as ProfileType,
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            name: p.nombre,
+            phone: p.telefono_contacto || '',
+            image_url: p.imagen_url || '',
+            tipo_perfil: p.tipo_perfil,
+            ...p.artista_data  // Merge con datos específicos del artista
+          } as ArtistData
+        };
 
-    // 4. Mapeo y tipado de perfiles de Banda (¡CORREGIDO!)
-    if (bandsRes.data) {
-        allProfiles = allProfiles.concat(bandsRes.data.map(p => ({
-            id: p.id_profile, // Usamos el ID correcto de la tabla
-            type: 'band' as ProfileType,
-            created_at: p.createdAt,
-            data: {
-                // Mapeo explícito de DB -> Interfaz BandData
-                band_name: p.nombre_banda,
-                style: p.estilo_banda,
-                music_type: p.tipo_musica,
-                is_tribute: p.es_tributo,
-                contact_phone: p.telefono_contacto,
-                cityId: p.Comuna.nombre_comuna,
-                regionId: p.Region.nombre_region,
-                countryId: p.Pais.nombre_pais,
-                photo_url: p.foto_url,
-                video_url: p.video_url,
-            } as BandData,
-        })));
-    }
+      case 'banda':
+        return {
+          id: p.id_perfil,
+          type: 'band' as ProfileType,
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            band_name: p.nombre,
+            style: p.banda_data?.estilo_banda || '',
+            music_type: p.banda_data?.tipo_musica || '',
+            is_tribute: p.banda_data?.es_tributo || false,
+            contact_phone: p.telefono_contacto || '',
+            photo_url: p.imagen_url || '',
+            video_url: p.video_url || '',
+            integrante: p.banda_data?.integrantes || [],
+            tipo_perfil: p.tipo_perfil,
+            ...p.banda_data  // Mantener otros datos de banda_data
+          } as BandData
+        };
 
-    // 5. Mapeo y tipado de perfiles de Local (¡CORREGIDO!)
-    if (placesRes.data) {
-        allProfiles = allProfiles.concat(placesRes.data.map(p => ({
-            id: p.id_profile, // Usamos el ID correcto de la tabla
-            type: 'place' as ProfileType,
-            created_at: p.createdAt,
-            data: {
-                // Mapeo explícito de DB -> Interfaz PlaceData
-                // mismos nombres para la db e interfaz
-                place_name: p.nombre_local,
-                address: p.direccion,
-                cityId: p.Comuna.nombre_comuna,
-                regionId: p.Region.nombre_region,
-                countryId: p.Pais.nombre_pais,
-                phone: p.telefono_local,
-                place_type: p.tipo_establecimiento,
-                lat: p.latitud,
-                lng: p.longitud,
-                photo_url: p.foto_url,
-                video_url: p.video_url,
-                 singer: p.mail_cantante,
-                 band: p.mail_grupo,
-                 actor: p.mail_actor,
-                 comedian: p.mail_humorista,
-                 impersonator: p.mail_dobles,
-                 tribute: p.mail_tributo,
-            } as PlaceData,
-        })));
-    }
+      case 'local':
+        // Para los booleanos, necesitamos consultar la tabla de intereses
+        // Por ahora los dejamos como false (después los implementarás)
+        return {
+          id: p.id_perfil,
+          type: 'place' as ProfileType,
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            place_name: p.nombre,
+            address: p.direccion || '',
+            phone: p.telefono_contacto || '',
+            place_type: p.local_data?.tipo_establecimiento as any || 'other',
+            lat: p.lat || 0,
+            lng: p.lon || 0,
+            photo_url: p.imagen_url || '',
+            video_url: p.video_url || '',
+            singer: false,  // Por defecto false (luego con intereses)
+            band: false,
+            actor: false,
+            comedian: false,
+            impersonator: false,
+            tribute: false,
+            tipo_perfil: p.tipo_perfil,
+            ...p.local_data  // Mantener otros datos de local_data
+          } as PlaceData
+        };
 
-    // 6. Ordenar por fecha de creación
-    allProfiles.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    
-    return allProfiles;
+      case 'productor':
+      case 'representante':
+        // Para los nuevos tipos, por ahora los mapeamos como artistas
+        // o puedes crear nuevas interfaces después
+        return {
+          id: p.id_perfil,
+          type: 'artist' as ProfileType, // Temporal
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            name: p.nombre,
+            phone: p.telefono_contacto || '',
+            image_url: p.imagen_url || '',
+            tipo_perfil: p.tipo_perfil,
+            ...(p.tipo_perfil === 'productor' ? p.productor_data : p.representante_data)
+          } as ArtistData
+        };
+
+      default:
+        // Tipo desconocido, usar datos mínimos
+        return {
+          id: p.id_perfil,
+          type: 'artist' as ProfileType,
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            name: p.nombre,
+            phone: p.telefono_contacto || '',
+            image_url: p.imagen_url || '',
+            tipo_perfil: p.tipo_perfil || 'artista'
+          } as ArtistData
+        };
+    }
+  });
+
+  return allProfiles;
 };
 
 

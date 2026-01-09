@@ -30,7 +30,7 @@ export default function ProfileManager({
 }: ProfileManagerProps) {
 
   const [profiles, setProfiles] = useState(initialProfiles);
-  const [selectedType, setSelectedType] = useState<'artist' | 'band' | 'place' | null>(null);
+  const [selectedType, setSelectedType] = useState<'artist' | 'band' | 'place' |'representative'|'producer' | null>(null);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
 
   const loadProfiles = async () => {

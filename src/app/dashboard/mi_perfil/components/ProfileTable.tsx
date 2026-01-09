@@ -67,6 +67,7 @@ export default function ProfileCards({ profiles, onRefresh, onEdit, geoData }: P
       case 'artist': return (p.data as any).name || 'Sin nombre';
       case 'band': return (p.data as any).band_name || 'Sin nombre';
       case 'place': return (p.data as any).place_name || 'Sin nombre';
+      default: return 'Sin nombre';
     }
   };
 

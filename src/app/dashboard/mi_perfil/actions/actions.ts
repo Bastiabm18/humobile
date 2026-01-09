@@ -47,27 +47,25 @@ export async function getGeoData(): Promise<GeoData> {
 // 3. FUNCIONES DE CREACIÓN ESPECÍFICAS
 // ===========================================
 
-/**
- * Crea un perfil de Artista.
- */
 export async function createArtistProfile(userId: string, data: ArtistData) {
     const supabaseAdmin = getSupabaseAdmin();
     
-    // Mapeo basado en la interfaz ArtistData (usa IDs geográficos)
     const mappedData = {
-        user_id: userId,
-        nombre_artistico: data.name,
+        usuario_id: userId,
+        tipo_perfil: 'artista',
+        nombre: data.name,
         email: data.email, 
         telefono_contacto: data.phone,
         id_comuna: data.cityId, 
         id_region: data.regionId,
         id_pais: data.countryId,
-        image_url: data.image_url,
+        imagen_url: data.image_url,
         perfil_visible: data.perfil_visible,
+        artista_data: {}  // JSONB vacío para datos específicos
     };
     
-     const { error } = await supabaseAdmin.from('ProfileArtist').insert([mappedData]);
-     if (error) throw new Error(error.message);
+    const { error } = await supabaseAdmin.from('perfil').insert([mappedData]);
+    if (error) throw new Error(error.message);
     
     console.log(`[DB OPERATION] Perfil de Artista creado para ${userId}`);
 }
@@ -76,26 +74,29 @@ export async function createArtistProfile(userId: string, data: ArtistData) {
  * Crea un perfil de Banda.
  */
 export async function createBandProfile(userId: string, data: BandData) {
-    // Mapeo basado en la interfaz BandData (usa NOMBRES geográficos)
     const supabaseAdmin = getSupabaseAdmin();
     
     const mappedData = {
-        user_id: userId,
-        nombre_banda: data.band_name,
-        estilo_banda: data.style,
-        tipo_musica: data.music_type,
-        es_tributo: data.is_tribute,
+        usuario_id: userId,
+        tipo_perfil: 'banda',
+        nombre: data.band_name,
+        email: data.email,
         telefono_contacto: data.contact_phone,
         id_comuna: data.cityId, 
         id_region: data.regionId,
         id_pais: data.countryId,
-        foto_url: data.photo_url,
+        imagen_url: data.photo_url,
         video_url: data.video_url,
-        email:data.email
+        banda_data: {
+            estilo_banda: data.style,
+            tipo_musica: data.music_type,
+            es_tributo: data.is_tribute,
+            integrantes: data.integrante || []
+        }
     };
     
-     const { error } = await supabaseAdmin.from('ProfileBand').insert([mappedData]);
-     if (error) throw new Error(error.message);
+    const { error } = await supabaseAdmin.from('perfil').insert([mappedData]);
+    if (error) throw new Error(error.message);
 
     console.log(`[DB OPERATION] Perfil de Banda creado para ${userId}`);
 }
@@ -104,41 +105,89 @@ export async function createBandProfile(userId: string, data: BandData) {
  * Crea un perfil de Local.
  */
 export async function createPlaceProfile(userId: string, data: PlaceData) {
-    // Mapeo basado en la interfaz PlaceData
     const supabaseAdmin = getSupabaseAdmin();
     
     const mappedData = {
-        user_id: userId,
-        nombre_local: data.place_name,
+        usuario_id: userId,
+        tipo_perfil: 'local',
+        nombre: data.place_name,
+        email: data.email,
         direccion: data.address,
-        telefono_local: data.phone,
-        tipo_establecimiento: data.place_type,
-        latitud: data.lat,
-        longitud: data.lng,
-        foto_url: data.photo_url,
-        video_url: data.video_url,
+        lat: data.lat,
+        lon: data.lng,
+        telefono_contacto: data.phone,
         id_comuna: data.cityId, 
         id_region: data.regionId,
         id_pais: data.countryId,
-        mail_cantante: data.singer,
-        mail_grupo: data.band,
-        mail_actor: data.actor,
-        mail_humorista: data.comedian,
-        mail_dobles: data.impersonator,
-        mail_tributo: data.tribute,
-        email:data.email
-
+        imagen_url: data.photo_url,
+        video_url: data.video_url,
+        local_data: {
+            tipo_establecimiento: data.place_type,
+            telefono_local: data.phone
+        }
     };
 
-     const { error } = await supabaseAdmin.from('ProfilePlace').insert([mappedData]); 
-     if (error) throw new Error(error.message);
+    const { error } = await supabaseAdmin.from('perfil').insert([mappedData]);
+    if (error) throw new Error(error.message);
 
     console.log(`[DB OPERATION] Perfil de Local creado para ${userId}`);
+
+    // OPCIONAL: Insertar intereses si los tienes en data
+    // await insertPlaceIntereses(profileId, data);
 }
 
+/**
+ * Crea un perfil de Productor.
+ */
+export async function createProducerProfile(userId: string, data: any) {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    const mappedData = {
+        usuario_id: userId,
+        tipo_perfil: 'productor',
+        nombre: data.name,
+        email: data.email,
+        telefono_contacto: data.phone,
+        id_comuna: data.cityId, 
+        id_region: data.regionId,
+        id_pais: data.countryId,
+        imagen_url: data.image_url,
+        productor_data: data.productorData || {}
+    };
+    
+    const { error } = await supabaseAdmin.from('perfil').insert([mappedData]);
+    if (error) throw new Error(error.message);
+    
+    console.log(`[DB OPERATION] Perfil de Productor creado para ${userId}`);
+}
+
+/**
+ * Crea un perfil de Representante.
+ */
+export async function createRepresentativeProfile(userId: string, data: any) {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    const mappedData = {
+        usuario_id: userId,
+        tipo_perfil: 'representante',
+        nombre: data.name,
+        email: data.email,
+        telefono_contacto: data.phone,
+        id_comuna: data.cityId, 
+        id_region: data.regionId,
+        id_pais: data.countryId,
+        imagen_url: data.image_url,
+        representante_data: data.representativeData || {}
+    };
+    
+    const { error } = await supabaseAdmin.from('perfil').insert([mappedData]);
+    if (error) throw new Error(error.message);
+    
+    console.log(`[DB OPERATION] Perfil de Representante creado para ${userId}`);
+}
 
 // ===========================================
-// 4. FUNCIÓN PRINCIPAL DE CREACIÓN (Router)
+// FUNCIÓN PRINCIPAL DE CREACIÓN (Router)
 // ===========================================
 
 /**
@@ -154,210 +203,296 @@ export const createProfile = async (userId: string, type: ProfileType, data: any
             break; 
         case 'place':
             await createPlaceProfile(userId, data as PlaceData);
+            break;
+        case 'producer':
+            await createProducerProfile(userId, data);
+            break;
+        case 'representative':
+            await createRepresentativeProfile(userId, data);
             break; 
         default:
             throw new Error(`Tipo de perfil no soportado: ${type}`);
     }
 };
+
 export const deleteProfile = async (profileId: string, type: ProfileType) => {
     const supabaseAdmin = getSupabaseAdmin(); 
     
-    switch (type) {
-        case 'artist':
-            const { error: artistError } = await supabaseAdmin
-                .from('ProfileArtist')
-                .delete()
-                .eq('id_profile', profileId); // 
-            
-            if (artistError) {
-                console.error("DELETE ARTIST PROFILE ERROR:", artistError);
-                throw new Error(`Fallo al eliminar el perfil de artista: ${artistError.message}`);
-            }
-            break; 
-            
-        case 'band':
-            const { error: bandError } = await supabaseAdmin
-                .from('ProfileBand') // 
-                .delete()
-                .eq('id_profile', profileId); //
-            
-            if (bandError) {
-                console.error("DELETE BAND PROFILE ERROR:", bandError);
-                throw new Error(`Fallo al eliminar el perfil de banda: ${bandError.message}`);
-            }
-            break; 
-            
-        case 'place':
-            const { error: placeError } = await supabaseAdmin
-                .from('ProfilePlace') // 
-                .delete()
-                .eq('id_profile', profileId);
-            
-            if (placeError) {
-                console.error("DELETE PLACE PROFILE ERROR:", placeError);
-                throw new Error(`Fallo al eliminar el perfil de local: ${placeError.message}`);
-            }
-            break; 
-            
-        default:
-            throw new Error(`Tipo de perfil no soportado: ${type}`);
+    // Mapear ProfileType a tipo_perfil
+    const tipoPerfilMap: Record<ProfileType, string> = {
+        'artist': 'artista',
+        'band': 'banda',
+        'place': 'local',
+        'producer': 'productor',
+        'representative': 'representante'
+    };
+    
+    const tipoPerfil = tipoPerfilMap[type];
+    
+    if (!tipoPerfil) {
+        throw new Error(`Tipo de perfil no soportado: ${type}`);
+    }
+    
+    const { error } = await supabaseAdmin
+        .from('perfil')
+        .delete()
+        .eq('id_perfil', profileId)
+        .eq('tipo_perfil', tipoPerfil);
+    
+    if (error) {
+        console.error(`DELETE ${type.toUpperCase()} PROFILE ERROR:`, error);
+        throw new Error(`Fallo al eliminar el perfil de ${type}: ${error.message}`);
     }
     
     console.log(`[DB OPERATION] Perfil ${type} eliminado: ${profileId}`);
 };
 
-export const updateProfile = async (userId: string, type: ProfileType, data: any) => {
-
-        switch (type) {
-            case 'artist':
-            await updateArtistProfile(userId, data as ArtistData);
+export const updateProfile = async (profileId: string, type: ProfileType, data: any) => {
+    switch (type) {
+        case 'artist':
+            await updateArtistProfile(profileId, data as ArtistData);
             break; 
         case 'band':
-            await updateBandProfile(userId, data as BandData);
+            await updateBandProfile(profileId, data as BandData);
             break; 
         case 'place':
-            await updatePlaceProfile(userId, data as PlaceData);
+            await updatePlaceProfile(profileId, data as PlaceData);
+            break;
+        case 'producer':
+            await updateProducerProfile(profileId, data);
+            break;
+        case 'representative':
+            await updateRepresentativeProfile(profileId, data);
             break; 
         default:
             throw new Error(`Tipo de perfil no soportado: ${type}`);
-        }
-
+    }
 };
 
 // ===========================================
-// 5. FUNCIONES DE ACTUALIZACIÓN ESPECÍFICAS
+// FUNCIONES DE ACTUALIZACIÓN ESPECÍFICAS
 // ===========================================
 
 /**
  * Actualiza un perfil de Artista.
  */
-export async function updateArtistProfile(userId: string, data: ArtistData) {
+export async function updateArtistProfile(profileId: string, data: ArtistData) {
     const supabaseAdmin = getSupabaseAdmin();
     
-    // Verificar que el perfil existe y pertenece al usuario
+    // Verificar que el perfil existe
     const { data: existingProfile, error: fetchError } = await supabaseAdmin
-        .from('ProfileArtist')
-        .select('id_profile')
-        .eq('id_profile', userId) // Asumiendo que ArtistData tiene un campo 'id'
+        .from('perfil')
+        .select('id_perfil')
+        .eq('id_perfil', profileId)
+        .eq('tipo_perfil', 'artista')
         .single();
 
     if (fetchError || !existingProfile) {
-        throw new Error('Perfil no encontrado o no tienes permisos para editarlo');
+        throw new Error('Perfil de artista no encontrado');
     }
 
-    // Mapeo basado en la interfaz ArtistData
     const mappedData = {
-        nombre_artistico: data.name,
+        nombre: data.name,
         email: data.email, 
         telefono_contacto: data.phone,
         id_comuna: data.cityId, 
         id_region: data.regionId,
         id_pais: data.countryId,
-        image_url: data.image_url,
-        updatedAt: new Date().toISOString(),
+        imagen_url: data.image_url,
+        perfil_visible: data.perfil_visible,
+        actualizado_en: new Date().toISOString(),
+        artista_data: {}  // Aquí puedes agregar datos específicos si los tienes
     };
     
     const { error } = await supabaseAdmin
-        .from('ProfileArtist')
+        .from('perfil')
         .update(mappedData)
-        .eq('id_profile', userId);
+        .eq('id_perfil', profileId)
+        .eq('tipo_perfil', 'artista');
     
     if (error) throw new Error(error.message);
     
-    console.log(`[DB OPERATION] Perfil de Artista actualizado: ${userId}`);
+    console.log(`[DB OPERATION] Perfil de Artista actualizado: ${profileId}`);
 }
 
 /**
  * Actualiza un perfil de Banda.
  */
-export async function updateBandProfile(userId: string, data: BandData) {
+export async function updateBandProfile(profileId: string, data: BandData) {
     const supabaseAdmin = getSupabaseAdmin();
     
-    // Verificar que el perfil existe y pertenece al usuario
+    // Verificar que el perfil existe
     const { data: existingProfile, error: fetchError } = await supabaseAdmin
-        .from('ProfileBand')
-        .select('id_profile')
-        .eq('id_profile', userId) // Asumiendo que BandData tiene un campo 'id'
+        .from('perfil')
+        .select('id_perfil')
+        .eq('id_perfil', profileId)
+        .eq('tipo_perfil', 'banda')
         .single();
 
     if (fetchError || !existingProfile) {
-        throw new Error('Perfil no encontrado o no tienes permisos para editarlo');
+        throw new Error('Perfil de banda no encontrado');
     }
 
     const mappedData = {
-        nombre_banda: data.band_name,
-        estilo_banda: data.style,
-        tipo_musica: data.music_type,
-        es_tributo: data.is_tribute,
+        nombre: data.band_name,
+        email: data.email,
         telefono_contacto: data.contact_phone,
         id_comuna: data.cityId, 
         id_region: data.regionId,
         id_pais: data.countryId,
-        foto_url: data.photo_url,
+        imagen_url: data.photo_url,
         video_url: data.video_url,
-        updatedAt: data.updateAt
+        actualizado_en: data.updateAt,
+        banda_data: {
+            estilo_banda: data.style,
+            tipo_musica: data.music_type,
+            es_tributo: data.is_tribute,
+            integrantes: data.integrante || []
+        }
     };
     
     const { error } = await supabaseAdmin
-        .from('ProfileBand')
+        .from('perfil')
         .update(mappedData)
-        .eq('id_profile', userId)
-
+        .eq('id_perfil', profileId)
+        .eq('tipo_perfil', 'banda');
     
     if (error) throw new Error(error.message);
 
-    console.log(`[DB OPERATION] Perfil de Banda actualizado: ${userId}`);
+    console.log(`[DB OPERATION] Perfil de Banda actualizado: ${profileId}`);
 }
 
 /**
  * Actualiza un perfil de Local.
  */
-export async function updatePlaceProfile(userId: string, data: PlaceData) {
+export async function updatePlaceProfile(profileId: string, data: PlaceData) {
     const supabaseAdmin = getSupabaseAdmin();
     
-    // Verificar que el perfil existe y pertenece al usuario
+    // Verificar que el perfil existe
     const { data: existingProfile, error: fetchError } = await supabaseAdmin
-        .from('ProfilePlace')
-        .select('id_profile')
-        .eq('id_profile', userId)
-  
+        .from('perfil')
+        .select('id_perfil')
+        .eq('id_perfil', profileId)
+        .eq('tipo_perfil', 'local')
         .single();
 
     if (fetchError || !existingProfile) {
-        throw new Error('Perfil no encontrado o no tienes permisos para editarlo');
+        throw new Error('Perfil de local no encontrado');
     }
 
     const mappedData = {
-        nombre_local: data.place_name,
+        nombre: data.place_name,
+        email: data.email,
         direccion: data.address,
-        telefono_local: data.phone,
-        tipo_establecimiento: data.place_type,
-        latitud: data.lat,
-        longitud: data.lng,
-        foto_url: data.photo_url,
-        video_url: data.video_url,
+        lat: data.lat,
+        lon: data.lng,
+        telefono_contacto: data.phone,
         id_comuna: data.cityId, 
         id_region: data.regionId,
         id_pais: data.countryId,
-        mail_cantante: data.singer,
-        mail_grupo: data.band,
-        mail_actor: data.actor,
-        mail_humorista: data.comedian,
-        mail_dobles: data.impersonator,
-        mail_tributo: data.tribute,
-        updatedAt: data.updateAt,
+        imagen_url: data.photo_url,
+        video_url: data.video_url,
+        perfil_visible: data.perfil_visible,
+        actualizado_en: data.updateAt,
+        local_data: {
+            tipo_establecimiento: data.place_type,
+            telefono_local: data.phone
+        }
     };
 
     const { error } = await supabaseAdmin
-        .from('ProfilePlace')
+        .from('perfil')
         .update(mappedData)
-        .eq('id_profile', userId)
-  
+        .eq('id_perfil', profileId)
+        .eq('tipo_perfil', 'local');
+    
     if (error) throw new Error(error.message);
 
-    console.log(`[DB OPERATION] Perfil de Local actualizado: ${userId}`);
+    console.log(`[DB OPERATION] Perfil de Local actualizado: ${profileId}`);
+
+    // OPCIONAL: Actualizar intereses si los implementas
+    // await updatePlaceIntereses(profileId, data);
 }
 
+/**
+ * Actualiza un perfil de Productor.
+ */
+export async function updateProducerProfile(profileId: string, data: any) {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    const { data: existingProfile, error: fetchError } = await supabaseAdmin
+        .from('perfil')
+        .select('id_perfil')
+        .eq('id_perfil', profileId)
+        .eq('tipo_perfil', 'productor')
+        .single();
+
+    if (fetchError || !existingProfile) {
+        throw new Error('Perfil de productor no encontrado');
+    }
+
+    const mappedData = {
+        nombre: data.name,
+        email: data.email,
+        telefono_contacto: data.phone,
+        id_comuna: data.cityId, 
+        id_region: data.regionId,
+        id_pais: data.countryId,
+        imagen_url: data.image_url,
+        actualizado_en: new Date().toISOString(),
+        productor_data: data.productorData || {}
+    };
+    
+    const { error } = await supabaseAdmin
+        .from('perfil')
+        .update(mappedData)
+        .eq('id_perfil', profileId)
+        .eq('tipo_perfil', 'productor');
+    
+    if (error) throw new Error(error.message);
+    
+    console.log(`[DB OPERATION] Perfil de Productor actualizado: ${profileId}`);
+}
+
+/**
+ * Actualiza un perfil de Representante.
+ */
+export async function updateRepresentativeProfile(profileId: string, data: any) {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    const { data: existingProfile, error: fetchError } = await supabaseAdmin
+        .from('perfil')
+        .select('id_perfil')
+        .eq('id_perfil', profileId)
+        .eq('tipo_perfil', 'representante')
+        .single();
+
+    if (fetchError || !existingProfile) {
+        throw new Error('Perfil de representante no encontrado');
+    }
+
+    const mappedData = {
+        nombre: data.name,
+        email: data.email,
+        telefono_contacto: data.phone,
+        id_comuna: data.cityId, 
+        id_region: data.regionId,
+        id_pais: data.countryId,
+        imagen_url: data.image_url,
+        actualizado_en: new Date().toISOString(),
+        representante_data: data.representativeData || {}
+    };
+    
+    const { error } = await supabaseAdmin
+        .from('perfil')
+        .update(mappedData)
+        .eq('id_perfil', profileId)
+        .eq('tipo_perfil', 'representante');
+    
+    if (error) throw new Error(error.message);
+    
+    console.log(`[DB OPERATION] Perfil de Representante actualizado: ${profileId}`);
+}
 
 // ===========================================
 // 2. FUNCIÓN DE LECTURA (COMBINADA)
@@ -370,137 +505,141 @@ export async function updatePlaceProfile(userId: string, data: PlaceData) {
  * @returns Array combinado de todos los perfiles del usuario.
  */
 export const getProfiles = async (userId: string): Promise<Profile[]> => {
-    const supabaseAdmin = getSupabaseAdmin();
-    
-    // 1. Ejecutar consultas concurrentemente en las tres tablas, filtrando por user_id
-    const [artistsRes, bandsRes, placesRes] = await Promise.all([
-        // Incluimos todas las columnas necesarias para el mapeo
-      supabaseAdmin.from('ProfileArtist').select(`
-            *, 
-            id_profile, 
-            "createdAt",
-            Pais(nombre_pais),     
-            Region(nombre_region), 
-            Comuna(nombre_comuna) 
-        `).eq('user_id', userId),
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  // 1. Consulta única a la tabla perfil
+  const { data, error } = await supabaseAdmin
+    .from('perfil')
+    .select(`
+      *,
+      Pais(nombre_pais),
+      Region(nombre_region),
+      Comuna(nombre_comuna)
+    `)
+    .eq('usuario_id', userId)
+    .order('creado_en', { ascending: false });
 
-        supabaseAdmin.from('ProfileBand').select(`
-            *, 
-            id_profile,
-             "createdAt",
-             Pais(nombre_pais),     
-             Region(nombre_region), 
-             Comuna(nombre_comuna),
-              integrante!left(
-                              id_artista,
-                              estado,
-                              tipo,
-                              ProfileArtist(id_profile, nombre_artistico)
-                            ) 
-             `).eq('user_id', userId)
-               .eq('integrante.estado', 'activo'),
-        supabaseAdmin.from('ProfilePlace').select(` 
-             *,
-             id_profile,
-              "createdAt",
-                Pais(nombre_pais),     
-             Region(nombre_region), 
-             Comuna(nombre_comuna) 
-             `).eq('user_id', userId),
-    ]);
+  // 2. Manejo de errores
+  if (error) {
+    console.error("Error fetching profiles:", error);
+    throw new Error(`Fallo al obtener perfiles: ${error.message}`);
+  }
 
-    // 2. Manejo de errores
-    if (artistsRes.error || bandsRes.error || placesRes.error) {
-        console.error("Error fetching profiles:", artistsRes.error || bandsRes.error || placesRes.error);
-        throw new Error(`Fallo al obtener perfiles: ${artistsRes.error?.message || bandsRes.error?.message || placesRes.error?.message}`);
-    }
+  if (!data) return [];
 
-    let allProfiles: Profile[] = [];
+  // 3. Mapear cada perfil según su tipo
+  const allProfiles: Profile[] = data.map((p: any) => {
+    // Datos base comunes
+    const baseData = {
+      countryId: p.Pais?.nombre_pais || '',
+      regionId: p.Region?.nombre_region || '',
+      cityId: p.Comuna?.nombre_comuna || '',
+      perfil_visible: p.perfil_visible || true,
+      email: p.email || '',
+      updateAt: p.actualizado_en || p.creado_en
+    };
 
-    // 3. Mapeo y tipado de perfiles de Artista (¡CORREGIDO!)
-    if (artistsRes.data) {
-        allProfiles = allProfiles.concat(artistsRes.data.map(p => ({
-            // Usamos el ID correcto de la tabla de artista
-            id: p.id_profile, 
-            type: 'artist' as ProfileType,
-            created_at: p.createdAt, // Usamos el campo de fecha correcto
-            data: {
-                // Mapeo explícito de DB -> Interfaz ArtistData
-                name: p.nombre_artistico,
-                phone: p.telefono_contacto,
-                email: p.email,
-                countryId: p.Pais.nombre_pais,
-                regionId: p.Region.nombre_region,
-                cityId: p.Comuna.nombre_comuna,
-                image_url: p.image_url,
-                perfil_visible: p.perfil_visible,
-            } as ArtistData, 
-        })));
-    }
+    // Según el tipo de perfil, construir la data específica
+    switch (p.tipo_perfil) {
+      case 'artista':
+        return {
+          id: p.id_perfil,
+          type: 'artist' as ProfileType,
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            name: p.nombre,
+            phone: p.telefono_contacto || '',
+            image_url: p.imagen_url || '',
+            tipo_perfil: p.tipo_perfil,
+            ...p.artista_data  // Merge con datos específicos del artista
+          } as ArtistData
+        };
 
-    // 4. Mapeo y tipado de perfiles de Banda (¡CORREGIDO!)
-    if (bandsRes.data) {
-        allProfiles = allProfiles.concat(bandsRes.data.map(p => ({
-            id: p.id_profile, // Usamos el ID correcto de la tabla
-            type: 'band' as ProfileType,
-            created_at: p.createdAt,
-            data: {
-                // Mapeo explícito de DB -> Interfaz BandData
-                band_name: p.nombre_banda,
-                style: p.estilo_banda,
-                music_type: p.tipo_musica,
-                is_tribute: p.es_tributo,
-                contact_phone: p.telefono_contacto,
-                cityId: p.Comuna.nombre_comuna,
-                regionId: p.Region.nombre_region,
-                countryId: p.Pais.nombre_pais,
-                photo_url: p.foto_url,
-                video_url: p.video_url,
-                tipo_perfil:p.tipo_perfil,
-                integrante: p.integrante.map((i: any) => ({
-                    id: i.id_artista,
-                    estado: i.estado,
-                    tipo: i.tipo,
-                    nombre_integrante: i.ProfileArtist.nombre_artistico,
-                })),
-            } as BandData,
-        })));
-    }
+      case 'banda':
+        return {
+          id: p.id_perfil,
+          type: 'band' as ProfileType,
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            band_name: p.nombre,
+            style: p.banda_data?.estilo_banda || '',
+            music_type: p.banda_data?.tipo_musica || '',
+            is_tribute: p.banda_data?.es_tributo || false,
+            contact_phone: p.telefono_contacto || '',
+            photo_url: p.imagen_url || '',
+            video_url: p.video_url || '',
+            integrante: p.banda_data?.integrantes || [],
+            tipo_perfil: p.tipo_perfil,
+            ...p.banda_data  // Mantener otros datos de banda_data
+          } as BandData
+        };
 
-    // 5. Mapeo y tipado de perfiles de Local (¡CORREGIDO!)
-    if (placesRes.data) {
-        allProfiles = allProfiles.concat(placesRes.data.map(p => ({
-            id: p.id_profile, // Usamos el ID correcto de la tabla
-            type: 'place' as ProfileType,
-            created_at: p.createdAt,
-            data: {
-                // Mapeo explícito de DB -> Interfaz PlaceData
-                // mismos nombres para la db e interfaz
-                place_name: p.nombre_local,
-                address: p.direccion,
-                cityId: p.Comuna.nombre_comuna,
-                regionId: p.Region.nombre_region,
-                countryId: p.Pais.nombre_pais,
-                phone: p.telefono_local,
-                place_type: p.tipo_establecimiento,
-                lat: p.latitud,
-                lng: p.longitud,
-                photo_url: p.foto_url,
-                video_url: p.video_url,
-                 singer: p.mail_cantante,
-                 band: p.mail_grupo,
-                 actor: p.mail_actor,
-                 comedian: p.mail_humorista,
-                 impersonator: p.mail_dobles,
-                 tribute: p.mail_tributo,
-            } as PlaceData,
-        })));
-    }
+      case 'local':
+        // Para los booleanos, necesitamos consultar la tabla de intereses
+        // Por ahora los dejamos como false (después los implementarás)
+        return {
+          id: p.id_perfil,
+          type: 'place' as ProfileType,
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            place_name: p.nombre,
+            address: p.direccion || '',
+            phone: p.telefono_contacto || '',
+            place_type: p.local_data?.tipo_establecimiento as any || 'other',
+            lat: p.lat || 0,
+            lng: p.lon || 0,
+            photo_url: p.imagen_url || '',
+            video_url: p.video_url || '',
+            singer: false,  // Por defecto false (luego con intereses)
+            band: false,
+            actor: false,
+            comedian: false,
+            impersonator: false,
+            tribute: false,
+            tipo_perfil: p.tipo_perfil,
+            ...p.local_data  // Mantener otros datos de local_data
+          } as PlaceData
+        };
 
-    // 6. Ordenar por fecha de creación
-    allProfiles.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    
-    return allProfiles;
+      case 'productor':
+      case 'representante':
+        // Para los nuevos tipos, por ahora los mapeamos como artistas
+        // o puedes crear nuevas interfaces después
+        return {
+          id: p.id_perfil,
+          type: 'artist' as ProfileType, // Temporal
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            name: p.nombre,
+            phone: p.telefono_contacto || '',
+            image_url: p.imagen_url || '',
+            tipo_perfil: p.tipo_perfil,
+            ...(p.tipo_perfil === 'productor' ? p.productor_data : p.representante_data)
+          } as ArtistData
+        };
+
+      default:
+        // Tipo desconocido, usar datos mínimos
+        return {
+          id: p.id_perfil,
+          type: 'artist' as ProfileType,
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            name: p.nombre,
+            phone: p.telefono_contacto || '',
+            image_url: p.imagen_url || '',
+            tipo_perfil: p.tipo_perfil || 'artista'
+          } as ArtistData
+        };
+    }
+  });
+
+  return allProfiles;
 };
 
 
@@ -510,18 +649,18 @@ export const getProfiles = async (userId: string): Promise<Profile[]> => {
 export const getPerfilesVisibles = async (): Promise<Profile[]> => {
   const supabaseAdmin = getSupabaseAdmin();
   
-  // SOLO ProfileArtist con perfil_visible = true
+  // Consulta única a tabla perfil filtrando por tipo y visibilidad
   const { data, error } = await supabaseAdmin
-    .from('ProfileArtist')
+    .from('perfil')
     .select(`
-      *, 
-      id_profile, 
-      "createdAt",
-      Pais(nombre_pais),     
-      Region(nombre_region), 
-      Comuna(nombre_comuna) 
+      *,
+      Pais(nombre_pais),
+      Region(nombre_region),
+      Comuna(nombre_comuna)
     `)
-    .eq('perfil_visible', true);
+    .eq('tipo_perfil', 'artista')
+    .eq('perfil_visible', true)
+    .order('nombre');
 
   // Manejo de errores
   if (error) {
@@ -533,28 +672,25 @@ export const getPerfilesVisibles = async (): Promise<Profile[]> => {
     return [];
   }
 
-  // Mapeo solo de artistas visibles
+  // Mapeo de artistas visibles
   const perfilesVisibles: Profile[] = data.map(p => ({
-    id: p.id_profile, 
+    id: p.id_perfil,
     type: 'artist' as ProfileType,
-    created_at: p.createdAt,
+    created_at: p.creado_en,
     data: {
-      name: p.nombre_artistico,
-      phone: p.telefono_contacto,
-      email: p.email,
-      countryId: p.Pais.nombre_pais,
-      regionId: p.Region.nombre_region,
-      cityId: p.Comuna.nombre_comuna,
-      image_url: p.image_url,
+      name: p.nombre,
+      phone: p.telefono_contacto || '',
+      email: p.email || '',
+      countryId: p.Pais?.nombre_pais || '',
+      regionId: p.Region?.nombre_region || '',
+      cityId: p.Comuna?.nombre_comuna || '',
+      image_url: p.imagen_url || '',
       perfil_visible: p.perfil_visible,
-    } as ArtistData,
+      tipo_perfil: p.tipo_perfil,
+      updateAt: p.actualizado_en
+    } as ArtistData
   }));
 
-  // Ordenar por nombre
-  perfilesVisibles.sort((a, b) => 
-    (a.data as ArtistData).name.localeCompare((b.data as ArtistData).name)
-  );
-  
   return perfilesVisibles;
 };
 

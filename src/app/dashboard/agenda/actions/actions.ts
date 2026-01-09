@@ -199,7 +199,7 @@ export async function eliminarBloqueo(eventId: string): Promise<{ success: boole
 
 }
 
-export async function getEventsByProfile(profileId: string, profileType: 'artist' | 'band' | 'place'): Promise<CalendarEvent[]> {
+export async function getEventsByProfile(profileId: string, estadoEvento:string ): Promise<CalendarEvent[]> {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     
@@ -207,6 +207,7 @@ export async function getEventsByProfile(profileId: string, profileType: 'artist
     const { data:eventosDB, error } = await supabaseAdmin
       .rpc('obtener_eventos_calendario',{
         p_id_perfil: profileId,
+         p_estado_filtro: estadoEvento
       });
        if (error) {
       console.error('❌ Error en la función PostgreSQL:', error);
@@ -607,22 +608,22 @@ export async function createEvent(eventData: evento) {
       };
     }
 
-   // Validar que no existan eventos en el mismo rango de fechas para el creador
-const { data: eventosExistentes, error: errorConsulta } = await supabaseAdmin
-  .from('participacion_evento')
-  .select(`
-    evento_id,
-    events!inner(
-      id,
-      title,
-      fecha_hora_ini,
-      fecha_hora_fin
-    )
-  `)
-  .eq('perfil_id', eventData.creator_profile_id)  // Mismo perfil
-  .filter('events.fecha_hora_ini', 'lt', eventData.fecha_hora_fin.toISOString())  // Inicio existente < Fin nuevo
-  .filter('events.fecha_hora_fin', 'gt', eventData.fecha_hora_ini.toISOString());  // Fin existente > Inicio nuevo
-          
+           // Validar que no existan eventos en el mismo rango de fechas para el creador
+          const { data: eventosExistentes, error: errorConsulta } = await supabaseAdmin
+            .from('participacion_evento')
+            .select(`
+              evento_id,
+              events!inner(
+                id,
+                title,
+                fecha_hora_ini,
+                fecha_hora_fin
+              )
+            `)
+            .eq('perfil_id', eventData.creator_profile_id)  // Mismo perfil
+            .filter('events.fecha_hora_ini', 'lt', eventData.fecha_hora_fin.toISOString())  // Inicio existente < Fin nuevo
+            .filter('events.fecha_hora_fin', 'gt', eventData.fecha_hora_ini.toISOString());  // Fin existente > Inicio nuevo
+                    
         if (errorConsulta) {
           console.error('Error al verificar eventos existentes:', errorConsulta);
           return { 
@@ -684,125 +685,23 @@ const { data: eventosExistentes, error: errorConsulta } = await supabaseAdmin
 
     console.log('Evento Id creado:', evento.id);
 
-    // 2. Insertar el creador en participacion_evento
-    await supabaseAdmin
-      .from('participacion_evento')
-      .insert([{
-        evento_id: evento.id,
-        perfil_id: eventData.creator_profile_id,
-        estado: 'confirmado'
-      }]);
+   // 2. El creador siempre participa (y no necesita solicitud)
+    await crearParticipacionEvento(evento.id, eventData.creator_profile_id, 'confirmado');
 
-          // 3. Si el creador es BANDA
-          if (eventData.creator_type === 'band') {
-            try {
-              console.log('Creador es banda, agregando banda e integrantes como participantes');
-
-              // 1. La banda como participante (estado pendiente)
-              await supabaseAdmin
-                .from('participacion_evento')
-                .insert([{
-                  evento_id: evento.id,
-                  perfil_id: eventData.creator_profile_id, // ID de la banda
-                  estado: 'pendiente'
-                }]);
-              
-              // 2. Los integrantes que vienen en eventData
-              const integrantesIds = eventData.integrantes || [];
-              if (integrantesIds.length > 0) {
-                console.log(`Agregando ${integrantesIds.length} integrantes a participacion_evento`);
-
-                const participaciones = integrantesIds.map(id => ({
-                  evento_id: evento.id,
-                  perfil_id: id,
-                  estado: 'pendiente'
-                }));
-              
-                await supabaseAdmin
-                  .from('participacion_evento')
-                  .insert(participaciones);
-              }
-            } catch (error) {
-              console.error('Error al agregar banda e integrantes como participantes:', error);
-            }
-          }
-
-    // 4. Si es un LOCAL y agrega artista solista
-    const artistaId = eventData.id_artista || '';
-    if (artistaId && eventData.creator_type === 'place' && eventData.id_tipo_artista === 'artist') {
-      console.log(`Agregando artista ${eventData.nombre_artista} a participacion_evento`);
-      
-      await supabaseAdmin
-        .from('participacion_evento')
-        .insert([{
-          evento_id: evento.id,
-          perfil_id: artistaId,
-          estado: 'pendiente'
-        }]);
+      // 3. Procesar según tipo de creador
+    switch (eventData.creator_type) {
+      case 'band':
+        await procesarEventoBanda(evento.id, eventData);
+        break;
+        
+      case 'place':
+        await procesarEventoLocal(evento.id, eventData);
+        break;
+        
+      case 'artist':
+        await procesarEventoArtista(evento.id, eventData);
+        break;
     }
-
-    // si es artista o local y agrega local del listado o personalizado
-      const lugarId = eventData.place_profile_id || '';
-      if (lugarId && (eventData.creator_type =='artist' )){
-        console.log('agregando participante para lugar establecido en la pagina ')
-
-       try {
-        const {data, error} = await supabaseAdmin
-          .from('participacion_evento')
-            .insert([{
-              evento_id: evento.id,
-              perfil_id: lugarId,
-              estado: 'pendiente'
-            }]);
-       } catch (error) {
-         console.log('error ',error)
-       }
-        }
-
-
-        // 5. Si es un LOCAL y agrega una BANDA
-    const bandaId = eventData.id_artista || '';
-if (bandaId && eventData.creator_type === 'place' && eventData.id_tipo_artista === 'band') {
-  try {
-    console.log('Local agregando banda e integrantes como participantes');
-    
-    // 1. La banda como participante
-    await supabaseAdmin
-      .from('participacion_evento')
-      .insert([{
-        evento_id: evento.id,
-        perfil_id: bandaId, // ID de la banda invitada
-        estado: 'pendiente'
-      }]);
-    
-    // 2. Buscar integrantes de la banda
-    const { data: integranteData, error: integranteError } = await supabaseAdmin
-      .from('integrante')
-      .select('id_artista')
-      .eq('id_banda', bandaId)
-      .eq('estado', 'activo');
-
-    if (integranteError) {
-      console.error('Error al obtener integrantes:', integranteError);
-    } else if (integranteData && integranteData.length > 0) {
-      console.log(`Encontrados ${integranteData.length} integrantes`);
-      
-      // 3. Los integrantes como participantes
-      const participaciones = integranteData.map(integrante => ({
-        evento_id: evento.id,
-        perfil_id: integrante.id_artista,
-        estado: 'pendiente'
-      }));
-
-      await supabaseAdmin
-        .from('participacion_evento')
-        .insert(participaciones);
-    }
-  } catch (error) {
-    console.error('Error al agregar banda invitada:', error);
-  }
-}
-
 
     
     return { 
@@ -820,6 +719,140 @@ if (bandaId && eventData.creator_type === 'place' && eventData.id_tipo_artista =
   }
 }
 
+
+
+/**
+ * Crea una solicitud de invitación a evento
+ */
+async function crearSolicitudEvento(
+  eventoId: string,
+  creadorId: string,
+  invitadoId: string,
+  tipo: 'invitacion' | 'solicitud' = 'invitacion'
+) {
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  const tipoCodigo = tipo === 'invitacion' ? 'invitacion_evento' : 'solicitud_evento';
+  
+  const { data, error } = await supabaseAdmin
+    .from('solicitud')
+    .insert([{
+      tipo_solicitud_id: (await supabaseAdmin
+        .from('tipo_solicitud')
+        .select('id')
+        .eq('codigo', tipoCodigo)
+        .single()).data?.id,
+      id_creador: creadorId,
+      id_invitado: invitadoId,
+      id_evento_solicitud: eventoId,
+      fecha_expiracion: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 días
+    }])
+    .select()
+    .single();
+    
+  if (error) {
+    console.error(`Error creando solicitud de evento para ${invitadoId}:`, error);
+    return null;
+  }
+  
+  console.log(`✅ Solicitud creada para ${invitadoId}`);
+  return data;
+}
+
+async function crearParticipacionEvento(
+  eventoId: string,
+  perfilId: string,
+  estado: 'pendiente' | 'confirmado' | 'rechazado' = 'pendiente'
+) {
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  const { error } = await supabaseAdmin
+    .from('participacion_evento')
+    .insert([{
+      evento_id: eventoId,
+      perfil_id: perfilId,
+      estado: estado
+    }]);
+    
+  if (error) {
+    console.error(`Error creando participación para ${perfilId}:`, error);
+    return false;
+  }
+  
+  console.log(`✅ Participación creada para ${perfilId}`);
+  return true;
+}
+
+/**
+ * Procesa evento creado por una BANDA
+ */
+async function procesarEventoBanda(eventoId: string, eventData: evento) {
+  console.log('🎸 Procesando evento de banda');
+  
+  // La banda como participante
+  await crearParticipacionEvento(eventoId, eventData.creator_profile_id, 'pendiente');
+  
+  // Integrantes de la banda
+  const integrantesIds = eventData.integrantes || [];
+  for (const integranteId of integrantesIds) {
+    // Crear participación
+    await crearParticipacionEvento(eventoId, integranteId, 'pendiente');
+    
+    // Crear solicitud (la banda invita a sus integrantes)
+    await crearSolicitudEvento(eventoId, eventData.creator_profile_id, integranteId, 'invitacion');
+  }
+  
+  // Si tiene local asignado
+  if (eventData.place_profile_id) {
+    await crearParticipacionEvento(eventoId, eventData.place_profile_id, 'pendiente');
+    await crearSolicitudEvento(eventoId, eventData.creator_profile_id, eventData.place_profile_id, 'invitacion');
+  }
+}
+
+/**
+ * Procesa evento creado por un LOCAL
+ */
+async function procesarEventoLocal(eventoId: string, eventData: evento) {
+  console.log('🏠 Procesando evento de local');
+  
+  if (!eventData.id_artista) return;
+  
+  const artistaId = eventData.id_artista;
+  const esBanda = eventData.id_tipo_artista === 'band';
+  
+  // Artista/Banda invitada
+  await crearParticipacionEvento(eventoId, artistaId, 'pendiente');
+  await crearSolicitudEvento(eventoId, eventData.creator_profile_id, artistaId, 'invitacion');
+  
+  // Si es banda, también invitar a sus integrantes
+  if (esBanda) {
+    const { data: integrantes } = await getSupabaseAdmin()
+      .from('integrante')
+      .select('id_artista')
+      .eq('id_banda', artistaId)
+      .eq('estado', 'activo');
+    
+    if (integrantes) {
+      for (const integrante of integrantes) {
+        await crearParticipacionEvento(eventoId, integrante.id_artista, 'pendiente');
+        await crearSolicitudEvento(eventoId, eventData.creator_profile_id, integrante.id_artista, 'invitacion');
+      }
+    }
+  }
+}
+
+/**
+ * Procesa evento creado por un ARTISTA
+ */
+async function procesarEventoArtista(eventoId: string, eventData: evento) {
+  console.log('🎤 Procesando evento de artista');
+  
+  // Si tiene local asignado
+  if (eventData.place_profile_id) {
+    await crearParticipacionEvento(eventoId, eventData.place_profile_id, 'pendiente');
+    await crearSolicitudEvento(eventoId, eventData.creator_profile_id, eventData.place_profile_id, 'invitacion');
+  }
+}
 
 export const getLugaresVisibles = async (): Promise<Profile[]> => {
 
@@ -950,135 +983,141 @@ export const getArtistasVisibles = async (): Promise<Profile[]> => {
 
 
 export const getProfiles = async (userId: string): Promise<Profile[]> => {
-    const supabaseAdmin = getSupabaseAdmin();
-    
-    // 1. Ejecutar consultas concurrentemente en las tres tablas, filtrando por user_id
-    const [artistsRes, bandsRes, placesRes] = await Promise.all([
-        // Incluimos todas las columnas necesarias para el mapeo
-      supabaseAdmin.from('ProfileArtist').select(`
-            *, 
-            id_profile, 
-            "createdAt",
-            Pais(nombre_pais),     
-            Region(nombre_region), 
-            Comuna(nombre_comuna) 
-        `).eq('user_id', userId),
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  // 1. Consulta única a la tabla perfil
+  const { data, error } = await supabaseAdmin
+    .from('perfil')
+    .select(`
+      *,
+      Pais(nombre_pais),
+      Region(nombre_region),
+      Comuna(nombre_comuna)
+    `)
+    .eq('usuario_id', userId)
+    .order('creado_en', { ascending: false });
 
-        supabaseAdmin.from('ProfileBand').select(`
-            *, 
-            id_profile,
-             "createdAt",
-             Pais(nombre_pais),     
-             Region(nombre_region), 
-             Comuna(nombre_comuna),
-             integrante!left(
-                              id_artista,
-                              estado,
-                              tipo,
-                              ProfileArtist(id_profile, nombre_artistico)
-                            ) 
-             `).eq('user_id', userId)
-               .eq('integrante.estado', 'activo'),
-        supabaseAdmin.from('ProfilePlace').select(` 
-             *,
-             id_profile,
-              "createdAt",
-                Pais(nombre_pais),     
-             Region(nombre_region), 
-             Comuna(nombre_comuna) 
-             `).eq('user_id', userId),
-    ]);
+  // 2. Manejo de errores
+  if (error) {
+    console.error("Error fetching profiles:", error);
+    throw new Error(`Fallo al obtener perfiles: ${error.message}`);
+  }
 
-    // 2. Manejo de errores
-    if (artistsRes.error || bandsRes.error || placesRes.error) {
-        console.error("Error fetching profiles:", artistsRes.error || bandsRes.error || placesRes.error);
-        throw new Error(`Fallo al obtener perfiles: ${artistsRes.error?.message || bandsRes.error?.message || placesRes.error?.message}`);
-    }
+  if (!data) return [];
 
-    let allProfiles: Profile[] = [];
+  // 3. Mapear cada perfil según su tipo
+  const allProfiles: Profile[] = data.map((p: any) => {
+    // Datos base comunes
+    const baseData = {
+      countryId: p.Pais?.nombre_pais || '',
+      regionId: p.Region?.nombre_region || '',
+      cityId: p.Comuna?.nombre_comuna || '',
+      perfil_visible: p.perfil_visible || true,
+      email: p.email || '',
+      updateAt: p.actualizado_en || p.creado_en
+    };
 
-    // 3. Mapeo y tipado de perfiles de Artista (¡CORREGIDO!)
-    if (artistsRes.data) {
-        allProfiles = allProfiles.concat(artistsRes.data.map(p => ({
-            // Usamos el ID correcto de la tabla de artista
-            id: p.id_profile, 
-            type: 'artist' as ProfileType,
-            created_at: p.createdAt, // Usamos el campo de fecha correcto
-            data: {
-                // Mapeo explícito de DB -> Interfaz ArtistData
-                name: p.nombre_artistico,
-                phone: p.telefono_contacto,
-                email: p.email,
-                countryId: p.Pais.nombre_pais,
-                regionId: p.Region.nombre_region,
-                cityId: p.Comuna.nombre_comuna,
-                image_url: p.image_url,
-            } as ArtistData, 
-        })));
-    }
+    // Según el tipo de perfil, construir la data específica
+    switch (p.tipo_perfil) {
+      case 'artista':
+        return {
+          id: p.id_perfil,
+          type: 'artist' as ProfileType,
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            name: p.nombre,
+            phone: p.telefono_contacto || '',
+            image_url: p.imagen_url || '',
+            tipo_perfil: p.tipo_perfil,
+            ...p.artista_data  // Merge con datos específicos del artista
+          } as ArtistData
+        };
 
-    // 4. Mapeo y tipado de perfiles de Banda (¡CORREGIDO!)
-    if (bandsRes.data) {
-        allProfiles = allProfiles.concat(bandsRes.data.map(p => ({
-            id: p.id_profile, // Usamos el ID correcto de la tabla
-            type: 'band' as ProfileType,
-            created_at: p.createdAt,
-            data: {
-                // Mapeo explícito de DB -> Interfaz BandData
-                band_name: p.nombre_banda,
-                style: p.estilo_banda,
-                music_type: p.tipo_musica,
-                is_tribute: p.es_tributo,
-                contact_phone: p.telefono_contacto,
-                cityId: p.Comuna.nombre_comuna,
-                regionId: p.Region.nombre_region,
-                countryId: p.Pais.nombre_pais,
-                photo_url: p.foto_url,
-                video_url: p.video_url,
-                integrante: p.integrante.map((i: any) => ({
-                    id: i.id_artista,
-                    estado: i.estado,
-                    tipo: i.tipo,
-                    nombre_integrante: i.ProfileArtist.nombre_artistico,
-                })),
-            } as BandData,
-        })));
-    }
+      case 'banda':
+        return {
+          id: p.id_perfil,
+          type: 'band' as ProfileType,
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            band_name: p.nombre,
+            style: p.banda_data?.estilo_banda || '',
+            music_type: p.banda_data?.tipo_musica || '',
+            is_tribute: p.banda_data?.es_tributo || false,
+            contact_phone: p.telefono_contacto || '',
+            photo_url: p.imagen_url || '',
+            video_url: p.video_url || '',
+            integrante: p.banda_data?.integrantes || [],
+            tipo_perfil: p.tipo_perfil,
+            ...p.banda_data  // Mantener otros datos de banda_data
+          } as BandData
+        };
 
-    // 5. Mapeo y tipado de perfiles de Local (¡CORREGIDO!)
-    if (placesRes.data) {
-        allProfiles = allProfiles.concat(placesRes.data.map(p => ({
-            id: p.id_profile, // Usamos el ID correcto de la tabla
-            type: 'place' as ProfileType,
-            created_at: p.createdAt,
-            data: {
-                // Mapeo explícito de DB -> Interfaz PlaceData
-                // mismos nombres para la db e interfaz
-                place_name: p.nombre_local,
-                address: p.direccion,
-                cityId: p.Comuna.nombre_comuna,
-                regionId: p.Region.nombre_region,
-                countryId: p.Pais.nombre_pais,
-                phone: p.telefono_local,
-                place_type: p.tipo_establecimiento,
-                lat: p.latitud,
-                lng: p.longitud,
-                photo_url: p.foto_url,
-                video_url: p.video_url,
-                 singer: p.mail_cantante,
-                 band: p.mail_grupo,
-                 actor: p.mail_actor,
-                 comedian: p.mail_humorista,
-                 impersonator: p.mail_dobles,
-                 tribute: p.mail_tributo,
-            } as PlaceData,
-        })));
-    }
+      case 'local':
+        // Para los booleanos, necesitamos consultar la tabla de intereses
+        // Por ahora los dejamos como false (después los implementarás)
+        return {
+          id: p.id_perfil,
+          type: 'place' as ProfileType,
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            place_name: p.nombre,
+            address: p.direccion || '',
+            phone: p.telefono_contacto || '',
+            place_type: p.local_data?.tipo_establecimiento as any || 'other',
+            lat: p.lat || 0,
+            lng: p.lon || 0,
+            photo_url: p.imagen_url || '',
+            video_url: p.video_url || '',
+            singer: false,  // Por defecto false (luego con intereses)
+            band: false,
+            actor: false,
+            comedian: false,
+            impersonator: false,
+            tribute: false,
+            tipo_perfil: p.tipo_perfil,
+            ...p.local_data  // Mantener otros datos de local_data
+          } as PlaceData
+        };
 
-    // 6. Ordenar por fecha de creación
-    allProfiles.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    
-    return allProfiles;
+      case 'productor':
+      case 'representante':
+        // Para los nuevos tipos, por ahora los mapeamos como artistas
+        // o puedes crear nuevas interfaces después
+        return {
+          id: p.id_perfil,
+          type: 'artist' as ProfileType, // Temporal
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            name: p.nombre,
+            phone: p.telefono_contacto || '',
+            image_url: p.imagen_url || '',
+            tipo_perfil: p.tipo_perfil,
+            ...(p.tipo_perfil === 'productor' ? p.productor_data : p.representante_data)
+          } as ArtistData
+        };
+
+      default:
+        // Tipo desconocido, usar datos mínimos
+        return {
+          id: p.id_perfil,
+          type: 'artist' as ProfileType,
+          created_at: p.creado_en,
+          data: {
+            ...baseData,
+            name: p.nombre,
+            phone: p.telefono_contacto || '',
+            image_url: p.imagen_url || '',
+            tipo_perfil: p.tipo_perfil || 'artista'
+          } as ArtistData
+        };
+    }
+  });
+
+  return allProfiles;
 };
 
 export async function updateEvent(eventData: any) {

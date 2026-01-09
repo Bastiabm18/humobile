@@ -16,6 +16,7 @@ import EventBadge from './EventBadge';
 import EventModal from './EventModal';
 import DayTimelineModal from './DayTimelineModal';
 import DesbloquearModal from './DesbloquearModal';
+import { FiCalendar, FiCheckCircle, FiClock } from 'react-icons/fi';
 
 
 
@@ -55,15 +56,17 @@ export default function CalendarView({ profileId, perfil }: { profileId: string,
 
   const [showDateSelectors, setShowDateSelectors] = useState(false);
 
+  const [estadoEvento, setEstadoEvento] = useState('confirmado');
+
   useEffect(() => {
     fetchEvents();
-  }, [profile.id, profile.type]);
+  }, [profile.id, profile.type, estadoEvento]);
 
   const fetchEvents = async () => {
     try {
       setLoading(true);
       setError(null);
-      const creatorEvents = await getEventsByProfile(profile.id, profile.type);
+      const creatorEvents = await getEventsByProfile(profile.id, estadoEvento);
       const uniqueEvents = [...creatorEvents];
       setEvents(uniqueEvents);
     } catch (err: any) {
@@ -214,7 +217,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string,
 
 
         {isToday && (
-          <div className="absolute inset-0 border-2 border-indigo-100 bg-indigo-600 rounded-lg pointer-events-none z-10" />
+          <div className="absolute inset-0 border-2 border-indigo-100 bg-indigo-600/50 rounded-lg pointer-events-none z-10" />
         )}
 
         <div className="relative z-10 h-full">
@@ -401,7 +404,7 @@ const CustomToolbar = (toolbar: any) => {
     
       return (
         <div className=" flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
-          <div className="flex items-center gap-2 order-2 md:order-1">
+          <div className="flex items-center gap-5 order-2 md:order-1">
             <button
               className="rbc-btn rbc-btn-group bg-neutral-800 hover:bg-neutral-700 px-3 py-1.5 rounded-lg"
               onClick={goToBack}
@@ -422,11 +425,40 @@ const CustomToolbar = (toolbar: any) => {
             </button>
           </div>
       
-          <div className="text-lg font-semibold text-white order-1 md:order-2">
+          <div className="text-lg font-semibold flex items-center justify-center flex-col gap-3 mb-6 text-white order-1 md:order-2">
             {toolbar.label}
+            <div className="flex items-center gap-2 order-3">
+              <button
+              
+              onClick={() => setEstadoEvento('')}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === '' ? 'bg-blue-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
+            >
+              <FiCalendar className="h-4 w-4" />
+              Todos
+            </button>
+                
+              <button
+              
+              onClick={() => setEstadoEvento('pendiente')}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === 'pendiente' ? 'bg-yellow-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
+            >
+              <FiClock className="h-4 w-4" />
+              Pendientes
+            </button>
+                
+              <button
+              
+              onClick={() => setEstadoEvento('confirmado')}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === 'confirmado' ? 'bg-green-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
+            >
+              <FiCheckCircle className="h-4 w-4" />
+              Confirmados
+            </button>
           </div>
+          </div>
+
       
-          <div className="flex items-center gap-1 order-3">
+          <div className="flex items-center gap-5 order-3">
             <button
               className={`rbc-btn ${toolbar.view === 'month' ? 'bg-sky-600' : 'bg-neutral-800 hover:bg-neutral-700'} px-3 py-1.5 rounded-lg text-sm`}
               onClick={() => toolbar.onView('month')}
@@ -501,7 +533,7 @@ const CustomToolbar = (toolbar: any) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 md:hidden">
           <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-sm">
             <h3 className="text-white text-lg font-bold mb-4">
-              Gestionar {format(selectedDate, 'dd/MM/yyyy')}
+              Gestiona {format(selectedDate, 'dd/MM/yyyy')}
             </h3>
             
             <div className="flex gap-3 mb-4">

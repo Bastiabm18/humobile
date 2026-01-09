@@ -15,6 +15,8 @@ import { aceptarSolicitud, rechazarSolicitud } from '../actions/actions';
 import { MdOutlineBlock } from 'react-icons/md';
 import { filter } from 'framer-motion/client';
 import { FaTrashCan } from 'react-icons/fa6';
+import RespuestaModal from './RespuestaModal';
+
 
 interface EventosTableProps {
   profile: {
@@ -36,7 +38,7 @@ export default function EventosTable({ profile, onCreateEvent, onBlockDate }: Ev
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('fecha_hora_ini');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-
+  
 
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,6 +48,19 @@ const [actionType, setActionType] = useState<'accept' | 'delete' | 'reject' | nu
 const [eventToAction, setEventToAction] = useState<CalendarEvent | null>(null);
 
 const [statusFilter, setStatusFilter] = useState< string | null>(null);
+
+// para pasar el id del evento a las actions
+const [id_perfil , setid_perfil] = useState(profile.id);
+
+
+// Estado para el modal de respuesta
+const [showRespuestaModal, setShowRespuestaModal] = useState(false);
+const [respuestaModalProps, setRespuestaModalProps] = useState({
+  type: 'success' as 'success' | 'error' | 'warning',
+  title: '',
+  message: '',
+});
+
 
   // Cargar eventos
 
@@ -129,10 +144,10 @@ const getFilterButtonClass = (filterStatus: string | null) => {
   // Obtener color según estado
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case 'pending': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
-      case 'rejected': return 'bg-red-500/20 text-red-300 border-red-500/30';
-      case 'cancelled': return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+      case 'confirmado': return 'bg-green-500/20 text-green-300 border-green-500/30';
+      case 'pendiente': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
+      case 'rechazado': return 'bg-red-500/20 text-red-300 border-red-500/30';
+      case 'vencido': return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
       default: return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
     }
   };
@@ -140,10 +155,10 @@ const getFilterButtonClass = (filterStatus: string | null) => {
   // Obtener ícono según estado
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved': return <FaCheckCircle className="text-green-400" />;
-      case 'pending': return <FaClock className="text-yellow-400" />;
-      case 'rejected': return <FaTimesCircle className="text-red-400" />;
-      case 'cancelled': return <FaTimesCircle className="text-gray-400" />;
+      case 'confirmado': return <FaCheckCircle className="text-green-400" />;
+      case 'pendiente': return <FaClock className="text-yellow-400" />;
+      case 'rechazado': return <FaTimesCircle className="text-red-400" />;
+      case 'vencido': return <FaTimesCircle className="text-gray-400" />;
       default: return <FaClock className="text-blue-400" />;
     }
   };
@@ -151,10 +166,10 @@ const getFilterButtonClass = (filterStatus: string | null) => {
   // Obtener texto del estado
   const getStatusText = (status: string) => {
     const texts: Record<string, string> = {
-      'approved': 'Aprobado',
-      'pending': 'Pendiente',
-      'rejected': 'Rechazado',
-      'cancelled': 'Cancelado',
+      'pendiente': 'Pendiente',
+      'confirmado': 'Confirmado',
+      'rechazado': 'Rechazado',
+      'vencido': 'vencido'
     };
     return texts[status] || status;
   };
@@ -180,49 +195,51 @@ const handleEliminarEvent = (event: CalendarEvent) => {
 const handleConfirmAction = async () => {
   if (!eventToAction || !actionType) return;
   
-
   try {
-    // Aquí llamarás a tu API
-    console.log(`${actionType} event:`, eventToAction.id);
-  
+    let result;
+    
     if (actionType === 'accept') {
-      // Lógica para aceptar el evento
-      console.log("aca");
-      const result = await aceptarSolicitud({ id_evento: eventToAction.id, motivo: '' });
-
-      if (result.success) {
-        alert('Evento Aceptado exitosamente');
-      
-       loadEvents(statusFilter || '');
-      } else {
-        alert('Error: ' + result.error);
-      }
-
-
+      result = await aceptarSolicitud({ 
+        id_evento: eventToAction.id, 
+        motivo: '', 
+        id_perfil 
+      });
     } else if (actionType === 'delete') {
-      // Lógica para eliminar el evento
-     const result =  await eliminarEvento({ id_evento: eventToAction.id, motivo: 'eliminado por el usuario' });
-     
-     if (result.success) {
-          alert('Evento eliminado exitosamente');
-          loadEvents(statusFilter || '');
-        } else {
-          alert('Error: ' + result.error);
-        }
-      } else if (actionType === 'reject') {
-        // Lógica para rechazar el evento
-        const result =  await rechazarSolicitud({ id_evento: eventToAction.id, motivo: 'rechazado por el usuario' });
-        
-        
-        if (result.success) {
-             alert('Evento rechazado exitosamente');
-           loadEvents(statusFilter || '');
-           } else {
-             alert('Error: ' + result.error);
-           }
-      }
-    } catch (error) {
-    alert('Error al procesar la acción');
+      result = await eliminarEvento({ 
+        id_evento: eventToAction.id, 
+        motivo: 'eliminado por el usuario', 
+        id_perfil 
+      });
+    } else if (actionType === 'reject') {
+      result = await rechazarSolicitud({ 
+        id_evento: eventToAction.id, 
+        motivo: 'rechazado por el usuario', 
+        id_perfil 
+      });
+    }
+
+    // Modal de respuesta BASADO EN result.success
+    setRespuestaModalProps({
+      type: result?.success ? 'success' : 'error',
+      title: result?.success ? '¡Éxito!' : 'Error',
+      message: result?.success 
+        ? `Evento ${actionType === 'accept' ? 'aceptado' : actionType === 'delete' ? 'eliminado' : 'rechazado'} exitosamente`
+        : result?.error || 'Error desconocido'
+    });
+    
+    if (result?.success) {
+      loadEvents(statusFilter || '');
+    }
+    
+    setShowRespuestaModal(true);
+    
+  } catch (error: any) {
+    setRespuestaModalProps({
+      type: 'error',
+      title: 'Error',
+      message: 'Error al procesar la acción',
+    });
+    setShowRespuestaModal(true);
   } finally {
     setShowConfirmModal(false);
     setEventToAction(null);
@@ -611,6 +628,14 @@ const handleConfirmAction = async () => {
               />
 
            <ConfirmModal />
+
+           <RespuestaModal
+              isOpen={showRespuestaModal}
+              type={respuestaModalProps.type}
+              title={respuestaModalProps.title}
+              message={respuestaModalProps.message}
+              onClose={() => setShowRespuestaModal(false)}
+/>
    
     </>
   );
