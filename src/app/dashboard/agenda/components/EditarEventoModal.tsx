@@ -429,7 +429,7 @@ export default function EditarEventoModal({
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-100 p-4">
         {/* Contenedor principal */}
         <div className="
-          bg-card rounded-2xl border border-neutral-700 
+          bg-neutral-800 rounded-2xl border border-neutral-700 
           w-full max-w-7xl
           max-h-[90vh] 
           overflow-y-auto
@@ -535,7 +535,7 @@ export default function EditarEventoModal({
                   value={form.title}
                   onChange={(e) => handleChange('title', e.target.value)}
                   placeholder="Ej: Show en Rock Bar, Presentación, Ensayo..."
-                  className="w-full px-4 py-3 bg-light-gray border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition"
+                  className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition"
                   maxLength={100}
                   required
                   disabled={loading || uploading}
@@ -551,7 +551,7 @@ export default function EditarEventoModal({
                   onChange={(e) => handleChange('description', e.target.value)}
                   placeholder="Detalles del evento..."
                   rows={3}
-                  className="w-full px-4 py-3 bg-light-gray border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition resize-none"
+                  className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition resize-none"
                   maxLength={500}
                   disabled={loading || uploading}
                 />
@@ -565,7 +565,7 @@ export default function EditarEventoModal({
                 <select
                   value={form.category}
                   onChange={(e) => handleChange('category', e.target.value)}
-                  className="w-full px-4 py-3 bg-light-gray border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition"
+                  className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition"
                   disabled={loading || uploading}
                 >
                   <option value="show">Show/Concierto</option>
@@ -597,7 +597,7 @@ export default function EditarEventoModal({
                         type="date"
                         value={form.startDate}
                         onChange={(e) => handleChange('startDate', e.target.value)}
-                        className="w-full px-3 py-2 bg-light-gray border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition text-sm"
+                        className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition text-sm"
                         required
                         disabled={loading || uploading}
                       />
@@ -605,7 +605,7 @@ export default function EditarEventoModal({
                         type="time"
                         value={form.startTime}
                         onChange={(e) => handleChange('startTime', e.target.value)}
-                        className="w-full px-3 py-2 bg-light-gray border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition text-sm"
+                        className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition text-sm"
                         required
                         disabled={loading || uploading}
                       />
@@ -622,7 +622,7 @@ export default function EditarEventoModal({
                         value={form.endDate}
                         onChange={(e) => handleChange('endDate', e.target.value)}
                         min={form.startDate}
-                        className="w-full px-3 py-2 bg-light-gray border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition text-sm"
+                        className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition text-sm"
                         required
                         disabled={loading || uploading}
                       />
@@ -630,7 +630,7 @@ export default function EditarEventoModal({
                         type="time"
                         value={form.endTime}
                         onChange={(e) => handleChange('endTime', e.target.value)}
-                        className="w-full px-3 py-2 bg-light-gray border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition text-sm"
+                        className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition text-sm"
                         required
                         disabled={loading || uploading}
                       />
@@ -677,7 +677,7 @@ export default function EditarEventoModal({
                               setCustomArtistName('');
                             }
                           }}
-                          className="w-full px-3 py-2 bg-light-gray border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
+                          className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
                           disabled={loading || uploading}
                         >
                           <option value="">Selecciona un lugar</option>
@@ -708,7 +708,7 @@ export default function EditarEventoModal({
                           value={customPlaceName}
                           onChange={(e) => setCustomPlaceName(e.target.value)}
                           placeholder="Escribe el nombre del lugar..."
-                          className="w-full px-3 py-2 bg-light-gray border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
+                          className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
                           disabled={loading || uploading}
                         />
                       </div>
@@ -722,7 +722,7 @@ export default function EditarEventoModal({
                       value={form.address}
                       onChange={(e) => handleChange('address', e.target.value)}
                       placeholder="Dirección completa..."
-                      className="w-full px-3 py-2 bg-light-gray border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
+                      className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
                       disabled={loading || uploading}
                     />
                   </div>
@@ -752,7 +752,7 @@ export default function EditarEventoModal({
                             setCustomArtistName('');
                           }
                         }}
-                        className="w-full px-4 py-3 bg-light-gray border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition"
+                        className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition"
                       >
                         <option value="">Selecciona un artista/banda</option>
                         {perfilesVisibles.map((perfil) => (
@@ -796,7 +796,7 @@ export default function EditarEventoModal({
                     value={customArtistName}
                     onChange={(e) => setCustomArtistName(e.target.value)}
                     placeholder="Escribe el nombre del artista o banda..."
-                    className="w-full px-3 py-2 bg-light-gray border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
+                    className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
                     disabled={loading || uploading}
                   />
                 </div>
@@ -822,7 +822,7 @@ export default function EditarEventoModal({
                       value={form.organizer_name}
                       onChange={(e) => handleChange('organizer_name', e.target.value)}
                       placeholder="Nombre del organizador..."
-                      className="w-full px-3 py-2 bg-light-gray border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
+                      className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
                       disabled={loading || uploading}
                     />
                   </div>
@@ -836,7 +836,7 @@ export default function EditarEventoModal({
                       value={form.organizer_contact}
                       onChange={(e) => handleChange('organizer_contact', e.target.value)}
                       placeholder="Teléfono o email..."
-                      className="w-full px-3 py-2 bg-light-gray border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
+                      className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
                       disabled={loading || uploading}
                     />
                   </div>
@@ -860,7 +860,7 @@ export default function EditarEventoModal({
                       value={form.ticket_link}
                       onChange={(e) => handleChange('ticket_link', e.target.value)}
                       placeholder="https://..."
-                      className="w-full px-3 py-2 bg-light-gray border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
+                      className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
                       disabled={loading || uploading}
                     />
                   </div>
@@ -874,7 +874,7 @@ export default function EditarEventoModal({
                       value={form.instagram_link}
                       onChange={(e) => handleChange('instagram_link', e.target.value)}
                       placeholder="https://instagram.com/..."
-                      className="w-full px-3 py-2 bg-light-gray border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
+                      className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition text-sm"
                       disabled={loading || uploading}
                     />
                   </div>
@@ -900,7 +900,7 @@ export default function EditarEventoModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-3 bg-light-gray hover:bg-gray-600 text-white font-medium rounded-lg transition"
+                className="flex-1 py-3 bg-neutral-600 hover:bg-gray-600 text-white font-medium rounded-lg transition"
                 disabled={loading || uploading}
               >
                 Cancelar

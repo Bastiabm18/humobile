@@ -88,7 +88,7 @@ export default function BlockDateModal({ open, onClose, profile, initialDate }: 
   return (
     <>
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-2xl border border-neutral-700 w-full max-w-md">
+      <div className="bg-neutral-800 rounded-2xl border border-neutral-700 w-full max-w-md">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-neutral-700">
           <div className="flex items-center gap-3">
@@ -111,7 +111,7 @@ export default function BlockDateModal({ open, onClose, profile, initialDate }: 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ej: Vacaciones, Enfermo, Otro show..."
-              className="w-full px-4 py-3 bg-light-gray border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition"
+              className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition"
               maxLength={50}
             />
           </div>
@@ -125,7 +125,7 @@ export default function BlockDateModal({ open, onClose, profile, initialDate }: 
               onChange={(e) => setReason(e.target.value)}
               placeholder="Motivo bloqueo"
               rows={3}
-              className="w-full px-4 py-3 bg-light-gray border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition resize-none"
+              className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition resize-none"
               maxLength={200}
             />
           </div>
@@ -141,7 +141,7 @@ export default function BlockDateModal({ open, onClose, profile, initialDate }: 
                 value={startDateTime}
                 onChange={(e) => setStartDateTime(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-light-gray border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-red-500 transition"
+                className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-red-500 transition"
               />
             </div>
 
@@ -155,7 +155,7 @@ export default function BlockDateModal({ open, onClose, profile, initialDate }: 
                 onChange={(e) => setEndDateTime(e.target.value)}
                 min={startDateTime}
                 required
-                className="w-full px-4 py-3 bg-light-gray border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-red-500 transition"
+                className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-red-500 transition"
               />
             </div>
           </div>
@@ -164,7 +164,7 @@ export default function BlockDateModal({ open, onClose, profile, initialDate }: 
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 bg-light-gray hover:bg-gray-600 text-white font-medium rounded-lg transition"
+              className="flex-1 py-3 bg-neutral-600 hover:bg-gray-600 text-white font-medium rounded-lg transition"
             >
               Cancelar
             </button>
