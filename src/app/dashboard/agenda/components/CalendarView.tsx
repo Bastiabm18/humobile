@@ -530,8 +530,8 @@ const CustomToolbar = (toolbar: any) => {
 
       {/* Modal de acciones para móvil */}
       {showActionModal && selectedDate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 md:hidden">
-          <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-sm">
+        <div className="fixed inset-0 bg-neutral-900/80 flex items-center justify-center z-50 p-4 md:hidden">
+          <div className="bg-neutral-800 rounded-2xl p-6 w-full max-w-sm">
             <h3 className="text-white text-lg font-bold mb-4">
               Gestiona {format(selectedDate, 'dd/MM/yyyy')}
             </h3>
@@ -546,7 +546,7 @@ const CustomToolbar = (toolbar: any) => {
                 className="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
               >
                 <HiPlus size={20} />
-                Agregar
+                Evento
               </button>
               
               <button
@@ -555,7 +555,7 @@ const CustomToolbar = (toolbar: any) => {
                   setBlockInitialDate(selectedDate);
                   setShowActionModal(false);
                 }}
-                className="flex-1 bg-gray-600 hover:bg-red-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                className="flex-1 bg-red-600  hover:bg-red-800 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
               >
                 <HiLockClosed size={20} />
                 Bloquear
@@ -564,7 +564,7 @@ const CustomToolbar = (toolbar: any) => {
             
             <button
               onClick={() => setShowActionModal(false)}
-              className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg"
+              className="w-full bg-neutral-500 hover:bg-neutral-600 text-white py-2 rounded-lg"
             >
               Cancelar
             </button>

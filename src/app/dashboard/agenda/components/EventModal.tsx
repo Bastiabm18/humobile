@@ -132,19 +132,13 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
 
   if (error || !eventData) {
     return (
-      <div className="fixed inset-0 flex z-[40] items-center justify-center p-4 bg-black/50">
-        <div className="bg-neutral-900 rounded-xl p-6 max-w-md">
-          <div className="text-red-400 mb-4">
-            <h3 className="text-lg font-semibold">Error al cargar el evento</h3>
-            <p className="text-sm">{error || 'No se pudo cargar la información del evento'}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
-          >
-            Cerrar
-          </button>
+      <div className="fixed inset-0 flex z-40 items-center justify-center p-4 bg-black/80">
+        <div className=" flex justify-center items-center rounded-xl w-[60vw] h-[40vh] p-8">
+          <div className="flex flex-col items-center justify-center gap-3">
+            <NeonSign/>
+            <FaSpinner className=' animate-spin' />
         </div>
+      </div>
       </div>
     );
   }
