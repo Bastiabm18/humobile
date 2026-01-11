@@ -646,3 +646,245 @@ export async function enviarSolicitud(data: InvitacionData) {
     return { success: false, error: error.message };
   }
 }
+
+
+export const actualizarPerfil = async (perfil: Perfil): Promise<{exito: boolean; mensaje: string; datos?: Perfil}> => {
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  try {
+    // Preparar datos para la actualización
+    const datosActualizacion: any = {
+      nombre: perfil.nombre,
+      email: perfil.email,
+      direccion: perfil.direccion,
+      lat: perfil.lat,
+      lon: perfil.lon,
+      telefono_contacto: perfil.telefono_contacto,
+      imagen_url: perfil.imagen_url,
+      video_url: perfil.video_url,
+      perfil_visible: perfil.perfil_visible,
+      id_comuna: perfil.id_comuna,
+      id_region: perfil.id_region,
+      id_pais: perfil.id_pais,
+      actualizado_en: new Date().toISOString()
+    };
+
+    // Agregar datos específicos según tipo de perfil
+    switch (perfil.tipo_perfil) {
+      case 'artista':
+        datosActualizacion.artista_data = perfil.artista_data;
+        break;
+      case 'banda':
+        datosActualizacion.banda_data = perfil.banda_data;
+        break;
+      case 'local':
+        datosActualizacion.local_data = perfil.local_data;
+        break;
+      case 'productor':
+        datosActualizacion.productor_data = perfil.productor_data;
+        break;
+      case 'representante':
+        datosActualizacion.representante_data = perfil.representante_data;
+        break;
+    }
+
+    // Realizar la actualización en la base de datos
+    const { data, error } = await supabaseAdmin
+      .from('perfil')
+      .update(datosActualizacion)
+      .eq('id_perfil', perfil.id_perfil)
+      .select(`
+        *,
+        Pais: id_pais (id_pais, nombre_pais),
+        Region: id_region (id_region, nombre_region),
+        Comuna: id_comuna (id_comuna, nombre_comuna)
+      `)
+      .single();
+
+    if (error) {
+      console.error("Error actualizando perfil:", error);
+      return {
+        exito: false,
+        mensaje: `Error al actualizar perfil: ${error.message}`
+      };
+    }
+
+    // Mapear la respuesta al formato Perfil
+    const perfilActualizado: Perfil = {
+      id_perfil: data.id_perfil,
+      usuario_id: data.usuario_id,
+      tipo_perfil: data.tipo_perfil,
+      nombre: data.nombre,
+      email: data.email,
+      direccion: data.direccion,
+      lat: data.lat,
+      lon: data.lon,
+      telefono_contacto: data.telefono_contacto,
+      imagen_url: data.imagen_url,
+      video_url: data.video_url,
+      perfil_visible: data.perfil_visible,
+      id_comuna: data.id_comuna,
+      id_region: data.id_region,
+      id_pais: data.id_pais,
+      creado_en: data.creado_en,
+      actualizado_en: data.actualizado_en,
+      artista_data: data.artista_data || {},
+      banda_data: data.banda_data || {},
+      local_data: data.local_data || {},
+      productor_data: data.productor_data || {},
+      representante_data: data.representante_data || {},
+     
+    };
+
+    return {
+      exito: true,
+      mensaje: 'Perfil actualizado exitosamente',
+      datos: perfilActualizado
+    };
+
+  } catch (error: any) {
+    console.error("Error en actualizarPerfil:", error);
+    return {
+      exito: false,
+      mensaje: `Error interno: ${error.message}`
+    };
+  }
+};
+
+// Función para eliminar perfil
+export const eliminarPerfil = async (id_perfil: string): Promise<{exito: boolean; mensaje: string}> => {
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  try {
+    const { error } = await supabaseAdmin
+      .from('perfil')
+      .delete()
+      .eq('id_perfil', id_perfil);
+
+    if (error) {
+      console.error("Error eliminando perfil:", error);
+      return {
+        exito: false,
+        mensaje: `Error al eliminar perfil: ${error.message}`
+      };
+    }
+
+    return {
+      exito: true,
+      mensaje: 'Perfil eliminado exitosamente'
+    };
+
+  } catch (error: any) {
+    console.error("Error en eliminarPerfil:", error);
+    return {
+      exito: false,
+      mensaje: `Error interno: ${error.message}`
+    };
+  }
+};
+
+export const crearPerfil = async (datosPerfil: {
+  usuario_id: string;
+  tipo_perfil: 'artista' | 'banda' | 'local' | 'productor' | 'representante';
+  nombre: string;
+  email?: string;
+  direccion?: string;
+  lat?: number;
+  lon?: number;
+  telefono_contacto?: string;
+  imagen_url?: string;
+  video_url?: string;
+  perfil_visible?: boolean;
+  id_comuna: string;
+  id_region: string;
+  id_pais: string;
+  datos_especificos?: Record<string, any>;
+}): Promise<{exito: boolean; mensaje: string; datos?: Perfil}> => {
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  try {
+    // Preparar datos para la creación
+    const datosCreacion: any = {
+      usuario_id: datosPerfil.usuario_id,
+      tipo_perfil: datosPerfil.tipo_perfil,
+      nombre: datosPerfil.nombre,
+      email: datosPerfil.email || null,
+      direccion: datosPerfil.direccion || null,
+      lat: datosPerfil.lat || null,
+      lon: datosPerfil.lon || null,
+      telefono_contacto: datosPerfil.telefono_contacto || null,
+      imagen_url: datosPerfil.imagen_url || null,
+      video_url: datosPerfil.video_url || null,
+      perfil_visible: datosPerfil.perfil_visible ?? true,
+      id_comuna: datosPerfil.id_comuna,
+      id_region: datosPerfil.id_region,
+      id_pais: datosPerfil.id_pais,
+      creado_en: new Date().toISOString(),
+      actualizado_en: new Date().toISOString()
+    };
+
+    // Agregar datos específicos según tipo
+    const campoDatosEspecificos = `${datosPerfil.tipo_perfil}_data`;
+    datosCreacion[campoDatosEspecificos] = datosPerfil.datos_especificos || {};
+
+    // Realizar la creación
+    const { data, error } = await supabaseAdmin
+      .from('perfil')
+      .insert(datosCreacion)
+      .select(`
+        *,
+        Pais: id_pais (id_pais, nombre_pais),
+        Region: id_region (id_region, nombre_region),
+        Comuna: id_comuna (id_comuna, nombre_comuna)
+      `)
+      .single();
+
+    if (error) {
+      console.error("Error creando perfil:", error);
+      return {
+        exito: false,
+        mensaje: `Error al crear perfil: ${error.message}`
+      };
+    }
+
+    // Mapear la respuesta
+    const perfilCreado: Perfil = {
+      id_perfil: data.id_perfil,
+      usuario_id: data.usuario_id,
+      tipo_perfil: data.tipo_perfil,
+      nombre: data.nombre,
+      email: data.email,
+      direccion: data.direccion,
+      lat: data.lat,
+      lon: data.lon,
+      telefono_contacto: data.telefono_contacto,
+      imagen_url: data.imagen_url,
+      video_url: data.video_url,
+      perfil_visible: data.perfil_visible,
+      id_comuna: data.id_comuna,
+      id_region: data.id_region,
+      id_pais: data.id_pais,
+      creado_en: data.creado_en,
+      actualizado_en: data.actualizado_en,
+      artista_data: data.artista_data || {},
+      banda_data: data.banda_data || {},
+      local_data: data.local_data || {},
+      productor_data: data.productor_data || {},
+      representante_data: data.representante_data || {},
+
+    };
+
+    return {
+      exito: true,
+      mensaje: 'Perfil creado exitosamente',
+      datos: perfilCreado
+    };
+
+  } catch (error: any) {
+    console.error("Error en crearPerfil:", error);
+    return {
+      exito: false,
+      mensaje: `Error interno: ${error.message}`
+    };
+  }
+};

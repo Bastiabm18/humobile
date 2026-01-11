@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { HiPlus, HiArrowLeft, HiEye } from 'react-icons/hi';
 import GridPerfiles from './GridPerfiles';
 import VistaPerfil from './VistaPerfil';
-import { getProfiles } from '../actions/actions';
+import { actualizarPerfil, eliminarPerfil, getProfiles } from '../actions/actions';
 import { GeoData, Perfil } from '@/types/profile';
 import { FaUserPlus, FaGuitar, FaBuilding, FaMusic, FaBriefcase, FaPlus } from 'react-icons/fa';
 import { FaUser } from 'react-icons/fa6';
@@ -45,6 +45,31 @@ export default function PerfilContent({
      setPerfilEditando(perfil); // nuevo estado para controlar edición
     // Aquí irías a la página de edición o abrirías formulario
   };
+  const handleActualizaPerfil = async (perfilActualizado: Perfil) => {
+  try {
+    const resultado = await actualizarPerfil(perfilActualizado);
+    
+    if (resultado.exito && resultado.datos) {
+      // Actualizar el estado local
+      setPerfiles(prev => prev.map(p => 
+        p.id_perfil === perfilActualizado.id_perfil ? resultado.datos! : p
+      ));
+      
+      // Volver a vista del perfil actualizado
+      setPerfilEditando(null);
+      setPerfilVista(resultado.datos);
+      
+      // Mostrar mensaje de éxito
+      alert(resultado.mensaje);
+    } else {
+      alert(`Error: ${resultado.mensaje}`);
+    }
+  } catch (error) {
+    console.error('Error al guardar perfil:', error);
+    alert('Error al guardar los cambios. Intenta nuevamente.');
+  }
+};
+
 
   const handleVer = (perfil: Perfil) => {
     setPerfilVista(perfil);
@@ -68,11 +93,41 @@ export default function PerfilContent({
     }
   };
 
+
+  const handleEliminarPerfil = async (id_perfil: string) => {
+  if (!confirm('¿Estás seguro de eliminar este perfil? Esta acción no se puede deshacer.')) {
+    return;
+  }
+
+  try {
+    const resultado = await eliminarPerfil(id_perfil);
+    
+    if (resultado.exito) {
+      // Recargar la lista de perfiles
+      await loadPerfiles();
+      alert(resultado.mensaje);
+      
+      // Si estamos viendo o editando este perfil, volver a la lista
+      if (perfilVista?.id_perfil === id_perfil) {
+        setPerfilVista(null);
+      }
+      if (perfilEditando?.id_perfil === id_perfil) {
+        setPerfilEditando(null);
+      }
+    } else {
+      alert(`Error: ${resultado.mensaje}`);
+    }
+  } catch (error) {
+    console.error('Error al eliminar perfil:', error);
+    alert('Error al eliminar el perfil. Intenta nuevamente.');
+  }
+};
   const handleCreateProfile = () => {
     console.log('Ir a crear perfil');
     // Navegar a página de creación
   };
 
+  // si estamos editando perfil
   if (perfilEditando) {
   return (
     <div className="min-h-screen p-4 bg-neutral-900">
@@ -99,41 +154,13 @@ export default function PerfilContent({
             <span>Volver a Perfiles</span>
           </button>
           
-          {/* Botón para guardar (este iría en el componente EditarPerfil mejor) */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setPerfilVista(perfilEditando)}
-              className="
-                flex items-center gap-2
-                px-4 py-2.5
-                bg-neutral-800
-                hover:bg-neutral-700
-                border border-neutral-700
-                hover:border-neutral-600
-                text-neutral-300
-                rounded-lg
-                transition-all duration-200
-                text-sm
-                font-medium
-              "
-            >
-              <HiEye className="w-4 h-4" />
-              <span>Vista Previa</span>
-            </button>
-          </div>
+     
         </div>
 
         {/* Componente EditarPerfil */}
         <EditarPerfil
           perfil={perfilEditando}
-          onSave={(perfilActualizado) => {
-            console.log('Guardar perfil editado:', perfilActualizado);
-            // Aquí llamarías a tu función de actualización
-            // Ej: await updatePerfil(perfilActualizado);
-            setPerfilEditando(null);
-            setPerfilVista(perfilActualizado); // Para ver los cambios
-            loadPerfiles(); // Recargar la lista
-          }}
+          onSave={handleActualizaPerfil}
           onCancel={handleVolverEdicion}
           geoData={geoData}
         />

@@ -18,18 +18,27 @@ import {
   FaCalendarAlt,
   FaUserCheck,
   FaMapPin,
-  FaInfoCircle
+  FaInfoCircle,
+  FaIdCard,
+  FaLocationArrow,
+  FaGlobe,
+  FaHome,
+  FaUserTag
 } from 'react-icons/fa';
-import { FaUser, FaLocationDot, FaClock, FaIdCard } from 'react-icons/fa6';
+import { FaUser, FaLocationDot, FaClock, FaIdCardClip } from 'react-icons/fa6';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useState } from 'react';
+import MapaLugar from './MapaLugar';
 
 interface VistaPerfilProps {
   perfil: Perfil;
 }
 
 export default function VistaPerfil({ perfil }: VistaPerfilProps) {
+  const [showFullMap, setShowFullMap] = useState(false);
+
   const getTipoIcono = () => {
     switch (perfil.tipo_perfil) {
       case 'artista': return <FaUser className="w-6 h-6" />;
@@ -40,8 +49,6 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
       default: return <FaUser className="w-6 h-6" />;
     }
   };
-
-
 
   const getTipoColor = () => {
     switch (perfil.tipo_perfil) {
@@ -62,18 +69,16 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
     }
   };
 
+  // Verificar si tiene coordenadas para mostrar mapa
+  const tieneCoordenadas = perfil.lat && perfil.lon;
+  const ubicacion = (perfil as any).ubicacion || {};
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="
-        bg-neutral-800
-        border border-neutral-700
-        rounded-2xl
-        overflow-hidden
-        shadow-xl
-      "
+      className="bg-neutral-800 border border-neutral-700 rounded-2xl overflow-hidden shadow-xl"
     >
       {/* Header con imagen */}
       <div className="relative h-64 overflow-hidden">
@@ -84,7 +89,7 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-neutral-900 flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-neutral-900 to-black flex items-center justify-center">
             <div className="text-7xl text-neutral-700">
               {getTipoIcono()}
             </div>
@@ -106,13 +111,16 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
                 backdrop-blur-sm
               `}>
                 {getTipoIcono()}
-                <span>{perfil.tipo_perfil}</span>
+                <span className="capitalize">{perfil.tipo_perfil}</span>
               </div>
               <h1 className="text-4xl font-bold text-white mb-2">
                 {perfil.nombre}
               </h1>
               {perfil.email && (
-                <p className="text-neutral-300">{perfil.email}</p>
+                <p className="text-neutral-300 flex items-center gap-2">
+                  <FaEnvelope className="w-4 h-4" />
+                  {perfil.email}
+                </p>
               )}
             </div>
             
@@ -136,22 +144,66 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
         </div>
       </div>
 
-      {/* Información principal */}
+      {/* Mapa en row aparte - SOLO si hay coordenadas */}
+      {tieneCoordenadas && (
+        <div className="px-6 pt-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl overflow-hidden">
+              <div className="p-5 pb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-white flex items-center gap-3">
+                    <div className="p-2 bg-red-500/10 rounded-lg">
+                      <FaMapMarkerAlt className="w-5 h-5 text-red-400" />
+                    </div>
+                    <span>Ubicación</span>
+                  </h2>
+                  <button
+                    onClick={() => setShowFullMap(!showFullMap)}
+                    className="px-3 py-1.5 bg-sky-600/70 hover:bg-sky-700 text-white text-sm rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    {showFullMap ? 'Ver pequeño' : 'Ver completo'}
+                  </button>
+                </div>
+                
+                <MapaLugar
+                  latitud={perfil.lat}
+                  longitud={perfil.lon}
+                  nombreLugar={perfil.nombre}
+                  direccion={perfil.direccion || undefined}
+                  compacto={!showFullMap}
+                />
+                
+                {/* Coordenadas debajo del mapa */}
+                <div className="mt-4 pt-4 border-t border-neutral-700/50">
+            
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Información principal - 3 columnas siempre */}
       <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Columna izquierda - Información de contacto */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Columna izquierda - Información de contacto y ubicación */}
           <div className="space-y-6">
+            {/* Contacto */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: 0.2 }}
               className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
             >
               <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
                 <div className="p-2 bg-blue-500/10 rounded-lg">
-                  <FaIdCard className="w-5 h-5 text-blue-400" />
+                  <FaPhone className="w-5 h-5 text-blue-400" />
                 </div>
-                <span>Información de Contacto</span>
+                <span>Contacto</span>
               </h2>
               
               <div className="space-y-4">
@@ -182,7 +234,7 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
                 {perfil.direccion && (
                   <div className="flex items-start gap-4 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors">
                     <div className="p-2 bg-green-500/10 rounded-lg">
-                      <FaMapMarkerAlt className="w-4 h-4 text-green-400" />
+                      <FaHome className="w-4 h-4 text-green-400" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-neutral-400">Dirección</p>
@@ -193,52 +245,70 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
               </div>
             </motion.div>
 
-            {/* Ubicación */}
-            {(perfil as any).ubicacion && (
+            {/* Ubicación geográfica (país, región, comuna) */}
+            {(ubicacion.comuna || ubicacion.region || ubicacion.pais) && (
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.3 }}
                 className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
               >
                 <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
-                  <div className="p-2 bg-green-500/10 rounded-lg">
-                    <FaLocationDot className="w-5 h-5 text-green-400" />
+                  <div className="p-2 bg-purple-500/10 rounded-lg">
+                    <FaGlobe className="w-5 h-5 text-purple-400" />
                   </div>
-                  <span>Ubicación</span>
+                  <span>Ubicación Geográfica</span>
                 </h2>
-                <div className="flex flex-wrap gap-3">
-                  {(perfil as any).ubicacion.comuna && (
-                    <span className="px-4 py-2 bg-neutral-800 text-neutral-300 text-sm rounded-lg flex items-center gap-2">
-                      <FaMapPin className="w-3 h-3" />
-                      {(perfil as any).ubicacion.comuna}
-                    </span>
+                
+                <div className="space-y-3">
+                  {ubicacion.pais && (
+                    <div className="flex items-center gap-3 p-3 bg-neutral-800/50 rounded-lg">
+                      <div className="p-2 bg-red-500/10 rounded-lg">
+                        <FaGlobeAmericas className="w-4 h-4 text-red-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-neutral-400">País</p>
+                        <p className="text-white font-medium">{ubicacion.pais}</p>
+                      </div>
+                    </div>
                   )}
-                  {(perfil as any).ubicacion.region && (
-                    <span className="px-4 py-2 bg-neutral-800 text-neutral-300 text-sm rounded-lg flex items-center gap-2">
-                      <FaGlobeAmericas className="w-3 h-3" />
-                      {(perfil as any).ubicacion.region}
-                    </span>
+                  
+                  {ubicacion.region && (
+                    <div className="flex items-center gap-3 p-3 bg-neutral-800/50 rounded-lg">
+                      <div className="p-2 bg-green-500/10 rounded-lg">
+                        <FaLocationDot className="w-4 h-4 text-green-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-neutral-400">Región</p>
+                        <p className="text-white font-medium">{ubicacion.region}</p>
+                      </div>
+                    </div>
                   )}
-                  {(perfil as any).ubicacion.pais && (
-                    <span className="px-4 py-2 bg-neutral-800 text-neutral-300 text-sm rounded-lg flex items-center gap-2">
-                      <FaGlobeAmericas className="w-3 h-3" />
-                      {(perfil as any).ubicacion.pais}
-                    </span>
+                  
+                  {ubicacion.comuna && (
+                    <div className="flex items-center gap-3 p-3 bg-neutral-800/50 rounded-lg">
+                      <div className="p-2 bg-yellow-500/10 rounded-lg">
+                        <FaMapPin className="w-4 h-4 text-yellow-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-neutral-400">Comuna</p>
+                        <p className="text-white font-medium">{ubicacion.comuna}</p>
+                      </div>
+                    </div>
                   )}
                 </div>
               </motion.div>
             )}
           </div>
 
-          {/* Columna derecha - Información adicional */}
+          {/* Columna central - Información del perfil */}
           <div className="space-y-6">
             {/* Video */}
             {perfil.video_url && (
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
                 className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
               >
                 <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
@@ -248,22 +318,122 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
                   <span>Video</span>
                 </h2>
                 <div className="bg-neutral-800/50 rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <FaLink className="w-4 h-4 text-blue-400" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <FaLink className="w-4 h-4 text-blue-400" />
+                      <div>
+                        <p className="text-sm text-neutral-400">Enlace de video</p>
+                        <a 
+                          href={perfil.video_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 font-medium truncate block max-w-xs"
+                        >
+                          {perfil.video_url.substring(0, 40)}...
+                        </a>
+                      </div>
+                    </div>
                     <a 
                       href={perfil.video_url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300 font-medium"
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
                     >
-                      Ver video externo
+                      Ver
                     </a>
                   </div>
                 </div>
               </motion.div>
             )}
 
-            {/* Fechas */}
+            {/* Información del perfil */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
+            >
+              <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+                <div className="p-2 bg-yellow-500/10 rounded-lg">
+                  <FaCalendarAlt className="w-5 h-5 text-yellow-400" />
+                </div>
+                <span>Historial del Perfil</span>
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="bg-neutral-800/50 rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <FaClock className="w-4 h-4 text-green-400" />
+                    <span className="text-neutral-300">Creado el</span>
+                  </div>
+                  <p className="text-white font-semibold text-lg">
+                    {formatFecha(perfil.creado_en)}
+                  </p>
+                </div>
+
+                <div className="bg-neutral-800/50 rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <FaClock className="w-4 h-4 text-blue-400" />
+                    <span className="text-neutral-300">Última actualización</span>
+                  </div>
+                  <p className="text-white font-semibold text-lg">
+                    {formatFecha(perfil.actualizado_en)}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Estado del perfil */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
+            >
+              <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+                <div className="p-2 bg-sky-500/10 rounded-lg">
+                  <FaIdCardClip className="w-5 h-5 text-sky-400" />
+                </div>
+                <span>Estado del Perfil</span>
+              </h2>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <FaEye className="w-4 h-4 text-neutral-400" />
+                    <span className="text-neutral-300">Visibilidad</span>
+                  </div>
+                  <span className={`font-semibold ${perfil.perfil_visible ? 'text-green-400' : 'text-red-400'}`}>
+                    {perfil.perfil_visible ? 'Público' : 'Privado'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <FaUserCheck className="w-4 h-4 text-neutral-400" />
+                    <span className="text-neutral-300">Tipo</span>
+                  </div>
+                  <span className={`font-semibold ${getTipoColor().split(' ')[0]}`}>
+                    {perfil.tipo_perfil}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <FaInfoCircle className="w-4 h-4 text-neutral-400" />
+                    <span className="text-neutral-300">ID del perfil</span>
+                  </div>
+                  <span className="text-white font-mono text-xs">
+                    {perfil.id_perfil.substring(0, 10)}...
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Columna derecha - IDs y coordenadas si no están en el mapa */}
+          <div className="space-y-6">
+            {/* IDs */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -271,31 +441,31 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
               className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
             >
               <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
-                <div className="p-2 bg-yellow-500/10 rounded-lg">
-                  <FaCalendarAlt className="w-5 h-5 text-yellow-400" />
+                <div className="p-2 bg-orange-500/10 rounded-lg">
+                  <FaIdCard className="w-5 h-5 text-orange-400" />
                 </div>
-                <span>Información del Perfil</span>
+                <span>Identificación</span>
               </h2>
+              
               <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-neutral-800/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FaClock className="w-4 h-4 text-neutral-400" />
-                    <span className="text-neutral-400">Creado</span>
-                  </div>
-                  <span className="text-white font-medium">{formatFecha(perfil.creado_en)}</span>
+                <div className="bg-neutral-800/50 rounded-lg p-4">
+                  <p className="text-sm text-neutral-400 mb-2">ID del Perfil</p>
+                  <p className="text-white font-mono text-sm break-all">
+                    {perfil.id_perfil}
+                  </p>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-neutral-800/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FaClock className="w-4 h-4 text-neutral-400" />
-                    <span className="text-neutral-400">Actualizado</span>
-                  </div>
-                  <span className="text-white font-medium">{formatFecha(perfil.actualizado_en)}</span>
+                
+                <div className="bg-neutral-800/50 rounded-lg p-4">
+                  <p className="text-sm text-neutral-400 mb-2">ID del Usuario</p>
+                  <p className="text-white font-mono text-sm break-all">
+                    {perfil.usuario_id}
+                  </p>
                 </div>
               </div>
             </motion.div>
 
-            {/* Coordenadas */}
-            {(perfil.lat && perfil.lon) && (
+            {/* Coordenadas (solo si no están en el mapa) */}
+            {!tieneCoordenadas && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -304,73 +474,57 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
               >
                 <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
                   <div className="p-2 bg-sky-500/10 rounded-lg">
-                    <FaMapPin className="w-5 h-5 text-sky-400" />
+                    <FaMapMarkerAlt className="w-5 h-5 text-sky-400" />
                   </div>
                   <span>Coordenadas</span>
                 </h2>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-neutral-800/50 rounded-lg">
-                    <p className="text-sm text-neutral-400 mb-1">Latitud</p>
-                    <p className="text-white font-bold text-lg">{perfil.lat}</p>
+                
+                <div className="space-y-3">
+                  <div className="bg-neutral-800/50 rounded-lg p-4">
+                    <p className="text-sm text-neutral-400 mb-2">Latitud</p>
+                    <p className="text-white font-bold text-lg font-mono">
+                      {perfil.lat ? perfil.lat.toFixed(6) : 'No definida'}
+                    </p>
                   </div>
-                  <div className="p-3 bg-neutral-800/50 rounded-lg">
-                    <p className="text-sm text-neutral-400 mb-1">Longitud</p>
-                    <p className="text-white font-bold text-lg">{perfil.lon}</p>
+                  
+                  <div className="bg-neutral-800/50 rounded-lg p-4">
+                    <p className="text-sm text-neutral-400 mb-2">Longitud</p>
+                    <p className="text-white font-bold text-lg font-mono">
+                      {perfil.lon ? perfil.lon.toFixed(6) : 'No definida'}
+                    </p>
                   </div>
                 </div>
               </motion.div>
             )}
+
+            {/* Información del tipo de perfil */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
+            >
+              <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+                <div className="p-2 bg-purple-500/10 rounded-lg">
+                  <FaUserTag className="w-5 h-5 text-purple-400" />
+                </div>
+                <span>Tipo de Perfil</span>
+              </h2>
+              
+              <div className={`p-4 ${getTipoColor()} rounded-lg text-center`}>
+                <div className="text-4xl mb-3">
+                  {getTipoIcono()}
+                </div>
+                <p className="text-xl font-bold text-white capitalize">
+                  {perfil.tipo_perfil}
+                </p>
+                <p className="text-sm text-neutral-300 mt-2">
+                  Perfil {perfil.perfil_visible ? 'público' : 'privado'}
+                </p>
+              </div>
+            </motion.div>
           </div>
         </div>
-
-        {/* Tipo de perfil específico */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mt-8 pt-8 border-t border-neutral-700/50"
-        >
-          <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
-            <div className="p-2 bg-purple-500/10 rounded-lg">
-              <FaInfoCircle className="w-5 h-5 text-purple-400" />
-            </div>
-            <span>Tipo de Perfil: {perfil.tipo_perfil}</span>
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="bg-neutral-900/30 border border-neutral-700 rounded-lg p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-blue-500/10 rounded-lg">
-                  <FaUserCheck className="w-4 h-4 text-blue-400" />
-                </div>
-                <span className="font-medium text-white">Tipo</span>
-              </div>
-              <p className="text-neutral-300">{perfil.tipo_perfil}</p>
-            </div>
-
-            <div className="bg-neutral-900/30 border border-neutral-700 rounded-lg p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-green-500/10 rounded-lg">
-                  <FaEye className="w-4 h-4 text-green-400" />
-                </div>
-                <span className="font-medium text-white">Visibilidad</span>
-              </div>
-              <p className={`font-medium ${perfil.perfil_visible ? 'text-green-400' : 'text-red-400'}`}>
-                {perfil.perfil_visible ? 'Visible al público' : 'Oculto'}
-              </p>
-            </div>
-
-            <div className="bg-neutral-900/30 border border-neutral-700 rounded-lg p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-yellow-500/10 rounded-lg">
-                  <FaCalendarAlt className="w-4 h-4 text-yellow-400" />
-                </div>
-                <span className="font-medium text-white">Última Actualización</span>
-              </div>
-              <p className="text-neutral-300">{formatFecha(perfil.actualizado_en)}</p>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </motion.div>
   );
