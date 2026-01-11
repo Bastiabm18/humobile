@@ -2,8 +2,9 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/app/components/DashboardLayout';
-import ProfileManager from './components/ProfileManager';
+import ProfileManager from './components/PerfilContent';
 import { getGeoData, getProfiles } from './actions/actions';
+import PerfilContent from './components/PerfilContent';
 
 export default async function MiPerfilPage() {
   let userData = null;
@@ -46,7 +47,7 @@ export default async function MiPerfilPage() {
         userName={userData.name}
         userRole={userData.role}
     >
-      <ProfileManager
+      <PerfilContent
         initialProfiles={initialProfiles}
         userEmail={userData.email || ''}
         userName={userData.name || ''}

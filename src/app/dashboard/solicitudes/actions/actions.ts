@@ -54,115 +54,51 @@ export async function blockDateRange({
 }
 
 
-export async function aceptarSolicitud ({ id_solicitud,respuesta_solicitud,motivo,tipo,id_banda,id_artista}: AceptarRechazarSolicitud){
-   try {
+export async function aceptarSolicitud({ 
+  id_solicitud,
+  codigo_solicitud,
+  id_evento_solicitud,
+  id_invitado
+}: AceptarRechazarSolicitud) {
+  try {
     const supabase = getSupabaseAdmin();
     
-    if (tipo === 'solicitud'){
-
-        const { data, error } = await supabase
-              .from('solicitud')
-              .update({
-                estado: 'aceptada',
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', id_solicitud)
-              .eq('estado', 'pendiente') // Solo actualizar si está pendiente
-              .select()
-              .single();
-            
-            if (error) {
-              console.error('Error aceptando solicitud:', error);
-              return { 
-                success: false, 
-                error: error.message || 'Error al aceptar la solicitud' 
-              };
-            }
-          
-             const { data: integrante, error: errorInsert } = await supabase
-              .from('integrante')
-              .insert({
-                id_artista: id_artista,
-                id_banda: id_banda,
-                estado: 'activo',
-                tipo: motivo || 'miembro', 
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              })
-              .select()
-              .single();
-            
-            if (errorInsert) {
-              console.error('Error agregando integrante:', errorInsert);
-
-              // Si falla el insert, revertir el update de la solicitud
-              await supabase
-                .from('solicitud')
-                .update({
-                  estado: 'pendiente',
-                  updated_at: new Date().toISOString()
-                })
-                .eq('id', id_solicitud);
-              
-              return { 
-                success: false, 
-                error: errorInsert.message || 'Error al agregar integrante a la banda' 
-              };
-            }
-          
-            return { 
-              success: true, 
-              data: {
-                solicitud: data,
-                integrante: integrante
-              },
-              message: 'Solicitud aceptada y artista agregado a la banda exitosamente'
-            };
-          
-            // TODO: Aquí podrías agregar lógica adicional:
-            // - Agregar artista a la banda
-            // - Notificar a ambos usuarios
-            // - Crear relación en tabla band_members, etc.
-          
-            return { 
-              success: true, 
-              data,
-              message: 'Solicitud aceptada exitosamente'
-            };
-
-    }else{
-
-      const { data, error } = await supabase
-      .from('participacion_evento')
+    // Primero actualizar el estado de la solicitud
+    const { data: solicitudActualizada, error: errorSolicitud } = await supabase
+      .from('solicitud')
       .update({
-        estado: 'confirmado',
-        updated_at: new Date().toISOString()
+        estado: 'aceptada',
+        actualizado_en: new Date().toISOString()
       })
       .eq('id', id_solicitud)
-      .eq('estado', 'pendiente') // Solo actualizar si está pendiente
+      .eq('estado', 'pendiente')
       .select()
       .single();
-
-    if (error) {
-      console.error('Error aceptando evento:', error);
+    
+    if (errorSolicitud) {
+      console.error('Error actualizando estado de solicitud:', errorSolicitud);
       return { 
         success: false, 
-        error: error.message || 'Error al aceptar el evento' 
+        error: errorSolicitud.message || 'Error al aceptar la solicitud' 
       };
     }
-    return { 
-      success: true, 
-      data,
-      message: 'Solicitud aceptada exitosamente'
-    };
     
-    
+    // Luego manejar según el código de solicitud
+    switch (codigo_solicitud) {
+      case 'invitacion_evento':
+        return await confirmarParticipacionEvento({
+          supabase,
+          id_evento_solicitud,
+          id_invitado
+        });
+        
+      default:
+        return { 
+          success: true, 
+          data: solicitudActualizada,
+          message: 'Solicitud aceptada exitosamente'
+        };
     }
-
-
-
-
-
   } catch (error: any) {
     console.error('Error en aceptarSolicitud:', error);
     return { 
@@ -170,81 +106,99 @@ export async function aceptarSolicitud ({ id_solicitud,respuesta_solicitud,motiv
       error: error.message || 'Error interno del servidor' 
     };
   }
-  
-  
 }
-export async function rechazarSolicitud ({ id_solicitud,motivo,tipo}: AceptarRechazarSolicitud){
- try {
+
+// Función separada para confirmar participación en evento
+async function confirmarParticipacionEvento({ 
+  supabase, 
+  id_evento_solicitud, 
+  id_invitado 
+}: {
+  supabase: any,
+  id_evento_solicitud: string,
+  id_invitado: string
+}) {
+  // Buscar el registro en participacion_evento usando evento_id y perfil_id
+  const { data, error } = await supabase
+    .from('participacion_evento')
+    .update({
+      estado: 'confirmado',
+      updated_at: new Date().toISOString()
+    })
+    .eq('evento_id', id_evento_solicitud)
+    .eq('perfil_id', id_invitado)
+    .eq('estado', 'pendiente')
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error confirmando participación en evento:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Error al confirmar participación en el evento' 
+    };
+  }
+
+  return { 
+    success: true, 
+    data,
+    message: 'Participación en evento confirmada exitosamente'
+  };
+}
+export async function rechazarSolicitud({ 
+  id_solicitud,
+  codigo_solicitud,
+  id_evento_solicitud,
+  id_invitado,
+  motivo_rechazo
+}: AceptarRechazarSolicitud) {
+  try {
     const supabase = getSupabaseAdmin();
     
-    const updateData: any = {
-      estado: 'rechazado',
-      updated_at: new Date().toISOString(),
-      motivo_rechazo: motivo,
+    // Primero actualizar el estado de la solicitud
+    const updateDataSolicitud: any = {
+      estado: 'rechazada',
+      actualizado_en: new Date().toISOString()
     };
     
-    if (tipo =='evento'){
-// Si hay motivo, guardarlo (podrías agregar un campo motivo_rechazo a la tabla)
-    if (motivo) {
-      updateData.motivo_rechazo = motivo.trim();
+    // Agregar motivo si existe
+    if (motivo_rechazo) {
+      updateDataSolicitud.motivo_rechazo = motivo_rechazo.trim();
     }
 
-    const { data, error } = await supabase
-      .from('participacion_evento')
-      .update(updateData)
-      .eq('id', id_solicitud)
-      .eq('estado', 'pendiente') // Solo actualizar si está pendiente
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error rechazando evento:', error);
-      return { 
-        success: false, 
-        error: error.message || 'Error al rechazar el evento' 
-      };
-    }
-
-    // TODO: Aquí podrías notificar al artista del rechazo
-
-    return { 
-      success: true, 
-      data,
-      message: 'Solicitud rechazada exitosamente'
-    };
-
-    }else{
-
-      // Si hay motivo, guardarlo (podrías agregar un campo motivo_rechazo a la tabla)
-    if (motivo) {
-      updateData.motivo_rechazo = motivo.trim();
-    }
-
-    const { data, error } = await supabase
+    const { data: solicitudActualizada, error: errorSolicitud } = await supabase
       .from('solicitud')
-      .update(updateData)
+      .update(updateDataSolicitud)
       .eq('id', id_solicitud)
-      .eq('estado', 'pendiente') // Solo actualizar si está pendiente
+      .eq('estado', 'pendiente')
       .select()
       .single();
-
-    if (error) {
-      console.error('Error rechazando solicitud:', error);
+    
+    if (errorSolicitud) {
+      console.error('Error actualizando estado de solicitud:', errorSolicitud);
       return { 
         success: false, 
-        error: error.message || 'Error al rechazar la solicitud' 
+        error: errorSolicitud.message || 'Error al rechazar la solicitud' 
       };
     }
-
-    // TODO: Aquí podrías notificar al artista del rechazo
-
-    return { 
-      success: true, 
-      data,
-      message: 'Solicitud rechazada exitosamente'
-    };
-    }
     
+    // Luego manejar según el código de solicitud
+    switch (codigo_solicitud) {
+      case 'invitacion_evento':
+        return await rechazarParticipacionEvento({
+          supabase,
+          id_evento_solicitud,
+          id_invitado,
+          motivo_rechazo
+        });
+        
+      default:
+        return { 
+          success: true, 
+          data: solicitudActualizada,
+          message: 'Solicitud rechazada exitosamente'
+        };
+    }
   } catch (error: any) {
     console.error('Error en rechazarSolicitud:', error);
     return { 
@@ -252,6 +206,52 @@ export async function rechazarSolicitud ({ id_solicitud,motivo,tipo}: AceptarRec
       error: error.message || 'Error interno del servidor' 
     };
   }
+}
+
+// Función separada para rechazar participación en evento
+async function rechazarParticipacionEvento({ 
+  supabase, 
+  id_evento_solicitud, 
+  id_invitado,
+  motivo_rechazo
+}: {
+  supabase: any,
+  id_evento_solicitud: string,
+  id_invitado: string,
+  motivo_rechazo?: string
+}) {
+  const updateDataEvento: any = {
+    estado: 'rechazado',
+    updated_at: new Date().toISOString()
+  };
+  
+  // Agregar motivo si existe
+  if (motivo_rechazo) {
+    updateDataEvento.motivo_rechazo = motivo_rechazo.trim();
+  }
+
+  const { data, error } = await supabase
+    .from('participacion_evento')
+    .update(updateDataEvento)
+    .eq('evento_id', id_evento_solicitud)
+    .eq('perfil_id', id_invitado)
+    .eq('estado', 'pendiente')
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error rechazando participación en evento:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Error al rechazar participación en el evento' 
+    };
+  }
+
+  return { 
+    success: true, 
+    data,
+    message: 'Participación en evento rechazada exitosamente'
+  };
 }
 
 export const getProfiles = async (userId: string): Promise<Profile[]> => {
@@ -393,92 +393,74 @@ export const getProfiles = async (userId: string): Promise<Profile[]> => {
 };
 
 
-export async function getSolicitudesByPerfiles(perfilIds: string[]) {
-  try {
-    const supabaseAdmin = getSupabaseAdmin();
-    
-    if (perfilIds.length === 0) {
-      return [];
-    }
+export async function getSolicitudesByPerfil(
+    perfilId: string,
+    estadoSolicitud: string = ''
+): Promise<SolicitudRespuesta[]> {
+    try {
+        const supabaseAdmin = getSupabaseAdmin();
+        
+        if (!perfilId) {
+            return [];
+        }
 
-     // Convertir strings a UUID para PostgreSQL
-    const perfilIdsUUID = perfilIds.map(id => id);
-
- 
-      const {data,error} = await supabaseAdmin
-            .rpc('get_solicitudes_y_eventos',{
-              perfil_ids:perfilIdsUUID
+        const { data, error } = await supabaseAdmin
+            .rpc('get_solicitudes_detalladas', {
+                p_id_perfil: perfilId,
+                filtro_estado: estadoSolicitud
             });
 
+        if (error) {
+            console.error('❌ Error obteniendo solicitudes:', error);
+            throw new Error(`Error al obtener solicitudes: ${error.message}`);
+        }
 
-    if (error) {
-      console.error('Error obteniendo solicitudes y eventos:', error);
-      throw new Error(`Error al obtener solicitudes y eventos: ${error.message}`);
+        if (!data || data.length === 0) {
+            return [];
+        }
+
+        // Mapear la respuesta
+        const solicitudes: SolicitudRespuesta[] = data.map((item: any) => {
+            return {
+                id: item.id || '',
+                id_tipo_solicitud: item.id_tipo_solicitud || '',
+                tipo_solicitud: item.tipo_solicitud || '',
+                codigo_solicitud: item.codigo_solicitud || '',
+                nombre_solicitud: item.nombre_solicitud || '',
+                descripcion_solicitud: item.descripcion_solicitud || '',
+                creador_id: item.creador_id || '',
+                creador_nombre: item.creador_nombre || '',
+                creador_tipo: item.creador_tipo || '',
+                invitado_id: item.invitado_id || '',
+                invitado_nombre: item.invitado_nombre || '',
+                invitado_tipo: item.invitado_tipo || '',
+                fecha_creacion: new Date(item.fecha_creacion),
+                fecha_expiracion: item.fecha_expiracion ? new Date(item.fecha_expiracion) : new Date(),
+                plazoRespuesta: item.plazo_respuesta ? new Date(item.plazo_respuesta) : new Date(),
+                estado: item.estado || 'pendiente',
+                motivo_rechazo: item.motivo_rechazo || undefined,
+                id_evento_solicitud: item.id_evento_solicitud || undefined,
+                evento_titulo: item.evento_titulo || undefined,
+                evento_fecha_inicio: item.evento_fecha_inicio ? new Date(item.evento_fecha_inicio) : undefined,
+                evento_fecha_fin: item.evento_fecha_fin ? new Date(item.evento_fecha_fin) : undefined
+            };
+        });
+
+        console.log('📊 Solicitudes obtenidas:', {
+            cantidad: solicitudes.length,
+            primerItem: solicitudes[0] ? {
+                id: solicitudes[0].id,
+                tipo_solicitud: solicitudes[0].tipo_solicitud,
+                creador: solicitudes[0].creador_nombre,
+                invitado: solicitudes[0].invitado_nombre,
+                estado: solicitudes[0].estado
+            } : 'No hay datos'
+        });
+
+        return solicitudes;
+        
+    } catch (error: any) {
+        console.error('❌ Error en getSolicitudesByPerfil:', error);
+        throw error;
     }
-
-    if (!data || data.length === 0) {
-      return [];
-    }
-
-   const solicitudes: SolicitudRespuesta[] = data.map((item: any) => {
-      if (item.origen_tabla === 'solicitud') {
-        return {
-          id: item.id,
-          tipo: 'grupo' as const,
-          titulo: item.titulo,
-          creador: item.creador,
-          fechaInicio: new Date(item.fecha_inicio),
-          fechaFin: new Date(item.fecha_fin),
-          plazoRespuesta: new Date(item.plazo_respuesta),
-          estado: item.estado as 'pendiente' | 'aceptada' | 'rechazada' | 'expirada',
-          
-          // Campos directos
-          id_perfil: item.id_perfil,
-          id_banda: item.id_banda,
-          tipo_invitacion: item.tipo_invitacion,
-          descripcion: item.descripcion,
-          created_at: item.created_at,
-          nombre_artista: item.nombre_artista,
-          nombre_banda: item.nombre_banda,
-          
-          esEvento: false,
-          origen_tabla: 'solicitud'
-        };
-      } else {
-        // Para eventos
-        return {
-          id: item.id,
-          tipo: 'evento' as const,
-          titulo: item.titulo,
-          creador: item.creador,
-          fechaInicio: new Date(item.fecha_inicio),
-          fechaFin: new Date(item.fecha_fin),
-          plazoRespuesta: new Date(item.plazo_respuesta),
-          estado: item.estado as 'pendiente' | 'aceptada' | 'rechazada' | 'expirada',
-          
-          // Campos específicos de eventos
-          id_perfil: item.id_perfil,
-          id_evento: item.id_evento,
-          tipo_evento: item.tipo_evento,
-          lugar: item.lugar,
-          direccion: item.direccion,
-          flyer_url: item.flyer_url,
-          confirmado: item.confirmado,
-          descripcion: item.descripcion,
-          created_at: item.created_at,
-          nombre_artista: item.nombre_artista,
-          
-          esEvento: true,
-          origen_tabla: 'participacion_evento',
-          id_organizador: item.id_organizador,
-          estado_evento: item.estado_evento
-        };
-      }
-    });
-
-    return solicitudes;
-  } catch (error: any) {
-    console.error('Error en getSolicitudesByPerfiles:', error);
-    throw error;
-  }
 }

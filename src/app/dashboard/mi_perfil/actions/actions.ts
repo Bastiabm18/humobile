@@ -1,7 +1,7 @@
 'use server'; 
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
-import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile } from '@/types/profile'; 
+import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, Perfil } from '@/types/profile'; 
 import { InvitacionData } from '@/types/profile';
 
 // ===========================================
@@ -504,22 +504,21 @@ export async function updateRepresentativeProfile(profileId: string, data: any) 
  * @param userId ID del usuario logueado.
  * @returns Array combinado de todos los perfiles del usuario.
  */
-export const getProfiles = async (userId: string): Promise<Profile[]> => {
+export const getProfiles = async (userId: string): Promise<Perfil[]> => {
   const supabaseAdmin = getSupabaseAdmin();
   
-  // 1. Consulta única a la tabla perfil
+  // Consulta a la tabla perfil con joins para ubicación
   const { data, error } = await supabaseAdmin
     .from('perfil')
     .select(`
       *,
-      Pais(nombre_pais),
-      Region(nombre_region),
-      Comuna(nombre_comuna)
+      Pais: id_pais (id_pais, nombre_pais),
+      Region: id_region (id_region, nombre_region),
+      Comuna: id_comuna (id_comuna, nombre_comuna)
     `)
     .eq('usuario_id', userId)
     .order('creado_en', { ascending: false });
 
-  // 2. Manejo de errores
   if (error) {
     console.error("Error fetching profiles:", error);
     throw new Error(`Fallo al obtener perfiles: ${error.message}`);
@@ -527,119 +526,39 @@ export const getProfiles = async (userId: string): Promise<Profile[]> => {
 
   if (!data) return [];
 
-  // 3. Mapear cada perfil según su tipo
-  const allProfiles: Profile[] = data.map((p: any) => {
-    // Datos base comunes
-    const baseData = {
-      countryId: p.Pais?.nombre_pais || '',
-      regionId: p.Region?.nombre_region || '',
-      cityId: p.Comuna?.nombre_comuna || '',
-      perfil_visible: p.perfil_visible || true,
-      email: p.email || '',
-      updateAt: p.actualizado_en || p.creado_en
-    };
-
-    // Según el tipo de perfil, construir la data específica
-    switch (p.tipo_perfil) {
-      case 'artista':
-        return {
-          id: p.id_perfil,
-          type: 'artist' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            name: p.nombre,
-            phone: p.telefono_contacto || '',
-            image_url: p.imagen_url || '',
-            tipo_perfil: p.tipo_perfil,
-            ...p.artista_data  // Merge con datos específicos del artista
-          } as ArtistData
-        };
-
-      case 'banda':
-        return {
-          id: p.id_perfil,
-          type: 'band' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            band_name: p.nombre,
-            style: p.banda_data?.estilo_banda || '',
-            music_type: p.banda_data?.tipo_musica || '',
-            is_tribute: p.banda_data?.es_tributo || false,
-            contact_phone: p.telefono_contacto || '',
-            photo_url: p.imagen_url || '',
-            video_url: p.video_url || '',
-            integrante: p.banda_data?.integrantes || [],
-            tipo_perfil: p.tipo_perfil,
-            ...p.banda_data  // Mantener otros datos de banda_data
-          } as BandData
-        };
-
-      case 'local':
-        // Para los booleanos, necesitamos consultar la tabla de intereses
-        // Por ahora los dejamos como false (después los implementarás)
-        return {
-          id: p.id_perfil,
-          type: 'place' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            place_name: p.nombre,
-            address: p.direccion || '',
-            phone: p.telefono_contacto || '',
-            place_type: p.local_data?.tipo_establecimiento as any || 'other',
-            lat: p.lat || 0,
-            lng: p.lon || 0,
-            photo_url: p.imagen_url || '',
-            video_url: p.video_url || '',
-            singer: false,  // Por defecto false (luego con intereses)
-            band: false,
-            actor: false,
-            comedian: false,
-            impersonator: false,
-            tribute: false,
-            tipo_perfil: p.tipo_perfil,
-            ...p.local_data  // Mantener otros datos de local_data
-          } as PlaceData
-        };
-
-      case 'productor':
-      case 'representante':
-        // Para los nuevos tipos, por ahora los mapeamos como artistas
-        // o puedes crear nuevas interfaces después
-        return {
-          id: p.id_perfil,
-          type: 'artist' as ProfileType, // Temporal
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            name: p.nombre,
-            phone: p.telefono_contacto || '',
-            image_url: p.imagen_url || '',
-            tipo_perfil: p.tipo_perfil,
-            ...(p.tipo_perfil === 'productor' ? p.productor_data : p.representante_data)
-          } as ArtistData
-        };
-
-      default:
-        // Tipo desconocido, usar datos mínimos
-        return {
-          id: p.id_perfil,
-          type: 'artist' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            name: p.nombre,
-            phone: p.telefono_contacto || '',
-            image_url: p.imagen_url || '',
-            tipo_perfil: p.tipo_perfil || 'artista'
-          } as ArtistData
-        };
+  // Mapear los datos al formato Perfil
+  const perfiles: Perfil[] = data.map((p: any) => ({
+    id_perfil: p.id_perfil,
+    usuario_id: p.usuario_id,
+    tipo_perfil: p.tipo_perfil,
+    nombre: p.nombre,
+    email: p.email,
+    direccion: p.direccion,
+    lat: p.lat,
+    lon: p.lon,
+    telefono_contacto: p.telefono_contacto,
+    imagen_url: p.imagen_url,
+    video_url: p.video_url,
+    perfil_visible: p.perfil_visible,
+    id_comuna: p.id_comuna,
+    id_region: p.id_region,
+    id_pais: p.id_pais,
+    creado_en: p.creado_en,
+    actualizado_en: p.actualizado_en,
+    artista_data: p.artista_data || {},
+    banda_data: p.banda_data || {},
+    local_data: p.local_data || {},
+    productor_data: p.productor_data || {},
+    representante_data: p.representante_data || {},
+    // Agregar datos de ubicación para fácil acceso
+    ubicacion: {
+      comuna: p.Comuna?.nombre_comuna || '',
+      region: p.Region?.nombre_region || '',
+      pais: p.Pais?.nombre_pais || ''
     }
-  });
+  }));
 
-  return allProfiles;
+  return perfiles;
 };
 
 

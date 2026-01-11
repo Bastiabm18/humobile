@@ -284,12 +284,11 @@ export interface AceptarRechazarEvento{
 
 export interface AceptarRechazarSolicitud{
 
-  id_solicitud:string;
-  respuesta_solicitud:boolean;
-  motivo:string;
-  id_banda:string;
-  id_artista:string;
-  tipo?:string;
+    id_solicitud: string;
+    codigo_solicitud:string;
+    id_evento_solicitud:string;
+    id_invitado:string;
+    motivo_rechazo?:string
 
 }
 type TipoSolicitud = "grupo" | "evento" | "booking";
@@ -309,19 +308,24 @@ export interface Solicitud {
 
 export interface SolicitudRespuesta {
   id: string;
-  tipo: 'grupo';
-  titulo: string;
-  creador: string;
-  fechaInicio: Date;
-  fechaFin: Date;
+  id_tipo_solicitud: string;
+  tipo_solicitud: string;
+  codigo_solicitud: string;
+  nombre_solicitud: string;
+  descripcion_solicitud: string;
+  creador_id: string;
+  creador_nombre: string;
+  creador_tipo: string;
+  invitado_id: string;
+  invitado_nombre: string;
+  invitado_tipo: string;
+  fecha_creacion: Date;
+  fecha_expiracion: Date;
   plazoRespuesta: Date;
-  estado: "pendiente" | "aceptada" | "rechazada" | "expirada";
-  id_perfil: string;
-  id_banda: string;
-  tipo_invitacion: string;
-  descripcion: string;
-  created_at: string;
-  nombre_artista?: string;
-  nombre_banda?: string;
-  origen_tabla: string;
+  estado: string;
+  motivo_rechazo: string;
+  id_evento_solicitud: string;
+  evento_titulo?: string;
+  evento_fecha_inicio?: Date;
+  evento_fecha_fin?: Date;
 }
