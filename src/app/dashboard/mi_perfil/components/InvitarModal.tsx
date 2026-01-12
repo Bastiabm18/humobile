@@ -4,7 +4,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { HiX, HiPaperAirplane, HiUser  } from 'react-icons/hi';
-import { enviarSolicitud, getPerfilesVisibles } from '../actions/actions';
+import { enviarSolicitud, getPerfilesArtistaVisibles } from '../actions/actions';
 import { format } from 'date-fns';
 import { InvitacionData } from '@/types/profile';
 
@@ -50,7 +50,7 @@ export default function InvitarModal({ isOpen, onClose, onEnviar, nombreBanda, i
   const cargarPerfiles = async () => {
     setLoadingPerfiles(true);
     try {
-      const perfiles = await getPerfilesVisibles();
+      const perfiles = await getPerfilesArtistaVisibles();
       setPerfilesVisibles(perfiles);
       console.log(perfiles);
     } catch (error) {
