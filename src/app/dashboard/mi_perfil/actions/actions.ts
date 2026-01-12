@@ -1,7 +1,7 @@
 'use server'; 
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
-import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, Perfil } from '@/types/profile'; 
+import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile,Perfil, PerfilConIntegrantes } from '@/types/profile'; 
 import { InvitacionData } from '@/types/profile';
 
 // ===========================================
@@ -215,59 +215,25 @@ export const createProfile = async (userId: string, type: ProfileType, data: any
     }
 };
 
-export const deleteProfile = async (profileId: string, type: ProfileType) => {
+export const BorrarPerfil = async (profileId: string) => {
     const supabaseAdmin = getSupabaseAdmin(); 
     
-    // Mapear ProfileType a tipo_perfil
-    const tipoPerfilMap: Record<ProfileType, string> = {
-        'artist': 'artista',
-        'band': 'banda',
-        'place': 'local',
-        'producer': 'productor',
-        'representative': 'representante'
-    };
-    
-    const tipoPerfil = tipoPerfilMap[type];
-    
-    if (!tipoPerfil) {
-        throw new Error(`Tipo de perfil no soportado: ${type}`);
-    }
+ 
     
     const { error } = await supabaseAdmin
         .from('perfil')
         .delete()
-        .eq('id_perfil', profileId)
-        .eq('tipo_perfil', tipoPerfil);
-    
+        .eq('id_perfil', profileId);
+
     if (error) {
-        console.error(`DELETE ${type.toUpperCase()} PROFILE ERROR:`, error);
-        throw new Error(`Fallo al eliminar el perfil de ${type}: ${error.message}`);
+        console.error(`DELETE  PROFILE ERROR:`, error);
+        throw new Error(`Fallo al eliminar el perfil : ${error.message}`);
     }
     
-    console.log(`[DB OPERATION] Perfil ${type} eliminado: ${profileId}`);
+    console.log(`[DB OPERATION] Perfil  eliminado: ${profileId}`);
 };
 
-export const updateProfile = async (profileId: string, type: ProfileType, data: any) => {
-    switch (type) {
-        case 'artist':
-            await updateArtistProfile(profileId, data as ArtistData);
-            break; 
-        case 'band':
-            await updateBandProfile(profileId, data as BandData);
-            break; 
-        case 'place':
-            await updatePlaceProfile(profileId, data as PlaceData);
-            break;
-        case 'producer':
-            await updateProducerProfile(profileId, data);
-            break;
-        case 'representative':
-            await updateRepresentativeProfile(profileId, data);
-            break; 
-        default:
-            throw new Error(`Tipo de perfil no soportado: ${type}`);
-    }
-};
+
 
 // ===========================================
 // FUNCIONES DE ACTUALIZACIÓN ESPECÍFICAS
@@ -504,20 +470,12 @@ export async function updateRepresentativeProfile(profileId: string, data: any) 
  * @param userId ID del usuario logueado.
  * @returns Array combinado de todos los perfiles del usuario.
  */
-export const getProfiles = async (userId: string): Promise<Perfil[]> => {
+export const getProfiles = async (userId: string): Promise<PerfilConIntegrantes[]> => {
   const supabaseAdmin = getSupabaseAdmin();
   
-  // Consulta a la tabla perfil con joins para ubicación
-  const { data, error } = await supabaseAdmin
-    .from('perfil')
-    .select(`
-      *,
-      Pais: id_pais (id_pais, nombre_pais),
-      Region: id_region (id_region, nombre_region),
-      Comuna: id_comuna (id_comuna, nombre_comuna)
-    `)
-    .eq('usuario_id', userId)
-    .order('creado_en', { ascending: false });
+  const { data, error } = await supabaseAdmin.rpc('get_perfiles_con_integrantes', {
+    p_user_id: userId
+  });
 
   if (error) {
     console.error("Error fetching profiles:", error);
@@ -526,8 +484,7 @@ export const getProfiles = async (userId: string): Promise<Perfil[]> => {
 
   if (!data) return [];
 
-  // Mapear los datos al formato Perfil
-  const perfiles: Perfil[] = data.map((p: any) => ({
+  const perfiles: PerfilConIntegrantes[] = data.map((p: any) => ({
     id_perfil: p.id_perfil,
     usuario_id: p.usuario_id,
     tipo_perfil: p.tipo_perfil,
@@ -550,12 +507,10 @@ export const getProfiles = async (userId: string): Promise<Perfil[]> => {
     local_data: p.local_data || {},
     productor_data: p.productor_data || {},
     representante_data: p.representante_data || {},
-    // Agregar datos de ubicación para fácil acceso
-    ubicacion: {
-      comuna: p.Comuna?.nombre_comuna || '',
-      region: p.Region?.nombre_region || '',
-      pais: p.Pais?.nombre_pais || ''
-    }
+    integrantes_perfil: p.integrantes_ids || [],
+    representados_perfil: p.representados_ids || [],
+    nombre_integrantes: p.integrantes_nombres || [],
+    nombre_representados: p.representados_nombres || []
   }));
 
   return perfiles;
@@ -565,17 +520,40 @@ export const getProfiles = async (userId: string): Promise<Perfil[]> => {
 /**PERFILES VISIBLES  */
 
 
-export const getPerfilesVisibles = async (): Promise<Profile[]> => {
+
+
+
+export const getPerfilesArtistaVisibles = async (): Promise<Perfil[]> => {
   const supabaseAdmin = getSupabaseAdmin();
   
   // Consulta única a tabla perfil filtrando por tipo y visibilidad
   const { data, error } = await supabaseAdmin
     .from('perfil')
     .select(`
-      *,
-      Pais(nombre_pais),
-      Region(nombre_region),
-      Comuna(nombre_comuna)
+      id_perfil,
+      usuario_id,
+      tipo_perfil,
+      nombre,
+      email,
+      direccion,
+      lat,
+      lon,
+      telefono_contacto,
+      imagen_url,
+      video_url,
+      perfil_visible,
+      id_comuna,
+      id_region,
+      id_pais,
+      creado_en,
+      actualizado_en,
+      artista_data,
+      banda_data,
+      local_data,
+      productor_data,
+      representante_data,
+      integrantes_perfil,
+      representados_perfil
     `)
     .eq('tipo_perfil', 'artista')
     .eq('perfil_visible', true)
@@ -591,29 +569,115 @@ export const getPerfilesVisibles = async (): Promise<Profile[]> => {
     return [];
   }
 
-  // Mapeo de artistas visibles
-  const perfilesVisibles: Profile[] = data.map(p => ({
-    id: p.id_perfil,
-    type: 'artist' as ProfileType,
-    created_at: p.creado_en,
-    data: {
-      name: p.nombre,
-      phone: p.telefono_contacto || '',
-      email: p.email || '',
-      countryId: p.Pais?.nombre_pais || '',
-      regionId: p.Region?.nombre_region || '',
-      cityId: p.Comuna?.nombre_comuna || '',
-      image_url: p.imagen_url || '',
-      perfil_visible: p.perfil_visible,
-      tipo_perfil: p.tipo_perfil,
-      updateAt: p.actualizado_en
-    } as ArtistData
+  // Mapeo de artistas visibles directamente a la interfaz Perfil
+  const perfilesVisibles: Perfil[] = data.map(p => ({
+    id_perfil: p.id_perfil,
+    usuario_id: p.usuario_id,
+    tipo_perfil: p.tipo_perfil,
+    nombre: p.nombre,
+    email: p.email,
+    direccion: p.direccion,
+    lat: p.lat,
+    lon: p.lon,
+    telefono_contacto: p.telefono_contacto,
+    imagen_url: p.imagen_url,
+    video_url: p.video_url,
+    perfil_visible: p.perfil_visible,
+    id_comuna: p.id_comuna,
+    id_region: p.id_region,
+    id_pais: p.id_pais,
+    creado_en: p.creado_en,
+    actualizado_en: p.actualizado_en,
+    artista_data: p.artista_data || {},
+    banda_data: p.banda_data || {},
+    local_data: p.local_data || {},
+    productor_data: p.productor_data || {},
+    representante_data: p.representante_data || {},
+    integrantes_perfil: p.integrantes_perfil || [],
+    representados_perfil: p.representados_perfil || []
+  }));
+
+  return perfilesVisibles;
+};
+export const getPerfilesRepresentanteVisibles = async (): Promise<Perfil[]> => {
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  // Consulta única a tabla perfil filtrando por tipo y visibilidad
+  const { data, error } = await supabaseAdmin
+    .from('perfil')
+    .select(`
+      id_perfil,
+      usuario_id,
+      tipo_perfil,
+      nombre,
+      email,
+      direccion,
+      lat,
+      lon,
+      telefono_contacto,
+      imagen_url,
+      video_url,
+      perfil_visible,
+      id_comuna,
+      id_region,
+      id_pais,
+      creado_en,
+      actualizado_en,
+      artista_data,
+      banda_data,
+      local_data,
+      productor_data,
+      representante_data,
+      integrantes_perfil,
+      representados_perfil
+    `)
+    .in('tipo_perfil', ['banda','artista'])
+    .eq('perfil_visible', true)
+    .order('tipo_perfil')
+    .order('nombre');
+
+  // Manejo de errores
+  if (error) {
+    console.error("Error fetching visible profiles:", error);
+    throw new Error(`Fallo al obtener perfiles visibles: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  // Mapeo de artistas visibles directamente a la interfaz Perfil
+  const perfilesVisibles: Perfil[] = data.map(p => ({
+    id_perfil: p.id_perfil,
+    usuario_id: p.usuario_id,
+    tipo_perfil: p.tipo_perfil,
+    nombre: p.nombre,
+    email: p.email,
+    direccion: p.direccion,
+    lat: p.lat,
+    lon: p.lon,
+    telefono_contacto: p.telefono_contacto,
+    imagen_url: p.imagen_url,
+    video_url: p.video_url,
+    perfil_visible: p.perfil_visible,
+    id_comuna: p.id_comuna,
+    id_region: p.id_region,
+    id_pais: p.id_pais,
+    creado_en: p.creado_en,
+    actualizado_en: p.actualizado_en,
+    artista_data: p.artista_data || {},
+    banda_data: p.banda_data || {},
+    local_data: p.local_data || {},
+    productor_data: p.productor_data || {},
+    representante_data: p.representante_data || {},
+    integrantes_perfil: p.integrantes_perfil || [],
+    representados_perfil: p.representados_perfil || []
   }));
 
   return perfilesVisibles;
 };
 
-// En actions.ts - Agregar esta función
+
 export async function enviarSolicitud(data: InvitacionData) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
@@ -783,108 +847,200 @@ export const eliminarPerfil = async (id_perfil: string): Promise<{exito: boolean
   }
 };
 
-export const crearPerfil = async (datosPerfil: {
-  usuario_id: string;
-  tipo_perfil: 'artista' | 'banda' | 'local' | 'productor' | 'representante';
-  nombre: string;
-  email?: string;
-  direccion?: string;
-  lat?: number;
-  lon?: number;
-  telefono_contacto?: string;
-  imagen_url?: string;
-  video_url?: string;
-  perfil_visible?: boolean;
-  id_comuna: string;
-  id_region: string;
-  id_pais: string;
-  datos_especificos?: Record<string, any>;
-}): Promise<{exito: boolean; mensaje: string; datos?: Perfil}> => {
+// 1. FUNCIÓN PARA CREAR SOLICITUD
+export async function crearSolicitud(
+  creadorId: string,
+  invitadoId: string,
+  tipo: 'unirse_banda' | 'ser_representado'
+) {
   const supabaseAdmin = getSupabaseAdmin();
   
   try {
-    // Preparar datos para la creación
-    const datosCreacion: any = {
-      usuario_id: datosPerfil.usuario_id,
-      tipo_perfil: datosPerfil.tipo_perfil,
-      nombre: datosPerfil.nombre,
-      email: datosPerfil.email || null,
-      direccion: datosPerfil.direccion || null,
-      lat: datosPerfil.lat || null,
-      lon: datosPerfil.lon || null,
-      telefono_contacto: datosPerfil.telefono_contacto || null,
-      imagen_url: datosPerfil.imagen_url || null,
-      video_url: datosPerfil.video_url || null,
-      perfil_visible: datosPerfil.perfil_visible ?? true,
-      id_comuna: datosPerfil.id_comuna,
-      id_region: datosPerfil.id_region,
-      id_pais: datosPerfil.id_pais,
-      creado_en: new Date().toISOString(),
-      actualizado_en: new Date().toISOString()
-    };
-
-    // Agregar datos específicos según tipo
-    const campoDatosEspecificos = `${datosPerfil.tipo_perfil}_data`;
-    datosCreacion[campoDatosEspecificos] = datosPerfil.datos_especificos || {};
-
-    // Realizar la creación
-    const { data, error } = await supabaseAdmin
-      .from('perfil')
-      .insert(datosCreacion)
-      .select(`
-        *,
-        Pais: id_pais (id_pais, nombre_pais),
-        Region: id_region (id_region, nombre_region),
-        Comuna: id_comuna (id_comuna, nombre_comuna)
-      `)
+    // Obtener el ID del tipo de solicitud
+    const { data: tipoData, error: tipoError } = await supabaseAdmin
+      .from('tipo_solicitud')
+      .select('id')
+      .eq('codigo', tipo)
       .single();
 
-    if (error) {
-      console.error("Error creando perfil:", error);
-      return {
-        exito: false,
-        mensaje: `Error al crear perfil: ${error.message}`
-      };
+    if (tipoError) throw tipoError;
+
+    // Crear la solicitud
+    const { data, error } = await supabaseAdmin
+      .from('solicitud')
+      .insert([{
+        tipo_solicitud_id: tipoData.id,
+        id_creador: creadorId,
+        id_invitado: invitadoId,
+        id_evento_solicitud: null,
+        fecha_expiracion: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        estado: 'pendiente'
+      }])
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    return { exito: true, data };
+  } catch (error: any) {
+    console.error(`Error creando solicitud ${tipo}:`, error);
+    return { exito: false, error: error.message };
+  }
+}
+
+// 2. FUNCIÓN PARA CREAR INTEGRANTE
+export async function crearIntegrante(id_artista: string, id_banda: string) {
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('integrante')
+      .insert([{
+        id_artista,
+        id_banda,
+        estado: 'pendiente',
+        tipo: 'miembro'
+      }])
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    return { exito: true, data };
+  } catch (error: any) {
+    console.error('Error creando integrante:', error);
+    return { exito: false, error: error.message };
+  }
+}
+
+// 3. FUNCIÓN PARA CREAR REPRESENTADO
+export async function crearRepresentado(id_representante: string, id_representado: string) {
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('representado')
+      .insert([{
+        id_representante,
+        id_representado,
+        estado_representacion: 'pendiente'
+      }])
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    return { exito: true, data };
+  } catch (error: any) {
+    console.error('Error creando representado:', error);
+    return { exito: false, error: error.message };
+  }
+}
+
+// 4. FUNCIÓN PARA PROCESAR INTEGRANTES DE BANDA
+export async function procesarIntegrantesBanda(id_banda: string, integrantesIds: string[]) {
+  const resultados = [];
+  
+  for (const idArtista of integrantesIds) {
+    try {
+      // Crear solicitud
+      const solicitudResult = await crearSolicitud(id_banda, idArtista, 'unirse_banda');
+      if (!solicitudResult.exito) {
+        resultados.push({ exito: false, idArtista, error: solicitudResult.error });
+        continue;
+      }
+
+      // Crear integrante
+      const integranteResult = await crearIntegrante(idArtista, id_banda);
+      if (!integranteResult.exito) {
+        resultados.push({ exito: false, idArtista, error: integranteResult.error });
+        continue;
+      }
+
+      resultados.push({ exito: true, idArtista, data: integranteResult.data });
+    } catch (error: any) {
+      resultados.push({ exito: false, idArtista, error: error.message });
+    }
+  }
+
+  return resultados;
+}
+
+// 5. FUNCIÓN PARA PROCESAR REPRESENTADOS
+export async function procesarRepresentados(id_representante: string, representadosIds: string[]) {
+  const resultados = [];
+  
+  for (const idRepresentado of representadosIds) {
+    try {
+      // Crear solicitud
+      const solicitudResult = await crearSolicitud(id_representante, idRepresentado, 'ser_representado');
+      if (!solicitudResult.exito) {
+        resultados.push({ exito: false, idRepresentado, error: solicitudResult.error });
+        continue;
+      }
+
+      // Crear representado
+      const representadoResult = await crearRepresentado(id_representante, idRepresentado);
+      if (!representadoResult.exito) {
+        resultados.push({ exito: false, idRepresentado, error: representadoResult.error });
+        continue;
+      }
+
+      resultados.push({ exito: true, idRepresentado, data: representadoResult.data });
+    } catch (error: any) {
+      resultados.push({ exito: false, idRepresentado, error: error.message });
+    }
+  }
+
+  return resultados;
+}
+
+// 6. FUNCIÓN PRINCIPAL CREAR PERFIL
+export async function crearPerfil(perfilData: any) {
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  try {
+    // Extraer arrays
+    const integrantesIds = Array.isArray(perfilData.integrantes_perfil) ? perfilData.integrantes_perfil : [];
+    const representadosIds = Array.isArray(perfilData.representados_perfil) ? perfilData.representados_perfil : [];
+
+    // Crear perfil sin arrays
+    const perfilParaInsertar = { ...perfilData };
+    delete perfilParaInsertar.integrantes_perfil;
+    delete perfilParaInsertar.representados_perfil;
+
+    const { data: perfilCreado, error: errorPerfil } = await supabaseAdmin
+      .from('perfil')
+      .insert([perfilParaInsertar])
+      .select()
+      .single();
+
+    if (errorPerfil) throw errorPerfil;
+
+    const idPerfilCreado = perfilCreado.id_perfil;
+
+    // Procesar según tipo
+    let resultadosIntegrantes:any = [];
+    let resultadosRepresentados:any = [];
+
+    if (perfilData.tipo_perfil === 'banda' && integrantesIds.length > 0) {
+      resultadosIntegrantes = await procesarIntegrantesBanda(idPerfilCreado, integrantesIds);
     }
 
-    // Mapear la respuesta
-    const perfilCreado: Perfil = {
-      id_perfil: data.id_perfil,
-      usuario_id: data.usuario_id,
-      tipo_perfil: data.tipo_perfil,
-      nombre: data.nombre,
-      email: data.email,
-      direccion: data.direccion,
-      lat: data.lat,
-      lon: data.lon,
-      telefono_contacto: data.telefono_contacto,
-      imagen_url: data.imagen_url,
-      video_url: data.video_url,
-      perfil_visible: data.perfil_visible,
-      id_comuna: data.id_comuna,
-      id_region: data.id_region,
-      id_pais: data.id_pais,
-      creado_en: data.creado_en,
-      actualizado_en: data.actualizado_en,
-      artista_data: data.artista_data || {},
-      banda_data: data.banda_data || {},
-      local_data: data.local_data || {},
-      productor_data: data.productor_data || {},
-      representante_data: data.representante_data || {},
-
-    };
+    if (perfilData.tipo_perfil === 'representante' && representadosIds.length > 0) {
+      resultadosRepresentados = await procesarRepresentados(idPerfilCreado, representadosIds);
+    }
 
     return {
       exito: true,
-      mensaje: 'Perfil creado exitosamente',
-      datos: perfilCreado
+      mensaje: 'Perfil creado',
+      datos: perfilCreado,
+      resultadosIntegrantes,
+      resultadosRepresentados
     };
 
   } catch (error: any) {
-    console.error("Error en crearPerfil:", error);
-    return {
-      exito: false,
-      mensaje: `Error interno: ${error.message}`
-    };
+    console.error('Error crearPerfil:', error);
+    return { exito: false, error: error.message };
   }
-};
+}

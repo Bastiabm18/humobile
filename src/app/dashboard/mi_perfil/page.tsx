@@ -36,13 +36,12 @@ export default async function MiPerfilPage() {
   }
 
   const geoData = await getGeoData();
-  console.log('Mi Perfil - UserData final →', userData);
+  console.log('Mi Perfil - UserData final →', userData.membresia.nombre_membresia);
   const initialProfiles = await getProfiles(userData.uid);
 
   console.log('Mi Perfil - Initial Profiles →', initialProfiles);
   return (
     <DashboardLayout
-  
         userEmail={userData.email}
         userName={userData.name}
         userRole={userData.role}
@@ -53,6 +52,7 @@ export default async function MiPerfilPage() {
         userName={userData.name || ''}
         userId={userData.uid || ''}
         geoData={geoData}
+        membresia={userData.membresia.nombre_membresia || 'Gratis'}
       />
     </DashboardLayout>
   );

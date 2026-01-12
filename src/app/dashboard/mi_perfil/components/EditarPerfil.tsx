@@ -1,7 +1,7 @@
 // app/dashboard/mi_perfil/EditarPerfil.tsx
 'use client';
 
-import { Perfil } from '@/types/profile';
+import { Perfil, PerfilSelect } from '@/types/profile';
 import { 
   FaGuitar, 
   FaBuilding, 
@@ -18,7 +18,10 @@ import {
   FaMap,
   FaLocationArrow,
   FaSave,
-  FaTrash
+  FaTrash,
+  FaPlus,
+  FaUsers,
+  FaUserCheck
 } from 'react-icons/fa';
 import { FaCheck, FaUser } from 'react-icons/fa6';
 import { motion } from 'framer-motion';
@@ -26,7 +29,7 @@ import { useState, useEffect } from 'react';
 import { getSupabaseBrowser } from '@/lib/supabase/supabase-client';
 import { FiUploadCloud, FiX, FiGlobe } from 'react-icons/fi';
 import LocationPickerMap from './LocationPickerMap';
-import { getGeoData } from '../actions/actions';
+import { getGeoData, getPerfilesArtistaVisibles, getPerfilesRepresentanteVisibles } from '../actions/actions';
 import { GeoData } from '@/types/profile';
 
 interface EditarPerfilProps {
@@ -38,6 +41,18 @@ interface EditarPerfilProps {
 
 export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: EditarPerfilProps) {
   const [formData, setFormData] = useState<Perfil>({ ...perfil });
+  
+  // Estados para manejar los arrays de IDs
+  const [integrantesSeleccionados, setIntegrantesSeleccionados] = useState<string[]>(
+    Array.isArray(perfil.integrantes_perfil) ? perfil.integrantes_perfil : []
+  );
+  const [representadosSeleccionados, setRepresentadosSeleccionados] = useState<string[]>(
+    Array.isArray(perfil.representados_perfil) ? perfil.representados_perfil : []
+  );
+  
+  const [nuevoIntegrante, setNuevoIntegrante] = useState<string>('');
+  const [nuevoRepresentado, setNuevoRepresentado] = useState<string>('');
+  
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(perfil.imagen_url);
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -51,7 +66,29 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
     comuna: ''
   });
   
+  // Estados para perfiles disponibles
+  const [perfilesDisponibles, setPerfilesDisponibles] = useState<PerfilSelect[]>([]);
+  const [cargandoPerfiles, setCargandoPerfiles] = useState(false);
+  
   const supabase = getSupabaseBrowser();
+
+  // Cargar perfiles disponibles según el tipo
+  useEffect(() => {
+    if (formData.tipo_perfil === 'banda' || formData.tipo_perfil === 'representante') {
+      cargarPerfilesDisponibles();
+    } else {
+      setPerfilesDisponibles([]);
+    }
+  }, [formData.tipo_perfil]);
+
+  // Actualizar formData cuando cambian los arrays
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      integrantes_perfil: integrantesSeleccionados,
+      representados_perfil: representadosSeleccionados
+    }));
+  }, [integrantesSeleccionados, representadosSeleccionados]);
 
   // Inicializar datos de ubicación
   useEffect(() => {
@@ -84,6 +121,44 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
       }
     }
   }, [geoData, formData.id_pais, formData.id_region, formData.id_comuna]);
+
+  const cargarPerfilesDisponibles = async () => {
+    try {
+      setCargandoPerfiles(true);
+      
+      if (formData.tipo_perfil === 'banda') {
+        // Para banda: solo artistas
+        const perfiles: PerfilSelect[] = await getPerfilesArtistaVisibles();
+        // Filtrar para excluir el propio perfil actual
+        const perfilesFiltrados: PerfilSelect[] = perfiles.filter(p => p.id_perfil !== perfil.id_perfil);
+        
+        const mappedPerfiles: PerfilSelect[] = perfilesFiltrados.map(p => ({
+          id_perfil: p.id_perfil,
+          nombre: p.nombre,
+          tipo_perfil: p.tipo_perfil,
+          perfil_visible: p.perfil_visible
+        }));
+        setPerfilesDisponibles(mappedPerfiles);
+      } else if (formData.tipo_perfil === 'representante') {
+        // Para representante: artistas y bandas
+        const perfiles = await getPerfilesRepresentanteVisibles();
+        // Filtrar para excluir el propio perfil actual
+        const perfilesFiltrados = perfiles.filter(p => p.id_perfil !== perfil.id_perfil);
+        
+        setPerfilesDisponibles(perfilesFiltrados.map(p => ({
+          id_perfil: p.id_perfil,
+          nombre: p.nombre,
+          tipo_perfil: p.tipo_perfil,
+          perfil_visible: p.perfil_visible
+        })));
+      }
+    } catch (error) {
+      console.error('Error cargando perfiles:', error);
+      setPerfilesDisponibles([]);
+    } finally {
+      setCargandoPerfiles(false);
+    }
+  };
 
   // Actualizar regiones cuando cambia el país
   const handlePaisChange = (idPais: string) => {
@@ -144,6 +219,30 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
       case 'representante': return 'bg-red-500/20 text-red-400 border-red-500/30';
       default: return 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30';
     }
+  };
+
+  // Funciones para manejar integrantes
+  const agregarIntegrante = () => {
+    if (nuevoIntegrante && !integrantesSeleccionados.includes(nuevoIntegrante)) {
+      setIntegrantesSeleccionados([...integrantesSeleccionados, nuevoIntegrante]);
+      setNuevoIntegrante('');
+    }
+  };
+
+  const eliminarIntegrante = (id: string) => {
+    setIntegrantesSeleccionados(integrantesSeleccionados.filter(item => item !== id));
+  };
+
+  // Funciones para manejar representados
+  const agregarRepresentado = () => {
+    if (nuevoRepresentado && !representadosSeleccionados.includes(nuevoRepresentado)) {
+      setRepresentadosSeleccionados([...representadosSeleccionados, nuevoRepresentado]);
+      setNuevoRepresentado('');
+    }
+  };
+
+  const eliminarRepresentado = (id: string) => {
+    setRepresentadosSeleccionados(representadosSeleccionados.filter(item => item !== id));
   };
 
   const uploadImage = async (event: React.ChangeEvent<HTMLInputElement>): Promise<string | null> => {
@@ -244,9 +343,186 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
     const updatedPerfil = {
       ...formData,
       video_url: tempVideoUrl,
+      integrantes_perfil: integrantesSeleccionados,
+      representados_perfil: representadosSeleccionados,
       actualizado_en: new Date().toISOString()
     };
     onSave(updatedPerfil);
+  };
+
+  // Renderizar sección de integrantes para banda
+  const renderIntegrantesSection = () => {
+    if (formData.tipo_perfil !== 'banda') return null;
+
+    return (
+      <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
+        <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+          <div className="p-2 bg-purple-500/10 rounded-lg">
+            <FaUsers className="w-5 h-5 text-purple-400" />
+          </div>
+          <span>Integrantes de la Banda</span>
+        </h2>
+        
+        <div className="space-y-4">
+          <div className="flex gap-2 mb-4">
+            {cargandoPerfiles ? (
+              <div className="flex-1 bg-neutral-800/50 border border-purple-600/30 rounded-xl px-4 py-3 flex items-center gap-3">
+                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-purple-500"></div>
+                <span className="text-gray-400">Cargando artistas...</span>
+              </div>
+            ) : (
+              <select
+                value={nuevoIntegrante}
+                onChange={(e) => setNuevoIntegrante(e.target.value)}
+                className="flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 text-white"
+                disabled={perfilesDisponibles.length === 0}
+              >
+                <option value="">Seleccionar artista</option>
+                {perfilesDisponibles
+                  .filter(p => p.tipo_perfil === 'artista')
+                  .map((artista) => (
+                    <option key={artista.id_perfil} value={artista.id_perfil}>
+                      {artista.nombre}
+                    </option>
+                  ))}
+              </select>
+            )}
+            
+            <button
+              type="button"
+              onClick={agregarIntegrante}
+              disabled={!nuevoIntegrante}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/30 disabled:cursor-not-allowed text-white rounded-lg flex items-center gap-2"
+            >
+              <FaPlus className="w-4 h-4" />
+              Agregar
+            </button>
+          </div>
+
+          {integrantesSeleccionados.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-sm font-medium text-neutral-400 mb-2">Integrantes seleccionados:</h4>
+              <div className="space-y-2">
+                {integrantesSeleccionados.map(id => {
+                  const artista = perfilesDisponibles.find(a => a.id_perfil === id);
+                  return (
+                    <div key={id} className="flex items-center justify-between bg-neutral-800/50 border border-neutral-700 rounded-lg p-3">
+                      <div className="flex items-center gap-3">
+                        <FaUser className="text-purple-400" />
+                        <span className="text-white">{artista?.nombre || 'Artista'}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => eliminarIntegrante(id)}
+                        className="p-1 text-red-400 hover:text-red-300"
+                      >
+                        <FaTrash className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Renderizar sección de representados para representante
+  const renderRepresentadosSection = () => {
+    if (formData.tipo_perfil !== 'representante') return null;
+
+    return (
+      <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
+        <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+          <div className="p-2 bg-red-500/10 rounded-lg">
+            <FaUserCheck className="w-5 h-5 text-red-400" />
+          </div>
+          <span>Artistas y Bandas Representados</span>
+        </h2>
+        
+        <div className="space-y-4">
+          <div className="flex gap-2 mb-4">
+            {cargandoPerfiles ? (
+              <div className="flex-1 bg-neutral-800/50 border border-red-600/30 rounded-xl px-4 py-3 flex items-center gap-3">
+                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-red-500"></div>
+                <span className="text-gray-400">Cargando perfiles...</span>
+              </div>
+            ) : (
+              <select
+                value={nuevoRepresentado}
+                onChange={(e) => setNuevoRepresentado(e.target.value)}
+                className="flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 text-white"
+                disabled={perfilesDisponibles.length === 0}
+              >
+                <option value="">Seleccionar perfil</option>
+                <optgroup label="Artistas">
+                  {perfilesDisponibles
+                    .filter(p => p.tipo_perfil === 'artista')
+                    .map((artista) => (
+                      <option key={artista.id_perfil} value={artista.id_perfil}>
+                        {artista.nombre}
+                      </option>
+                    ))}
+                </optgroup>
+                <optgroup label="Bandas">
+                  {perfilesDisponibles
+                    .filter(p => p.tipo_perfil === 'banda')
+                    .map((banda) => (
+                      <option key={banda.id_perfil} value={banda.id_perfil}>
+                        {banda.nombre}
+                      </option>
+                    ))}
+                </optgroup>
+              </select>
+            )}
+            
+            <button
+              type="button"
+              onClick={agregarRepresentado}
+              disabled={!nuevoRepresentado}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-600/30 disabled:cursor-not-allowed text-white rounded-lg flex items-center gap-2"
+            >
+              <FaPlus className="w-4 h-4" />
+              Agregar
+            </button>
+          </div>
+
+          {representadosSeleccionados.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-sm font-medium text-neutral-400 mb-2">Representados seleccionados:</h4>
+              <div className="space-y-2">
+                {representadosSeleccionados.map(id => {
+                  const perfil = perfilesDisponibles.find(p => p.id_perfil === id);
+                  return (
+                    <div key={id} className="flex items-center justify-between bg-neutral-800/50 border border-neutral-700 rounded-lg p-3">
+                      <div className="flex items-center gap-3">
+                        {perfil?.tipo_perfil === 'artista' ? 
+                          <FaUser className="text-blue-400" /> : 
+                          <FaUsers className="text-purple-400" />
+                        }
+                        <div>
+                          <span className="text-white">{perfil?.nombre || 'Perfil'}</span>
+                          <span className="text-xs text-neutral-500 ml-2">({perfil?.tipo_perfil})</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => eliminarRepresentado(id)}
+                        className="p-1 text-red-400 hover:text-red-300"
+                      >
+                        <FaTrash className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -407,6 +683,12 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
                   </div>
                 </div>
               </div>
+
+              {/* Sección de Integrantes (solo para banda) */}
+              {renderIntegrantesSection()}
+
+              {/* Sección de Representados (solo para representante) */}
+              {renderRepresentadosSection()}
 
               {/* Ubicación - País, Región, Comuna */}
               <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">

@@ -188,6 +188,59 @@ export interface Perfil {
   local_data: Record<string, any>;    // JSON object
   productor_data: Record<string, any>; // JSON object
   representante_data: Record<string, any>; // JSON object
+
+  //DATOS PARA BANDA Y REPRESENTANTE
+  integrantes_perfil?: string[]; // Array de IDs de integrantes del perfil
+  representados_perfil?: string[]; // Array de IDs de perfiles representados
+  nombre_integrantes?: string[]; // Nombres de los integrantes del perfil
+  nombre_representados?: string[]; // Nombres de los representados del perfil
+}
+export interface PerfilConIntegrantes {
+  // IDENTIFICACIÓN
+  id_perfil: string;
+  usuario_id: string;
+  tipo_perfil: 'artista' | 'banda' | 'local' | 'productor' | 'representante';
+  
+  // DATOS BÁSICOS COMUNES
+  nombre: string;
+  email: string | null;
+  direccion: string | null;
+  lat: number | null;
+  lon: number | null;
+  telefono_contacto: string | null;
+  imagen_url: string | null;
+  video_url: string | null;
+  perfil_visible: boolean;
+  
+  // UBICACIÓN (IDs)
+  id_comuna: string;
+  id_region: string;
+  id_pais: string;
+  
+  // METADATOS
+  creado_en: string;
+  actualizado_en: string;
+  
+  // DATOS ESPECÍFICOS POR TIPO (JSONB)
+  artista_data: Record<string, any>;  // JSON object
+  banda_data: Record<string, any>;    // JSON object
+  local_data: Record<string, any>;    // JSON object
+  productor_data: Record<string, any>; // JSON object
+  representante_data: Record<string, any>; // JSON object
+
+  //DATOS PARA BANDA Y REPRESENTANTE
+  integrantes_perfil?: string[]; // Array de IDs de integrantes del perfil
+  representados_perfil?: string[]; // Array de IDs de perfiles representados
+  nombre_integrantes?: string[]; // Nombres de los integrantes del perfil
+  nombre_representados?: string[]; // Nombres de los representados del perfil
+}
+
+// Interfaz para perfil básico
+export interface PerfilSelect {
+  id_perfil: string;
+  nombre: string;
+  tipo_perfil: string;
+  perfil_visible: boolean;
 }
 
 

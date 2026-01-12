@@ -23,7 +23,9 @@ import {
   FaLocationArrow,
   FaGlobe,
   FaHome,
-  FaUserTag
+  FaUserTag,
+  FaUsers,
+  FaUserFriends
 } from 'react-icons/fa';
 import { FaUser, FaLocationDot, FaClock, FaIdCardClip } from 'react-icons/fa6';
 import { motion } from 'framer-motion';
@@ -72,6 +74,15 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
   // Verificar si tiene coordenadas para mostrar mapa
   const tieneCoordenadas = perfil.lat && perfil.lon;
   const ubicacion = (perfil as any).ubicacion || {};
+
+  // Verificar si hay integrantes o representados
+  const tieneIntegrantes = perfil.tipo_perfil === 'banda' && 
+    perfil.nombre_integrantes && 
+    perfil.nombre_integrantes.length > 0;
+
+  const tieneRepresentados = perfil.tipo_perfil === 'representante' && 
+    perfil.nombre_representados && 
+    perfil.nombre_representados.length > 0;
 
   return (
     <motion.div
@@ -176,11 +187,6 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
                   direccion={perfil.direccion || undefined}
                   compacto={!showFullMap}
                 />
-                
-                {/* Coordenadas debajo del mapa */}
-                <div className="mt-4 pt-4 border-t border-neutral-700/50">
-            
-                </div>
               </div>
             </div>
           </motion.div>
@@ -245,8 +251,8 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
               </div>
             </motion.div>
 
-            {/* Ubicación geográfica (país, región, comuna) */}
-            {(ubicacion.comuna || ubicacion.region || ubicacion.pais) && (
+            {/* Integrantes (solo para bandas) */}
+            {tieneIntegrantes && (
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -255,7 +261,91 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
               >
                 <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
                   <div className="p-2 bg-purple-500/10 rounded-lg">
-                    <FaGlobe className="w-5 h-5 text-purple-400" />
+                    <FaUsers className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <span>Integrantes</span>
+                </h2>
+                
+                <div className="space-y-3">
+                  {perfil.nombre_integrantes && perfil.nombre_integrantes.map((integrante, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center gap-3 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                        <FaUser className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{integrante}</p>
+                  
+                      </div>
+                      <div className="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs font-medium rounded-full">
+                        Integrante
+                      </div>
+                    </div>
+                  ))}
+                  <div className="text-center pt-2">
+                    <p className="text-sm text-neutral-400">
+                      {perfil.nombre_integrantes?.length} integrante{perfil.nombre_integrantes?.length !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Representados (solo para representantes) */}
+            {tieneRepresentados && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
+              >
+                <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+                  <div className="p-2 bg-red-500/10 rounded-lg">
+                    <FaUserFriends className="w-5 h-5 text-red-400" />
+                  </div>
+                  <span>Representados</span>
+                </h2>
+                
+                <div className="space-y-3">
+                  {perfil.nombre_representados &&perfil.nombre_representados.map((representado, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center gap-3 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                        <FaUser className="w-5 h-5 text-red-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{representado}</p>
+                        
+                      </div>
+                      <div className="px-3 py-1 bg-red-500/20 text-red-400 text-xs font-medium rounded-full">
+                        Representado
+                      </div>
+                    </div>
+                  ))}
+                  <div className="text-center pt-2">
+                    <p className="text-sm text-neutral-400">
+                      {perfil.nombre_representados?.length} representado{perfil.nombre_representados?.length !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Ubicación geográfica (país, región, comuna) */}
+            {(ubicacion.comuna || ubicacion.region || ubicacion.pais) && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: tieneIntegrantes || tieneRepresentados ? 0.4 : 0.3 }}
+                className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
+              >
+                <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+                  <div className="p-2 bg-green-500/10 rounded-lg">
+                    <FaGlobe className="w-5 h-5 text-green-400" />
                   </div>
                   <span>Ubicación Geográfica</span>
                 </h2>

@@ -411,7 +411,7 @@ export async function getSolicitudesByPerfil(
             });
 
         if (error) {
-            console.error('❌ Error obteniendo solicitudes:', error);
+            console.error(' Error obteniendo solicitudes:', error);
             throw new Error(`Error al obtener solicitudes: ${error.message}`);
         }
 

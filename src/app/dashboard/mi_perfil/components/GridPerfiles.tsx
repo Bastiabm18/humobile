@@ -24,7 +24,7 @@ interface GridPerfilesProps {
   perfiles: Perfil[];
   onRefresh: () => void;
   onEdit: (perfil: Perfil) => void;
-  onDelete: (id_perfil: string) => Promise<void>;
+  onDelete: (id_perfil: string) => void;
   onVer: (perfil: Perfil) => void;
 }
 
@@ -282,10 +282,10 @@ export default function GridPerfiles({
                 {/* Botón Eliminar */}
                 <button
                   onClick={async () => {
-                    if (confirm(`¿Estás seguro de eliminar el perfil "${perfil.nombre}"?`)) {
+                   
                       await onDelete(perfil.id_perfil);
                       onRefresh();
-                    }
+                    
                   }}
                   className="
                     flex-1 flex items-center justify-center gap-2
