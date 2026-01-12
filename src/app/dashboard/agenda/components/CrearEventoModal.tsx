@@ -7,7 +7,6 @@ import { HiX, HiPlus, HiClock, HiCalendar, HiLink, HiPhotograph, HiMap, HiUser, 
 import { createEvent, getArtistasVisibles,getLugaresVisibles } from '../actions/actions';
 import { getSupabaseBrowser } from '@/lib/supabase/supabase-client';
 import { FiUploadCloud, FiX } from 'react-icons/fi';
-import { getPerfilesVisibles } from '../../mi_perfil/actions/actions';
 
 import RespuestaModal from './RespuestaModal';
 
