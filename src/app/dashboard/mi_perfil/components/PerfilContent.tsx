@@ -14,6 +14,7 @@ import EditarPerfil from './EditarPerfil';
 import ModalMensaje from './Modalmensaje';
 import ModalConfirmacion from './ModalConfirmacion';
 import CrearPerfil from './CrearPerfil';
+import { useRouter } from 'next/navigation';
 
 interface PerfilContentProps {
   initialProfiles: Perfil[];
@@ -37,6 +38,7 @@ export default function PerfilContent({
   const [perfilEditando, setPerfilEditando] = useState<Perfil | null>(null);
   const [creandoPerfil, setCreandoPerfil] = useState(false);
   const [membresiaEstado, setMembresiaEstado] = useState(membresia);
+  const router = useRouter();
   
   // Estados para el modal
   const [showModal, setShowModal] = useState(false);
@@ -69,17 +71,21 @@ export default function PerfilContent({
   };
 
   const handleEdit = (perfil: Perfil) => {
+   // console.log('Editando perfil:', perfil);
     setPerfilEditando(perfil);
   };
 
   const handleActualizaPerfil = async (perfilActualizado: Perfil) => {
+    console.log('Guardando perfil actualizado:', perfilActualizado);
     try {
-      const resultado = await actualizarPerfil(perfilActualizado);
+      const resultado = await actualizarPerfil(perfilActualizado,
+                                               perfilActualizado.integrantes_perfil, 
+                                               perfilActualizado.representados_perfil, 
+                                               perfilActualizado.integrantes_eliminar,
+                                               perfilActualizado.representados_eliminar);
       
       if (resultado.exito && resultado.datos) {
-        setPerfiles(prev => prev.map(p => 
-          p.id_perfil === perfilActualizado.id_perfil ? resultado.datos! : p
-        ));
+        await loadPerfiles();
         
         setPerfilEditando(null);
         setPerfilVista(resultado.datos);
@@ -148,6 +154,13 @@ const handleCrearPerfil = async (nuevoPerfilData: Omit<Perfil, 'id_perfil' | 'cr
       mostrarMensaje('Perfil creado exitosamente', 'exito');
       await loadPerfiles();
       setCreandoPerfil(false);
+
+      if (membresiaEstado != process.env.NEXT_PUBLIC_SUPERADMIN) {
+        
+        setTimeout(() => {
+          router.push('/dashboard/serPremium');
+        }, 3000);
+      }
     } else {
       mostrarMensaje(resultado.mensaje || 'Error al crear el perfil', 'error');
     }
@@ -404,7 +417,7 @@ const handleCrearPerfil = async (nuevoPerfilData: Omit<Perfil, 'id_perfil' | 'cr
   return (
     <>
       {renderModales()}
-      <div className="min-h-screen p-4 bg-neutral-900">
+      <div className="min-h-screen w-[85vw] md:w-[95vw] p-4 bg-neutral-900">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8 text-center">
             <div className="mb-6">

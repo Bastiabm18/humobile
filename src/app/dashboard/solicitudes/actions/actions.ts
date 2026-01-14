@@ -59,6 +59,7 @@ export async function aceptarSolicitud({
   codigo_solicitud,
   id_evento_solicitud,
   id_invitado
+  ,id_creador
 }: AceptarRechazarSolicitud) {
   try {
     const supabase = getSupabaseAdmin();
@@ -91,6 +92,12 @@ export async function aceptarSolicitud({
           id_evento_solicitud,
           id_invitado
         });
+
+        case 'ser_representado':
+          return await confirmarSerRepresentado({
+            id_creador,
+            id_invitado
+          });
         
       default:
         return { 
@@ -143,6 +150,45 @@ async function confirmarParticipacionEvento({
     success: true, 
     data,
     message: 'Participación en evento confirmada exitosamente'
+  };
+}
+// Función separada para confirmar ser representado
+async function confirmarSerRepresentado({ 
+ 
+ 
+  id_invitado,
+  id_creador
+}: {
+
+  id_invitado: string,
+  id_creador:string
+}) {
+  const supabase = getSupabaseAdmin();
+  // Buscar el registro en participacion_evento usando evento_id y perfil_id
+  const { data, error } = await supabase
+    .from('representado')
+    .update({
+      estado_representacion: 'activo',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id_representante',id_creador)
+    .eq('id_representado',id_invitado)
+    .eq('estado_representacion', 'pendiente')
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error confirmando al representante:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Error al confirmar al representante' 
+    };
+  }
+
+  return { 
+    success: true, 
+    data,
+    message: 'Representante confirmado exitosamente'
   };
 }
 export async function rechazarSolicitud({ 

@@ -69,7 +69,7 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
     setSelectedProfile(profile);
   };
 
-  const handleAceptar = async (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string) => {
+  const handleAceptar = async (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string,creador_id:string) => {
     const solicitud = solicitudes.find(s => s.id === id);
     if (!solicitud) return;
     
@@ -78,6 +78,7 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
       codigo_solicitud:codigo_solicitud,
       id_evento_solicitud:id_evento_solicitud,
       id_invitado:invitado_id,
+      id_creador:creador_id
     });
     
     if (resultado.success) {
@@ -89,7 +90,7 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
     }
   };
 
-  const handleRechazar = async (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string) => {
+  const handleRechazar = async (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string,creador_id:string) => {
     const solicitud = solicitudes.find(s => s.id === id);
     if (!solicitud) return;
     
@@ -98,7 +99,8 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
         codigo_solicitud:codigo_solicitud,
         id_evento_solicitud:id_evento_solicitud,  
         id_invitado:invitado_id,
-        motivo_rechazo:''
+        motivo_rechazo:'',
+        id_creador:creador_id
     });
 
     if (resultado.success) {

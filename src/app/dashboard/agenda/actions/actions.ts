@@ -1022,7 +1022,7 @@ export const getProfiles = async (userId: string): Promise<Profile[]> => {
       case 'artista':
         return {
           id: p.id_perfil,
-          type: 'artist' as ProfileType,
+          type: 'Artista' as ProfileType,
           created_at: p.creado_en,
           data: {
             ...baseData,
@@ -1037,7 +1037,7 @@ export const getProfiles = async (userId: string): Promise<Profile[]> => {
       case 'banda':
         return {
           id: p.id_perfil,
-          type: 'band' as ProfileType,
+          type: 'Banda' as ProfileType,
           created_at: p.creado_en,
           data: {
             ...baseData,
@@ -1059,7 +1059,7 @@ export const getProfiles = async (userId: string): Promise<Profile[]> => {
         // Por ahora los dejamos como false (después los implementarás)
         return {
           id: p.id_perfil,
-          type: 'place' as ProfileType,
+          type: 'Local' as ProfileType,
           created_at: p.creado_en,
           data: {
             ...baseData,
@@ -1088,7 +1088,7 @@ export const getProfiles = async (userId: string): Promise<Profile[]> => {
         // o puedes crear nuevas interfaces después
         return {
           id: p.id_perfil,
-          type: 'artist' as ProfileType, // Temporal
+          type: 'Representante' as ProfileType, // Temporal
           created_at: p.creado_en,
           data: {
             ...baseData,
@@ -1104,7 +1104,7 @@ export const getProfiles = async (userId: string): Promise<Profile[]> => {
         // Tipo desconocido, usar datos mínimos
         return {
           id: p.id_perfil,
-          type: 'artist' as ProfileType,
+          type: 'Usuario' as ProfileType,
           created_at: p.creado_en,
           data: {
             ...baseData,

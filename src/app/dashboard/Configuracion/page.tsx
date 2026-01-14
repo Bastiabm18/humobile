@@ -43,7 +43,12 @@ console.log('config - UserData →', userData);
 // console.log('config - Profiles →', profiles);
     
   return (
-    <DashboardLayout userEmail={userData.email} userName={userData.name} userRole={userData.role}>
+    <DashboardLayout
+         userEmail={userData.email} 
+         userName={userData.name} 
+         userRole={userData.role}
+         userMembresia={userData.membresia}
+         >
       <ConfiguracionContent userData={userData}  />
     </DashboardLayout>
   );

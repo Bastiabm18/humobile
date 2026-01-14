@@ -510,7 +510,11 @@ export const getProfiles = async (userId: string): Promise<PerfilConIntegrantes[
     integrantes_perfil: p.integrantes_ids || [],
     representados_perfil: p.representados_ids || [],
     nombre_integrantes: p.integrantes_nombres || [],
-    nombre_representados: p.representados_nombres || []
+    nombre_representados: p.representados_nombres || [],
+    representantes_perfil:p.representante_ids || [],
+    representantes_nombres:p.representante_nombres || [],
+    bandas_ids:p.bandas_ids || [],
+    bandas_nombres:p.bandas_nombres || []
   }));
 
   return perfiles;
@@ -557,6 +561,80 @@ export const getPerfilesArtistaVisibles = async (): Promise<Perfil[]> => {
     `)
     .eq('tipo_perfil', 'artista')
     .eq('perfil_visible', true)
+    .order('nombre');
+
+  // Manejo de errores
+  if (error) {
+    console.error("Error fetching visible profiles:", error);
+    throw new Error(`Fallo al obtener perfiles visibles: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  // Mapeo de artistas visibles directamente a la interfaz Perfil
+  const perfilesVisibles: Perfil[] = data.map(p => ({
+    id_perfil: p.id_perfil,
+    usuario_id: p.usuario_id,
+    tipo_perfil: p.tipo_perfil,
+    nombre: p.nombre,
+    email: p.email,
+    direccion: p.direccion,
+    lat: p.lat,
+    lon: p.lon,
+    telefono_contacto: p.telefono_contacto,
+    imagen_url: p.imagen_url,
+    video_url: p.video_url,
+    perfil_visible: p.perfil_visible,
+    id_comuna: p.id_comuna,
+    id_region: p.id_region,
+    id_pais: p.id_pais,
+    creado_en: p.creado_en,
+    actualizado_en: p.actualizado_en,
+    artista_data: p.artista_data || {},
+    banda_data: p.banda_data || {},
+    local_data: p.local_data || {},
+    productor_data: p.productor_data || {},
+    representante_data: p.representante_data || {},
+    integrantes_perfil: p.integrantes_perfil || [],
+    representados_perfil: p.representados_perfil || []
+  }));
+
+  return perfilesVisibles;
+};
+export const getPerfilesTodoUso = async (): Promise<Perfil[]> => {
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  // Consulta única a tabla perfil filtrando por tipo y visibilidad
+  const { data, error } = await supabaseAdmin
+    .from('perfil')
+    .select(`
+      id_perfil,
+      usuario_id,
+      tipo_perfil,
+      nombre,
+      email,
+      direccion,
+      lat,
+      lon,
+      telefono_contacto,
+      imagen_url,
+      video_url,
+      perfil_visible,
+      id_comuna,
+      id_region,
+      id_pais,
+      creado_en,
+      actualizado_en,
+      artista_data,
+      banda_data,
+      local_data,
+      productor_data,
+      representante_data,
+      integrantes_perfil,
+      representados_perfil
+    `)
     .order('nombre');
 
   // Manejo de errores
@@ -712,11 +790,82 @@ export async function enviarSolicitud(data: InvitacionData) {
 }
 
 
-export const actualizarPerfil = async (perfil: Perfil): Promise<{exito: boolean; mensaje: string; datos?: Perfil}> => {
+// FUNCIÓN AUXILIAR PARA BUSCAR SOLICITUD
+async function buscarSolicitud(
+  supabaseAdmin: any,
+  idCreador: string, 
+  idInvitado: string, 
+  tipoSolicitud: 'unirse_banda' | 'ser_representado'
+) {
+  try {
+    const { data } = await supabaseAdmin
+      .from('solicitud')
+      .select(`
+        id,
+        tipo_solicitud:tipo_solicitud_id (
+          codigo
+        )
+      `)
+      .eq('id_creador', idCreador)
+      .eq('id_invitado', idInvitado)
+      .eq('estado', 'pendiente')
+      .eq('tipo_solicitud.codigo', tipoSolicitud)
+      .single();
+
+    return data;
+  } catch (error: any) {
+    if (error.code !== 'PGRST116') {
+      console.error(`Error buscando solicitud: ${error.message}`);
+    }
+    return null;
+  }
+}
+
+// FUNCIÓN AUXILIAR PARA ELIMINAR SOLICITUD
+async function eliminarSolicitudSiExiste(
+  supabaseAdmin: any,
+  idCreador: string, 
+  idInvitado: string, 
+  tipoSolicitud: 'unirse_banda' | 'ser_representado'
+) {
+  const solicitudExistente = await buscarSolicitud(supabaseAdmin, idCreador, idInvitado, tipoSolicitud);
+  
+  if (solicitudExistente) {
+    await supabaseAdmin
+      .from('solicitud')
+      .delete()
+      .eq('id', solicitudExistente.id);
+    return true;
+  }
+  
+  return false;
+}
+
+export const actualizarPerfil = async (
+  perfil: Perfil, 
+  integrantes_perfil?: string[], 
+  representados_perfil?: string[],
+  integrantes_eliminar?: string[], 
+  representados_eliminar?: string[]
+): Promise<{
+  exito: boolean; 
+  mensaje: string; 
+  datos?: Perfil;
+  resultadosIntegrantes?: any[];
+  resultadosRepresentados?: any[];
+  resultadosEliminacionIntegrantes?: any[];
+  resultadosEliminacionRepresentados?: any[];
+}> => {
   const supabaseAdmin = getSupabaseAdmin();
   
   try {
-    // Preparar datos para la actualización
+    // Extraer arrays de integrantes y representados si existen
+    const integrantesIds = Array.isArray(integrantes_perfil) ? integrantes_perfil : [];
+    const representadosIds = Array.isArray(representados_perfil) ? representados_perfil : [];
+    const integrantesEliminarIds = Array.isArray(integrantes_eliminar) ? integrantes_eliminar : [];
+    const representadosEliminarIds = Array.isArray(representados_eliminar) ? representados_eliminar : [];
+
+    // Preparar datos para la actualización del perfil base
     const datosActualizacion: any = {
       nombre: perfil.nombre,
       email: perfil.email,
@@ -797,13 +946,327 @@ export const actualizarPerfil = async (perfil: Perfil): Promise<{exito: boolean;
       local_data: data.local_data || {},
       productor_data: data.productor_data || {},
       representante_data: data.representante_data || {},
-     
     };
+
+    // Procesar integrantes y representados según el tipo de perfil
+    let resultadosIntegrantes: any[] = [];
+    let resultadosRepresentados: any[] = [];
+    let resultadosEliminacionIntegrantes: any[] = [];
+    let resultadosEliminacionRepresentados: any[] = [];
+
+    // 1. PRIMERO: ELIMINAR INTEGRANTES/REPRESENTACIONES ESPECÍFICOS
+
+    // eliminar representacion 
+    if((perfil.tipo_perfil === 'artista' || perfil.tipo_perfil ==='banda') && representadosEliminarIds.length > 0){
+         for (const idRepresentadoEliminar of representadosEliminarIds) {
+        try {
+          // Eliminar de la tabla representado
+          const { error: errorEliminarRepresentado } = await supabaseAdmin
+            .from('representado')
+            .delete()
+            .eq('id_representado', perfil.id_perfil)
+            .eq('id_representante', idRepresentadoEliminar);
+
+          if (errorEliminarRepresentado) {
+            resultadosEliminacionRepresentados.push({
+              exito: false,
+              idRepresentado: idRepresentadoEliminar,
+              mensaje: `Error eliminando representado: ${errorEliminarRepresentado.message}`,
+              tipo: 'representado'
+            });
+          } else {
+            resultadosEliminacionRepresentados.push({
+              exito: true,
+              idRepresentado: idRepresentadoEliminar,
+              mensaje: 'Representado eliminado exitosamente',
+              tipo: 'representado'
+            });
+          }
+
+          // También eliminar solicitud pendiente asociada (si existe)
+          await eliminarSolicitudSiExiste(
+            supabaseAdmin,
+            perfil.id_perfil,
+            idRepresentadoEliminar,
+            'ser_representado'
+          );
+
+        } catch (error: any) {
+          resultadosEliminacionRepresentados.push({
+            exito: false,
+            idRepresentado: idRepresentadoEliminar,
+            mensaje: `Error: ${error.message}`,
+            tipo: 'representado'
+          });
+        }
+      }
+      }
+      // Eliminar participacion en la banda 
+    if (perfil.tipo_perfil === 'artista' && integrantesEliminarIds.length > 0) {
+          for (const idArtistaEliminar of integrantesEliminarIds) {
+        try {
+          // Eliminar de la tabla integrante
+          const { error: errorEliminarIntegrante } = await supabaseAdmin
+            .from('integrante')
+            .delete()
+            .eq('id_artista', perfil.id_perfil)
+            .eq('id_banda', idArtistaEliminar);
+
+          if (errorEliminarIntegrante) {
+            resultadosEliminacionIntegrantes.push({
+              exito: false,
+              idArtista: idArtistaEliminar,
+              mensaje: `Error eliminando participacion en la banda: ${errorEliminarIntegrante.message}`,
+              tipo: 'integrante'
+            });
+          } else {
+            resultadosEliminacionIntegrantes.push({
+              exito: true,
+              idArtista: idArtistaEliminar,
+              mensaje: 'Participacion en la banda eliminada exitosamente',
+              tipo: 'integrante'
+            });
+          }
+
+          // También eliminar solicitud pendiente asociada (si existe)
+          await eliminarSolicitudSiExiste(
+            supabaseAdmin,
+            perfil.id_perfil,
+            idArtistaEliminar,
+            'unirse_banda'
+          );
+
+        } catch (error: any) {
+          resultadosEliminacionIntegrantes.push({
+            exito: false,
+            idArtista: idArtistaEliminar,
+            mensaje: `Error: ${error.message}`,
+            tipo: 'integrante'
+          });
+        }
+      }
+    }
+    // Eliminar integrantes específicos (para bandas)
+    if (perfil.tipo_perfil === 'banda' && integrantesEliminarIds.length > 0) {
+      for (const idArtistaEliminar of integrantesEliminarIds) {
+        try {
+          // Eliminar de la tabla integrante
+          const { error: errorEliminarIntegrante } = await supabaseAdmin
+            .from('integrante')
+            .delete()
+            .eq('id_banda', perfil.id_perfil)
+            .eq('id_artista', idArtistaEliminar);
+
+          if (errorEliminarIntegrante) {
+            resultadosEliminacionIntegrantes.push({
+              exito: false,
+              idArtista: idArtistaEliminar,
+              mensaje: `Error eliminando integrante: ${errorEliminarIntegrante.message}`,
+              tipo: 'integrante'
+            });
+          } else {
+            resultadosEliminacionIntegrantes.push({
+              exito: true,
+              idArtista: idArtistaEliminar,
+              mensaje: 'Integrante eliminado exitosamente',
+              tipo: 'integrante'
+            });
+          }
+
+          // También eliminar solicitud pendiente asociada (si existe)
+          await eliminarSolicitudSiExiste(
+            supabaseAdmin,
+            perfil.id_perfil,
+            idArtistaEliminar,
+            'unirse_banda'
+          );
+
+        } catch (error: any) {
+          resultadosEliminacionIntegrantes.push({
+            exito: false,
+            idArtista: idArtistaEliminar,
+            mensaje: `Error: ${error.message}`,
+            tipo: 'integrante'
+          });
+        }
+      }
+    }
+
+    // Eliminar representados específicos (para representantes)
+    if (perfil.tipo_perfil === 'representante' && representadosEliminarIds.length > 0) {
+      for (const idRepresentadoEliminar of representadosEliminarIds) {
+        try {
+          // Eliminar de la tabla representado
+          const { error: errorEliminarRepresentado } = await supabaseAdmin
+            .from('representado')
+            .delete()
+            .eq('id_representante', perfil.id_perfil)
+            .eq('id_representado', idRepresentadoEliminar);
+
+          if (errorEliminarRepresentado) {
+            resultadosEliminacionRepresentados.push({
+              exito: false,
+              idRepresentado: idRepresentadoEliminar,
+              mensaje: `Error eliminando representado: ${errorEliminarRepresentado.message}`,
+              tipo: 'representado'
+            });
+          } else {
+            resultadosEliminacionRepresentados.push({
+              exito: true,
+              idRepresentado: idRepresentadoEliminar,
+              mensaje: 'Representado eliminado exitosamente',
+              tipo: 'representado'
+            });
+          }
+
+          // También eliminar solicitud pendiente asociada (si existe)
+          await eliminarSolicitudSiExiste(
+            supabaseAdmin,
+            perfil.id_perfil,
+            idRepresentadoEliminar,
+            'ser_representado'
+          );
+
+        } catch (error: any) {
+          resultadosEliminacionRepresentados.push({
+            exito: false,
+            idRepresentado: idRepresentadoEliminar,
+            mensaje: `Error: ${error.message}`,
+            tipo: 'representado'
+          });
+        }
+      }
+    }
+
+    // 2. SEGUNDO: AGREGAR NUEVOS INTEGRANTES/REPRESENTADOS
+    // Para bandas: procesar integrantes
+    if (perfil.tipo_perfil === 'banda' && integrantesIds.length > 0) {
+      // Verificar y eliminar solicitudes existentes para cada integrante
+      for (const idArtista of integrantesIds) {
+        try {
+          // PRIMERO: Verificar si ya existe un integrante CONFIRMADO (activo)
+          const { data: integranteConfirmado } = await supabaseAdmin
+            .from('integrante')
+            .select('id')
+            .eq('id_banda', perfil.id_perfil)
+            .eq('id_artista', idArtista)
+            .eq('estado', 'activo')
+            .single();
+
+          // Si ya es integrante confirmado, no hacemos nada
+          if (integranteConfirmado) {
+            console.log(`Artista ${idArtista} ya es integrante confirmado de la banda`);
+            resultadosIntegrantes.push({ 
+              exito: false, 
+              idArtista, 
+              mensaje: 'Ya es integrante confirmado',
+              estado: 'confirmado' 
+            });
+            continue; // Pasamos al siguiente artista
+          }
+
+          // SEGUNDO: Eliminar solicitud pendiente existente (si existe)
+          await eliminarSolicitudSiExiste(
+            supabaseAdmin,
+            perfil.id_perfil,
+            idArtista,
+            'unirse_banda'
+          );
+
+          // TERCERO: Verificar si ya existe un registro en la tabla integrante (pero no confirmado)
+          const { data: integranteExistente } = await supabaseAdmin
+            .from('integrante')
+            .select('id')
+            .eq('id_banda', perfil.id_perfil)
+            .eq('id_artista', idArtista)
+            .not('estado', 'eq', 'activo') 
+            .single();
+
+          // Si existe (pero no está confirmado), eliminarlo
+          if (integranteExistente) {
+            await supabaseAdmin
+              .from('integrante')
+              .delete()
+              .eq('id', integranteExistente.id);
+          }
+        } catch (error) {
+          // Si no existe registro, continuar normalmente
+          console.log(`No existe solicitud o integrante previo para artista ${idArtista}`);
+        }
+      }
+      
+      // Luego, crear nuevos integrantes (solo para los que no estaban confirmados)
+      resultadosIntegrantes = await procesarIntegrantesBanda(perfil.id_perfil, integrantesIds);
+    }
+
+    // Para representantes: procesar representados
+    if (perfil.tipo_perfil === 'representante' && representadosIds.length > 0) {
+      // Verificar y eliminar solicitudes existentes para cada representado
+      for (const idRepresentado of representadosIds) {
+        try {
+          // PRIMERO: Verificar si ya existe un representado CONFIRMADO
+          const { data: representadoConfirmado } = await supabaseAdmin
+            .from('representado')
+            .select('id')
+            .eq('id_representante', perfil.id_perfil)
+            .eq('id_representado', idRepresentado)
+            .eq('estado_representacion', 'confirmado')
+            .single();
+
+          // Si ya es representado confirmado, no hacemos nada
+          if (representadoConfirmado) {
+            console.log(`Perfil ${idRepresentado} ya es representado confirmado`);
+            resultadosRepresentados.push({ 
+              exito: false, 
+              idRepresentado, 
+              mensaje: 'Ya es representado confirmado',
+              estado: 'confirmado' 
+            });
+            continue; // Pasamos al siguiente representado
+          }
+
+          // SEGUNDO: Eliminar solicitud pendiente existente (si existe)
+          await eliminarSolicitudSiExiste(
+            supabaseAdmin,
+            perfil.id_perfil,
+            idRepresentado,
+            'ser_representado'
+          );
+
+          // TERCERO: Verificar si ya existe un registro en la tabla representado (pero no confirmado)
+          const { data: representadoExistente } = await supabaseAdmin
+            .from('representado')
+            .select('id')
+            .eq('id_representante', perfil.id_perfil)
+            .eq('id_representado', idRepresentado)
+            .eq('estado_representacion', 'pendiente')
+            .single();
+
+          // Si existe (pero no está confirmado), eliminarlo
+          if (representadoExistente) {
+            await supabaseAdmin
+              .from('representado')
+              .delete()
+              .eq('id', representadoExistente.id);
+          }
+        } catch (error) {
+          // Si no existe registro, continuar normalmente
+          console.log(`No existe solicitud o representado previo para ${idRepresentado}`);
+        }
+      }
+      
+      // Luego, crear nuevos representados (solo para los que no estaban confirmados)
+      resultadosRepresentados = await procesarRepresentados(perfil.id_perfil, representadosIds);
+    }
 
     return {
       exito: true,
       mensaje: 'Perfil actualizado exitosamente',
-      datos: perfilActualizado
+      datos: perfilActualizado,
+      resultadosIntegrantes,
+      resultadosRepresentados,
+      resultadosEliminacionIntegrantes,
+      resultadosEliminacionRepresentados
     };
 
   } catch (error: any) {

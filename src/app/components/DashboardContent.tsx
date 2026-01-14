@@ -30,7 +30,7 @@ import {
 import { AiFillSetting } from 'react-icons/ai';
 import { RiCustomerService2Fill, RiDashboardFill } from "react-icons/ri";
 import { HiCube } from "react-icons/hi";
-import { GiCube } from "react-icons/gi";
+import { GiCube, GiTakeMyMoney } from "react-icons/gi";
 import { TbCube, TbMessageQuestion } from "react-icons/tb";
 import { MENU_ITEMS } from '../constants/menu';
 import { UserRole } from '@/types/role';
@@ -38,6 +38,7 @@ import { BiCalendarCheck, BiCubeAlt } from 'react-icons/bi';
 import { DiSpark } from 'react-icons/di';
 import { CgNotifications } from 'react-icons/cg';
 import { useRouter } from 'next/navigation';
+import { GrUserManager } from 'react-icons/gr';
 
 interface MenuItem {
   name: string;
@@ -87,11 +88,18 @@ export default function DashboardContent({ userName, userRole, userMembresia }: 
     const dias = userMembresia?.fecha_fin_membresia && userMembresia?.fecha_ini_membresia
     ? Math.ceil((new Date(userMembresia.fecha_fin_membresia).getTime() - new Date(userMembresia.fecha_ini_membresia).getTime()) / (1000 * 3600 * 24))
     : 0;
-  console.log('membresia content', usuarioMembresia)
+ // console.log('membresia content', usuarioMembresia)
   const router = useRouter()
-  const menuItems = MENU_ITEMS.filter(item => 
-    userRole && item.role.includes(userRole)
-  );
+const menuItems = MENU_ITEMS.filter(item => {
+  // Debe tener el rol correcto
+  if (!userRole || !item.role.includes(userRole)) return false;
+  
+  // Si es PREMIUM, muestra todo de su rol
+  if (usuarioMembresia === 'PREMIUM') return true;
+  
+  // De lo contrario, solo muestra items GRATIS
+  return item.membresia.includes('GRATIS');
+});
 
   // Mapeo de iconos para cada opción del menú
   const getMenuIcon = (index: number) => {
@@ -104,6 +112,8 @@ export default function DashboardContent({ userName, userRole, userMembresia }: 
       'preguntas frecuentes': <FaQuestion className="text-neutral-400/30 text-4xl" />,
       'solicitudes': <TbMessageQuestion className="text-neutral-500/30 text-4xl" />,
       'cuenta': <MdOutlinePersonPin className="text-neutral-400/30 text-4xl" />,
+      'representante': <GrUserManager className="text-neutral-400/30 text-4xl" />,
+      'productor': <GiTakeMyMoney className="text-neutral-400/30 text-4xl" />,
       'salir': <BsBackspace className="text-neutral-400/30 text-4xl" />,
 
     };

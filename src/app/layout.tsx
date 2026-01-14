@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "./components/Nav";
 import { AuthProvider } from "@/context/AuthContext";
 import LayoutManager from "./components/LayoutManager";
+import { Inter, Roboto_Mono, Playfair_Display, Goldman } from 'next/font/google';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,6 +14,20 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+// Fuente secundaria 2 - Playfair Display (serif, elegante)
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-playfair',
+});
+
+// Nueva fuente - Goldman (display, moderna)
+const goldman = Goldman({
+  weight: ['400', '700'], // Puedes ajustar los pesos según necesites
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-goldman',
 });
 
 export const metadata: Metadata = {
@@ -32,7 +47,7 @@ export default function RootLayout({
 
       
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased custom-scrollbar`}
+        className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} ${goldman.variable} antialiased custom-scrollbar`}
         >
         <AuthProvider>
         <LayoutManager>

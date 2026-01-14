@@ -22,8 +22,8 @@ import { IoBanSharp } from "react-icons/io5";
 interface SolicitudesTablaProps {
   solicitudes: SolicitudRespuesta[];
   onVer: (solicitud: SolicitudRespuesta) => void;
-  onAceptar: (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string) => void;
-  onRechazar: (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string) => void;
+  onAceptar: (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string,creador_id:string) => void;
+  onRechazar: (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string,creador_id:string) => void;
 }
 
 export default function SolicitudesTabla({
@@ -284,7 +284,7 @@ export default function SolicitudesTabla({
                         {s.estado === "pendiente" && !expirada && (
                           <>
                             <button
-                              onClick={() => onRechazar(s.id,s.codigo_solicitud,s.id_evento_solicitud,s.invitado_id)}
+                              onClick={() => onRechazar(s.id,s.codigo_solicitud,s.id_evento_solicitud,s.invitado_id,s.creador_id)}
                               className="px-3 flex flex-row items-center justify-center gap-2 py-2.5 bg-red-500/70 text-red-200 hover:bg-red-700 border-red-900 border-3 rounded-full font-medium transition transform hover:scale-105"
                               title="Rechazar"
                            >
@@ -292,7 +292,7 @@ export default function SolicitudesTabla({
                               <IoBanSharp />
                             </button>
                             <button
-                              onClick={() => onAceptar(s.id,s.codigo_solicitud,s.id_evento_solicitud,s.invitado_id)}
+                              onClick={() => onAceptar(s.id,s.codigo_solicitud,s.id_evento_solicitud,s.invitado_id,s.creador_id)}
                               className="px-3 flex rounded-full flex-row items-center justify-center gap-2 py-2.5 bg-green-600/80 border-green-900 border-3 text-green-200 font-medium transition transform hover:scale-105 shadow-lg"
                               title="Aceptar"
                            >

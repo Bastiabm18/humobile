@@ -194,6 +194,12 @@ export interface Perfil {
   representados_perfil?: string[]; // Array de IDs de perfiles representados
   nombre_integrantes?: string[]; // Nombres de los integrantes del perfil
   nombre_representados?: string[]; // Nombres de los representados del perfil
+  integrantes_eliminar?: string[]; // IDs de integrantes a eliminar
+  representados_eliminar?: string[]; // IDs de representados a eliminar
+  bandas_ids?: string[]; // IDs de las bandas asociadas (si aplica)
+  bandas_nombres?: string[]; // Nombres de las bandas asociadas (si aplica)
+  representantes_ids?: string[]; // IDs de los representantes asociados (si aplica)
+  representantes_nombres?: string[]; // Nombres de los representantes asociados (si aplica)
 }
 export interface PerfilConIntegrantes {
   // IDENTIFICACIÓN
@@ -233,6 +239,11 @@ export interface PerfilConIntegrantes {
   representados_perfil?: string[]; // Array de IDs de perfiles representados
   nombre_integrantes?: string[]; // Nombres de los integrantes del perfil
   nombre_representados?: string[]; // Nombres de los representados del perfil
+  representantes_ids?: string[]; // IDs de los representantes asociados (si aplica)
+  representantes_nombres?: string[]; // Nombres de los representantes asociados (si aplica)
+  bandas_ids?: string[]; // IDs de las bandas asociadas (si aplica)
+  bandas_nombres?: string[]; // Nombres de las bandas asociadas (si aplica)
+
 }
 
 // Interfaz para perfil básico
@@ -341,6 +352,7 @@ export interface AceptarRechazarSolicitud{
     codigo_solicitud:string;
     id_evento_solicitud:string;
     id_invitado:string;
+    id_creador:string;
     motivo_rechazo?:string
 
 }

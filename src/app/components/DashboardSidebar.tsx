@@ -63,23 +63,29 @@ export default function DashboardSidebar({ collapsed, onToggle, mobileOpen, setM
   const [usuarioMembresia, setUsuarioMembresia] = useState<string | null>(null);
 
   const router = useRouter();
-  // Filtra los items del menú según el rol del usuario
-  const menuItems = MENU_ITEMS.filter(item => 
-    userRole && item.role.includes(userRole)
-  );
-
-  const dias = userMembresia?.fecha_fin_membresia && userMembresia?.fecha_ini_membresia
-    ? Math.ceil((new Date(userMembresia.fecha_fin_membresia).getTime() - new Date(userMembresia.fecha_ini_membresia).getTime()) / (1000 * 3600 * 24))
-    : 0;
-  
-  useEffect(() => {
+    useEffect(() => {
     if (userMembresia) {
       setUsuarioMembresia(userMembresia.nombre_membresia);
     }
   }, [userMembresia]);
+const menuItems = MENU_ITEMS.filter(item => {
+  // Debe tener el rol correcto
+  if (!userRole || !item.role.includes(userRole)) return false;
+  
+  // Si es PREMIUM, muestra todo de su rol
+  if (usuarioMembresia === 'PREMIUM') return true;
+  
+  // De lo contrario, solo muestra items GRATIS
+  return item.membresia.includes('GRATIS');
+});
+  const dias = userMembresia?.fecha_fin_membresia && userMembresia?.fecha_ini_membresia
+    ? Math.ceil((new Date(userMembresia.fecha_fin_membresia).getTime() - new Date(userMembresia.fecha_ini_membresia).getTime()) / (1000 * 3600 * 24))
+    : 0;
+  
+
   
   
-  console.log('membresia', usuarioMembresia)
+  //console.log('membresia', userMembresia)
   
 
   return (

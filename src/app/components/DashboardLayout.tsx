@@ -66,7 +66,7 @@ const currentRole = userRole && USER_ROLES.includes(userRole as any)
   };
 
   return (
-    <div className="flex h-screen  bg-neutral-900">
+    <div className="flex h-screen font-goldman bg-neutral-900">
       <DashboardSidebar 
         collapsed={sidebarCollapsed} 
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}

@@ -19,8 +19,8 @@ interface SolicitudModalProps {
   solicitud: SolicitudRespuesta | null;
   isOpen: boolean;
   onClose: () => void;
-  onAceptar: (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string) => void;
-  onRechazar: (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string) => void;
+  onAceptar: (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string,creador_id:string) => void;
+  onRechazar: (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string,creador_id:string) => void;
 }
 
 export default function SolicitudModal({
@@ -143,7 +143,7 @@ export default function SolicitudModal({
             <div className="bg-neutral-950/90 border-t border-blue-600/30 p-6 flex justify-center gap-4">
               <button
                 onClick={() => {
-                  onRechazar(solicitud.id,solicitud.codigo_solicitud,solicitud.id_evento_solicitud,solicitud.invitado_id);
+                  onRechazar(solicitud.id,solicitud.codigo_solicitud,solicitud.id_evento_solicitud,solicitud.invitado_id,solicitud.creador_id);
                   onClose();
                 }}
                 title="rechazar"
@@ -154,7 +154,7 @@ export default function SolicitudModal({
               </button>
               <button
                 onClick={() => {
-                  onAceptar(solicitud.id,solicitud.codigo_solicitud,solicitud.id_evento_solicitud,solicitud.invitado_id);
+                  onAceptar(solicitud.id,solicitud.codigo_solicitud,solicitud.id_evento_solicitud,solicitud.invitado_id,solicitud.creador_id);
                   onClose();
                 }}
                 title="aceptar"
