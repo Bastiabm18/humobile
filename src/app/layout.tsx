@@ -47,7 +47,7 @@ export default function RootLayout({
 
       
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} ${goldman.variable} antialiased custom-scrollbar`}
+        className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} ${goldman.variable} font-goldman antialiased custom-scrollbar`}
         >
         <AuthProvider>
         <LayoutManager>
