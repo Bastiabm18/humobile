@@ -45,7 +45,7 @@ export default async function MiPerfilPage() {
         userEmail={userData.email}
         userName={userData.name}
         userRole={userData.role}
-        userMembresia={userData.membresia }
+        userMembresia={userData.membresia}
     >
       <PerfilContent
         initialProfiles={initialProfiles}
