@@ -33,7 +33,12 @@ export default async function AgendaPage() {
  console.log('Agenda - Profiles →', profiles);
     
   return (
-    <DashboardLayout userEmail={userData.email} userName={userData.name} userRole={userData.role}>
+    <DashboardLayout
+     userEmail={userData.email} 
+     userName={userData.name} 
+     userRole={userData.role}
+     userMembresia={userData.membresia}
+     >
       <AgendaContent initialProfiles={profiles} userId={userData.id} userName={userData.name} />
     </DashboardLayout>
   );

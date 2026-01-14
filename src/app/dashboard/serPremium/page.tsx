@@ -34,6 +34,7 @@ export default async function SerPremiumPage() {
       userEmail={userData.email} 
       userName={userData.name} 
       userRole={userData.role}
+      userMembresia={userData.membresia}
     >
       <PremiumContent userData={userData} />
     </DashboardLayout>

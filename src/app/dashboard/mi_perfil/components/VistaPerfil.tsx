@@ -1,7 +1,7 @@
 // app/dashboard/mi_perfil/VistaPerfil.tsx
 'use client';
 
-import { Perfil } from '@/types/profile';
+import { Perfil, PerfilConIntegrantes } from '@/types/profile';
 import { 
   FaGuitar, 
   FaBuilding, 
@@ -27,7 +27,7 @@ import {
   FaUsers,
   FaUserFriends
 } from 'react-icons/fa';
-import { FaUser, FaLocationDot, FaClock, FaIdCardClip } from 'react-icons/fa6';
+import { FaUser, FaLocationDot, FaClock, FaIdCardClip, FaFilm } from 'react-icons/fa6';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -35,7 +35,7 @@ import { useState } from 'react';
 import MapaLugar from './MapaLugar';
 
 interface VistaPerfilProps {
-  perfil: Perfil;
+  perfil: PerfilConIntegrantes;
 }
 
 export default function VistaPerfil({ perfil }: VistaPerfilProps) {
@@ -70,19 +70,47 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
       return fecha;
     }
   };
+const getYouTubeId = (url:string) => {
+  if (!url) return null;
+  
+  // Patrones comunes de YouTube
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    /youtube\.com\/v\/([^&\n?#]+)/,
+    /youtube\.com\/shorts\/([^&\n?#]+)/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1].split('?')[0]; // Remover parámetros adicionales
+    }
+  }
+  
+  return null;
+};
 
   // Verificar si tiene coordenadas para mostrar mapa
   const tieneCoordenadas = perfil.lat && perfil.lon;
   const ubicacion = (perfil as any).ubicacion || {};
 
-  // Verificar si hay integrantes o representados
+  // Verificar si hay integrantes o representados bandas o representantes
   const tieneIntegrantes = perfil.tipo_perfil === 'banda' && 
     perfil.nombre_integrantes && 
     perfil.nombre_integrantes.length > 0;
 
+  const esIntegrante = perfil.tipo_perfil === 'artista' &&
+      perfil.bandas_nombres &&
+      perfil.bandas_nombres.length > 0;  
+
   const tieneRepresentados = perfil.tipo_perfil === 'representante' && 
     perfil.nombre_representados && 
     perfil.nombre_representados.length > 0;
+
+   const tieneRepresentantes = (perfil.tipo_perfil === 'artista' || 
+    perfil.tipo_perfil === 'banda') && 
+    perfil.representantes_nombres && 
+    perfil.representantes_nombres.length > 0; 
 
   return (
     <motion.div
@@ -232,7 +260,7 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-neutral-400">Email</p>
-                      <p className="text-lg text-white font-medium">{perfil.email}</p>
+                      <p className="text-lg text-white font-medium">{perfil.email.slice(0, 45)}</p>
                     </div>
                   </div>
                 )}
@@ -250,6 +278,85 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
                 )}
               </div>
             </motion.div>
+
+                       {/* Es intengrante */}
+            {esIntegrante && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
+              >
+                <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+                  <div className="p-2 bg-purple-500/10 rounded-lg">
+                    <FaUsers className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <span>Miembro en </span>
+                </h2>
+                
+                <div className="space-y-3">
+                  {perfil.bandas_nombres && perfil.bandas_nombres.map((banda, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center gap-3 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                        <FaUser className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{banda}</p>
+                  
+                      </div>
+                      <div className="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs font-medium rounded-full">
+                        Integrante
+                      </div>
+                    </div>
+                  ))}
+                  <div className="text-center pt-2">
+                    <p className="text-sm text-neutral-400">
+                     Miembro de  {perfil.bandas_nombres?.length} Grupos
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+                       {/*  tiene representante */}
+            {tieneRepresentantes && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
+              >
+                <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+                  <div className="p-2 bg-purple-500/10 rounded-lg">
+                    <FaUsers className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <span>Representante </span>
+                </h2>
+                
+                <div className="space-y-3">
+                  {perfil.representantes_nombres && perfil.representantes_nombres.map((representante, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center gap-3 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                        <FaUser className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{representante}</p>
+                  
+                      </div>
+                      <div className="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs font-medium rounded-full">
+                        Representante
+                      </div>
+                    </div>
+                  ))}
+      
+                </div>
+              </motion.div>
+            )}
 
             {/* Integrantes (solo para bandas) */}
             {tieneIntegrantes && (
@@ -305,7 +412,7 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
                   <div className="p-2 bg-red-500/10 rounded-lg">
                     <FaUserFriends className="w-5 h-5 text-red-400" />
                   </div>
-                  <span>Representados</span>
+                  <span>Cartera de Artistas</span>
                 </h2>
                 
                 <div className="space-y-3">
@@ -393,48 +500,7 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
 
           {/* Columna central - Información del perfil */}
           <div className="space-y-6">
-            {/* Video */}
-            {perfil.video_url && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
-              >
-                <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
-                  <div className="p-2 bg-red-500/10 rounded-lg">
-                    <FaVideo className="w-5 h-5 text-red-400" />
-                  </div>
-                  <span>Video</span>
-                </h2>
-                <div className="bg-neutral-800/50 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <FaLink className="w-4 h-4 text-blue-400" />
-                      <div>
-                        <p className="text-sm text-neutral-400">Enlace de video</p>
-                        <a 
-                          href={perfil.video_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-400 hover:text-blue-300 font-medium truncate block max-w-xs"
-                        >
-                          {perfil.video_url.substring(0, 40)}...
-                        </a>
-                      </div>
-                    </div>
-                    <a 
-                      href={perfil.video_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
-                    >
-                      Ver
-                    </a>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+
 
             {/* Información del perfil */}
             <motion.div
@@ -501,22 +567,14 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
                 <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <FaUserCheck className="w-4 h-4 text-neutral-400" />
-                    <span className="text-neutral-300">Tipo</span>
+                    <span className="text-neutral-300">Humobile</span>
                   </div>
                   <span className={`font-semibold ${getTipoColor().split(' ')[0]}`}>
                     {perfil.tipo_perfil}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FaInfoCircle className="w-4 h-4 text-neutral-400" />
-                    <span className="text-neutral-300">ID del perfil</span>
-                  </div>
-                  <span className="text-white font-mono text-xs">
-                    {perfil.id_perfil.substring(0, 10)}...
-                  </span>
-                </div>
+        
               </div>
             </motion.div>
           </div>
@@ -538,81 +596,76 @@ export default function VistaPerfil({ perfil }: VistaPerfilProps) {
               </h2>
               
               <div className="space-y-3">
-                <div className="bg-neutral-800/50 rounded-lg p-4">
+                <div
+                 onClick={(() => {
+                    navigator.clipboard.writeText(perfil.id_perfil);
+                  })} className="bg-neutral-800/50 rounded-lg p-4">
                   <p className="text-sm text-neutral-400 mb-2">ID del Perfil</p>
-                  <p className="text-white font-mono text-sm break-all">
+                  <p
+                    className="text-white font-mono text-sm break-all cursor-pointer">
                     {perfil.id_perfil}
                   </p>
                 </div>
                 
-                <div className="bg-neutral-800/50 rounded-lg p-4">
+                <div
+                  onClick={(() => {
+                    navigator.clipboard.writeText(perfil.usuario_id);
+                  })} className="bg-neutral-800/50 rounded-lg p-4">
                   <p className="text-sm text-neutral-400 mb-2">ID del Usuario</p>
-                  <p className="text-white font-mono text-sm break-all">
+                  <p className="text-white font-mono text-sm break-all cursor-pointer">
                     {perfil.usuario_id}
                   </p>
                 </div>
               </div>
             </motion.div>
-
-            {/* Coordenadas (solo si no están en el mapa) */}
-            {!tieneCoordenadas && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
-              >
-                <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
-                  <div className="p-2 bg-sky-500/10 rounded-lg">
-                    <FaMapMarkerAlt className="w-5 h-5 text-sky-400" />
-                  </div>
-                  <span>Coordenadas</span>
-                </h2>
-                
-                <div className="space-y-3">
-                  <div className="bg-neutral-800/50 rounded-lg p-4">
-                    <p className="text-sm text-neutral-400 mb-2">Latitud</p>
-                    <p className="text-white font-bold text-lg font-mono">
-                      {perfil.lat ? perfil.lat.toFixed(6) : 'No definida'}
-                    </p>
-                  </div>
-                  
-                  <div className="bg-neutral-800/50 rounded-lg p-4">
-                    <p className="text-sm text-neutral-400 mb-2">Longitud</p>
-                    <p className="text-white font-bold text-lg font-mono">
-                      {perfil.lon ? perfil.lon.toFixed(6) : 'No definida'}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Información del tipo de perfil */}
+            {/* video si tiene */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.2 }}
               className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
             >
               <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
-                <div className="p-2 bg-purple-500/10 rounded-lg">
-                  <FaUserTag className="w-5 h-5 text-purple-400" />
+                <div className="p-2 bg-orange-500/10 rounded-lg">
+                  <FaFilm className="w-5 h-5 text-orange-400" />
                 </div>
-                <span>Tipo de Perfil</span>
+                <span>Media</span>
               </h2>
               
-              <div className={`p-4 ${getTipoColor()} rounded-lg text-center`}>
-                <div className="text-4xl mb-3">
-                  {getTipoIcono()}
-                </div>
-                <p className="text-xl font-bold text-white capitalize">
-                  {perfil.tipo_perfil}
-                </p>
-                <p className="text-sm text-neutral-300 mt-2">
-                  Perfil {perfil.perfil_visible ? 'público' : 'privado'}
-                </p>
+              <div className="space-y-3">
+
+
+               <div className="bg-neutral-800/50 rounded-lg p-4">
+  <p className="text-sm text-neutral-400 mb-2">Video</p>
+  {perfil.video_url ? (
+    (() => {
+      const videoId = getYouTubeId(perfil.video_url);
+      return videoId ? (
+        <div className="aspect-video rounded-md overflow-hidden">
+          <iframe
+            src={`https://www.youtube.com/embed/${videoId}`}
+            className="w-full h-full"
+            title="Video del artista"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        </div>
+      ) : (
+        <p className="text-red-400 text-sm">URL de YouTube no válida</p>
+      );
+    })()
+  ) : (
+    <p className="text-neutral-400 italic">No disponible</p>
+  )}
+</div>
               </div>
             </motion.div>
+
+     
+
+  
           </div>
         </div>
       </div>

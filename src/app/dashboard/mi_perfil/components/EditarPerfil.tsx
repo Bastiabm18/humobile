@@ -29,7 +29,7 @@ import { useState, useEffect } from 'react';
 import { getSupabaseBrowser } from '@/lib/supabase/supabase-client';
 import { FiUploadCloud, FiX, FiGlobe } from 'react-icons/fi';
 import LocationPickerMap from './LocationPickerMap';
-import { getGeoData, getPerfilesArtistaVisibles, getPerfilesRepresentanteVisibles } from '../actions/actions';
+import { getGeoData, getPerfilesArtistaVisibles, getPerfilesRepresentanteVisibles, getPerfilesTodoUso } from '../actions/actions';
 import { GeoData } from '@/types/profile';
 
 interface EditarPerfilProps {
@@ -41,15 +41,29 @@ interface EditarPerfilProps {
 
 export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: EditarPerfilProps) {
   const [formData, setFormData] = useState<Perfil>({ ...perfil });
-  
+  console.log(perfil)
   // Estados para manejar los arrays de IDs
   const [integrantesSeleccionados, setIntegrantesSeleccionados] = useState<string[]>(
     Array.isArray(perfil.integrantes_perfil) ? perfil.integrantes_perfil : []
   );
+
   const [representadosSeleccionados, setRepresentadosSeleccionados] = useState<string[]>(
     Array.isArray(perfil.representados_perfil) ? perfil.representados_perfil : []
   );
-  
+
+  const [intengranteEn, setIntegranteEn] = useState<string[]>(
+    Array.isArray(perfil.bandas_ids)? perfil.bandas_ids : []
+  );
+
+  const [representadoPor, setRepresentadoPor] = useState<string[]>(
+    Array.isArray(perfil.representantes_ids)? perfil.representantes_ids : []
+  );
+
+
+  // manejar los integrantes a eliminar 
+  const [integrantesEliminar, setIntegrantesEliminar] = useState<string[]>([]);
+  const [representadosEliminar, setRepresentadosEliminar] = useState<string[]>([]);
+
   const [nuevoIntegrante, setNuevoIntegrante] = useState<string>('');
   const [nuevoRepresentado, setNuevoRepresentado] = useState<string>('');
   
@@ -74,7 +88,7 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
 
   // Cargar perfiles disponibles según el tipo
   useEffect(() => {
-    if (formData.tipo_perfil === 'banda' || formData.tipo_perfil === 'representante') {
+    if (formData.tipo_perfil === 'banda' || formData.tipo_perfil === 'representante' || formData.tipo_perfil === 'artista') {
       cargarPerfilesDisponibles();
     } else {
       setPerfilesDisponibles([]);
@@ -151,6 +165,18 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
           tipo_perfil: p.tipo_perfil,
           perfil_visible: p.perfil_visible
         })));
+      }else if (formData.tipo_perfil === 'artista'){
+   const perfiles = await getPerfilesTodoUso();
+        // Filtrar para excluir el propio perfil actual
+        const perfilesFiltrados = perfiles.filter(p => p.id_perfil !== perfil.id_perfil);
+        
+        setPerfilesDisponibles(perfilesFiltrados.map(p => ({
+          id_perfil: p.id_perfil,
+          nombre: p.nombre,
+          tipo_perfil: p.tipo_perfil,
+          perfil_visible: p.perfil_visible
+        })));
+
       }
     } catch (error) {
       console.error('Error cargando perfiles:', error);
@@ -231,7 +257,13 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
 
   const eliminarIntegrante = (id: string) => {
     setIntegrantesSeleccionados(integrantesSeleccionados.filter(item => item !== id));
+    setIntegrantesEliminar([...integrantesEliminar, id]);
   };
+  const eliminarIntegranteEn = (id: string) => {
+    setIntegranteEn(intengranteEn.filter(item => item !== id));
+    setIntegrantesEliminar([...integrantesEliminar, id]);
+  };
+
 
   // Funciones para manejar representados
   const agregarRepresentado = () => {
@@ -243,6 +275,7 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
 
   const eliminarRepresentado = (id: string) => {
     setRepresentadosSeleccionados(representadosSeleccionados.filter(item => item !== id));
+    setRepresentadosEliminar([...representadosEliminar, id]);
   };
 
   const uploadImage = async (event: React.ChangeEvent<HTMLInputElement>): Promise<string | null> => {
@@ -345,7 +378,8 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
       video_url: tempVideoUrl,
       integrantes_perfil: integrantesSeleccionados,
       representados_perfil: representadosSeleccionados,
-      actualizado_en: new Date().toISOString()
+      integrantes_eliminar: integrantesEliminar,
+      representados_eliminar: representadosEliminar
     };
     onSave(updatedPerfil);
   };
@@ -414,6 +448,50 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
                       <button
                         type="button"
                         onClick={() => eliminarIntegrante(id)}
+                        className="p-1 text-red-400 hover:text-red-300"
+                      >
+                        <FaTrash className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+  // Renderizar sección de artista si es participante en banda
+  const renderIntegranteDeBandaSection = () => {
+    if (formData.tipo_perfil !== 'artista') return null;
+
+    return (
+      <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
+        <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+          <div className="p-2 bg-purple-500/10 rounded-lg">
+            <FaUsers className="w-5 h-5 text-purple-400" />
+          </div>
+          <span>Mienbro En</span>
+        </h2>
+        
+        <div className="space-y-4">
+       
+
+          {intengranteEn.length > 0 && (
+            <div className="mt-4">
+              <div className="space-y-2">
+                {intengranteEn.map(id => {
+                  const artista = perfilesDisponibles.find(a => a.id_perfil === id);
+                  return (
+                    <div key={id} className="flex items-center justify-between bg-neutral-800/50 border border-neutral-700 rounded-lg p-3">
+                      <div className="flex items-center gap-3">
+                        <FaUser className="text-purple-400" />
+                        <span className="text-white">{artista?.nombre || 'Artista'}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => eliminarIntegranteEn(id)}
                         className="p-1 text-red-400 hover:text-red-300"
                       >
                         <FaTrash className="w-4 h-4" />
@@ -520,6 +598,56 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
               </div>
             </div>
           )}
+        </div>
+      </div>
+    );
+  };
+  const renderRepresentanteSection = () => {
+    if (formData.tipo_perfil == 'representante') return null;
+
+    return (
+      <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
+        <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+          <div className="p-2 bg-red-500/10 rounded-lg">
+            <FaUserCheck className="w-5 h-5 text-red-400" />
+          </div>
+          <span>Representante</span>
+        </h2>
+        
+        <div className="space-y-4">
+    
+
+          {representadoPor.length > 0 ? (
+            <div className="mt-4">
+              <h4 className="text-sm font-medium text-neutral-400 mb-2">Representados seleccionados:</h4>
+              <div className="space-y-2">
+                {representadoPor.map(id => {
+                  const perfil = perfilesDisponibles.find(p => p.id_perfil === id);
+                  return (
+                    <div key={id} className="flex items-center justify-between bg-neutral-800/50 border border-neutral-700 rounded-lg p-3">
+                      <div className="flex items-center gap-3">
+                        {perfil?.tipo_perfil === 'artista' ? 
+                          <FaUser className="text-blue-400" /> : 
+                          <FaUsers className="text-purple-400" />
+                        }
+                        <div>
+                          <span className="text-white">{perfil?.nombre || 'Perfil'}</span>
+                          <span className="text-xs text-neutral-500 ml-2">({perfil?.tipo_perfil})</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => eliminarRepresentado(id)}
+                        className="p-1 text-red-400 hover:text-red-300"
+                      >
+                        <FaTrash className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ):(<></>)}
         </div>
       </div>
     );
@@ -686,9 +814,13 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
 
               {/* Sección de Integrantes (solo para banda) */}
               {renderIntegrantesSection()}
+              {/* Sección de Integrante en banda (solo para artista) */}
+              {renderIntegranteDeBandaSection()}
 
               {/* Sección de Representados (solo para representante) */}
               {renderRepresentadosSection()}
+              {/* Sección de Representados (solo para representante) */}
+              {renderRepresentanteSection()}
 
               {/* Ubicación - País, Región, Comuna */}
               <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
@@ -871,42 +1003,6 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
                 </div>
               </div>
 
-              {/* Datos específicos */}
-              <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
-                <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
-                  <div className="p-2 bg-orange-500/10 rounded-lg">
-                    <FaBriefcase className="w-5 h-5 text-orange-400" />
-                  </div>
-                  <span>Datos Específicos ({formData.tipo_perfil})</span>
-                </h2>
-                <div className="bg-neutral-900/30 rounded-lg p-4">
-                  <textarea
-                    value={JSON.stringify(
-                      formData.tipo_perfil === 'artista' ? formData.artista_data :
-                      formData.tipo_perfil === 'banda' ? formData.banda_data :
-                      formData.tipo_perfil === 'local' ? formData.local_data :
-                      formData.tipo_perfil === 'productor' ? formData.productor_data :
-                      formData.representante_data,
-                      null,
-                      2
-                    )}
-                    onChange={(e) => {
-                      try {
-                        const parsed = JSON.parse(e.target.value);
-                        const field = `${formData.tipo_perfil}_data` as keyof Perfil;
-                        setFormData({...formData, [field]: parsed});
-                      } catch {
-                        // Ignorar errores de JSON inválido mientras se escribe
-                      }
-                    }}
-                    className="w-full h-48 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white font-mono text-sm focus:outline-none focus:border-orange-500"
-                    placeholder={`Datos en formato JSON para ${formData.tipo_perfil}`}
-                  />
-                  <p className="text-xs text-neutral-500 mt-2">
-                    Edita los datos en formato JSON. Asegúrate de mantener la sintaxis correcta.
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
 

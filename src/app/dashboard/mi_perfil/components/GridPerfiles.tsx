@@ -93,7 +93,7 @@ export default function GridPerfiles({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {perfiles.map((perfil, index) => (
         <motion.div
           key={perfil.id_perfil}
@@ -240,7 +240,7 @@ export default function GridPerfiles({
 
             {/* Pie de tarjeta con acciones */}
             <div className="p-4 border-t border-neutral-700/50 bg-neutral-900/30">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-2">
                 {/* Botón Ver */}
                 <button
                   onClick={() => onVer(perfil)}
@@ -276,7 +276,7 @@ export default function GridPerfiles({
                   title="Editar perfil"
                 >
                   <HiPencil className="w-4 h-4" />
-                  <span className="text-sm font-medium">Editar</span>
+                  <span className="text-sm font-medium">Modificar</span>
                 </button>
 
                 {/* Botón Eliminar */}
