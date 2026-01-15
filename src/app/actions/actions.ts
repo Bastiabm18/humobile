@@ -59,7 +59,7 @@ export const getProfilesPublic = async (): Promise<Profile[]> => {
       Region(nombre_region),
       Comuna(nombre_comuna)
     `)
-    .in('tipo_perfil', ['artista', 'banda', 'local'])
+    .in('tipo_perfil', ['artista', 'banda', 'lugar'])
     .order('creado_en', { ascending: false });
 
   // 2. Manejo de errores
