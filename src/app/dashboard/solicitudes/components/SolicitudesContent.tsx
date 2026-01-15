@@ -137,9 +137,9 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {profiles.map((profile) => {
-              const data = profile.data as any;
-              const name = data.name || data.band_name || data.place_name || 'Sin nombre';
-              const imagenUrl = data.imagen_url || data.photo_url || data.image_url || '';
+              const data = profile;
+              const name = data.nombre || 'Sin nombre';
+              const imagenUrl = data.imagen_url  || '';
 
               return (
                 <div
@@ -170,7 +170,7 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
                           {name}
                         </h3>
                         <p className="text-green-400/80 text-sm mt-1 group-hover:text-green-300 transition-colors">
-                          {profile.type}
+                          {profile.tipo}
                         </p>
                       </div>
                       <div className="bg-black/50 p-3 rounded-full group-hover:bg-green-600 transition-colors backdrop-blur-sm">
@@ -215,8 +215,8 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
               ">
                 {/* Imagen de fondo */}
                 {(() => {
-                  const data = selectedProfile.data as any;
-                  const imageUrl = data?.imagen_url || data?.photo_url || data?.image_url;
+                  const data = selectedProfile;
+                  const imageUrl = data?.imagen_url  || '';
 
                   return imageUrl ? (
                     <div className="absolute inset-0">
@@ -244,13 +244,13 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
                     {/* Badge de tipo */}
                     <div className="flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border border-neutral-600/50 bg-black/30">
                       <FaTag className="w-4 h-4 text-blue-400" />
-                      <span className="font-medium text-white">{selectedProfile.type}</span>
+                      <span className="font-medium text-white">{selectedProfile.tipo}</span>
                     </div>
 
                     {/* Ubicación */}
                     {(() => {
-                      const data = selectedProfile.data as any;
-                      const location = data?.cityId || data?.regionId || data?.countryId;
+                      const data = selectedProfile;
+                      const location = data?.ciudad_id || '';
 
                       return location ? (
                         <div className="flex items-center gap-2 px-4 py-2 bg-black/50 rounded-full backdrop-blur-sm border border-neutral-600/50">
@@ -267,22 +267,22 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
                     <div>
                       <h1 className="text-3xl font-bold text-white mb-3">
                         {(() => {
-                          const data = selectedProfile.data as any;
-                          return data?.name || data?.band_name || data?.place_name || 'Sin nombre';
+                          const data = selectedProfile;
+                          return data?.nombre  || 'Sin nombre';
                         })()}
                       </h1>
                       
                       {/* Información de contacto - Badges */}
                       <div className="flex flex-wrap items-center gap-2">
                         {(() => {
-                          const data = selectedProfile.data as any;
+                          const data = selectedProfile;
                           const badges = [];
 
-                          if (data?.phone) {
+                          if (data?.telefono) {
                             badges.push(
                               <div key="phone" className="flex items-center gap-2 bg-green-500/20 px-3 py-2 rounded-lg border border-green-500/30">
                                 <HiPhone className="w-4 h-4 text-green-400" />
-                                <span className="text-green-300 text-sm font-medium">{data.phone}</span>
+                                <span className="text-green-300 text-sm font-medium">{data.telefono}</span>
                               </div>
                             );
                           }
@@ -296,38 +296,38 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
                             );
                           }
 
-                          if (data?.countryId) {
+                          if (data?.pais_id) {
                             badges.push(
                               <div key="country" className="flex items-center gap-2 bg-yellow-500/20 px-3 py-2 rounded-lg border border-yellow-500/30">
                                 <FaGlobeAmericas className="w-4 h-4 text-yellow-400" />
-                                <span className="text-yellow-300 text-sm font-medium">{data.countryId}</span>
+                                <span className="text-yellow-300 text-sm font-medium">{data.pais_id}</span>
                               </div>
                             );
                           }
 
-                          if (data?.regionId) {
+                          if (data?.region_id) {
                             badges.push(
                               <div key="region" className="flex items-center gap-2 bg-purple-500/20 px-3 py-2 rounded-lg border border-purple-500/30">
                                 <FaMapMarkerAlt className="w-4 h-4 text-purple-400" />
-                                <span className="text-purple-300 text-sm font-medium">{data.regionId}</span>
+                                <span className="text-purple-300 text-sm font-medium">{data.region_id}</span>
                               </div>
                             );
                           }
 
-                          if (data?.cityId) {
+                          if (data?.ciudad_id) {
                             badges.push(
                               <div key="city" className="flex items-center gap-2 bg-pink-500/20 px-3 py-2 rounded-lg border border-pink-500/30">
                                 <FaCity className="w-4 h-4 text-pink-400" />
-                                <span className="text-pink-300 text-sm font-medium">{data.cityId}</span>
+                                <span className="text-pink-300 text-sm font-medium">{data.ciudad_id}</span>
                               </div>
                             );
                           }
 
-                          if (data?.address) {
+                          if (data?.direccion) {
                             badges.push(
                               <div key="address" className="flex items-center gap-2 bg-gray-500/20 px-3 py-2 rounded-lg border border-gray-500/30">
                                 <FaHome className="w-4 h-4 text-gray-400" />
-                                <span className="text-gray-300 text-sm font-medium">{data.address}</span>
+                                <span className="text-gray-300 text-sm font-medium">{data.direccion}</span>
                               </div>
                             );
                           }
