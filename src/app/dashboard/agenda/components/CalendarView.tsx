@@ -10,7 +10,7 @@ import { HiPlus, HiLockClosed, HiCog } from 'react-icons/hi';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import BlockDateModal from './BlockDateModal';
 import CrearEventoModal from './CrearEventoModal';
-import { CalendarEvent, evento } from '@/types/profile'; 
+import { CalendarEvent, evento, Profile } from '@/types/profile'; 
 import { getEventsByProfile } from '../actions/actions';
 import EventBadge from './EventBadge';
 import EventModal from './EventModal';
@@ -28,7 +28,7 @@ const localizer = dateFnsLocalizer({
   locales: { es },
 });
 
-export default function CalendarView({ profileId, perfil }: { profileId: string, perfil: any }) {
+export default function CalendarView({ profileId, perfil }: { profileId: string, perfil: Profile }) {
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(new Date());
   const [profile, setProfile] = useState(perfil);
@@ -60,7 +60,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string,
 
   useEffect(() => {
     fetchEvents();
-  }, [profile.id, profile.type, estadoEvento]);
+  }, [profile.id, profile.tipo, estadoEvento]);
 
   const fetchEvents = async () => {
     try {

@@ -1,7 +1,7 @@
 'use server'; 
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
-import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, BlockDateRangeParams, evento, CalendarEvent, eventoCompleto } from '@/types/profile'; 
+import { ArtistData, BandData, PlaceData, ProfileType, GeoData,ParticipanteEvento, Profile, BlockDateRangeParams, evento, CalendarEvent, eventoCompleto, categoriaEvento, EventoGuardar } from '@/types/profile'; 
 import { revalidatePath } from 'next/cache';
 
 
@@ -75,7 +75,7 @@ const { data: eventosExistentes, error: errorConsulta } = await supabase
   .from('participacion_evento')
   .select(`
     evento_id,
-    events!inner(
+    evento!inner(
       id,
       title,
       fecha_hora_ini,
@@ -587,7 +587,7 @@ export async function getEventsByPlaceProfile(placeProfileId: string): Promise<e
   }
 }
 
-
+/** 
 export async function createEvent(eventData: evento) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
@@ -718,7 +718,7 @@ export async function createEvent(eventData: evento) {
     };
   }
 }
-
+*/
 
 
 /**
@@ -786,56 +786,67 @@ async function crearParticipacionEvento(
 /**
  * Procesa evento creado por una BANDA
  */
-async function procesarEventoBanda(eventoId: string, eventData: evento) {
-  console.log('🎸 Procesando evento de banda');
+async function procesarEventoBanda(eventoId: string, id_creador: string, id_participante:string, tipo_perfil_participante:string) {
+  console.log(' Procesando evento de banda');
   
   // La banda como participante
-  await crearParticipacionEvento(eventoId, eventData.creator_profile_id, 'pendiente');
-  
-  // Integrantes de la banda
-  const integrantesIds = eventData.integrantes || [];
-  for (const integranteId of integrantesIds) {
-    // Crear participación
-    await crearParticipacionEvento(eventoId, integranteId, 'pendiente');
+  await crearParticipacionEvento(eventoId, id_creador, 'pendiente');
+
+    // Si es banda, también invitar a sus integrantes
+  if (tipo_perfil_participante === 'banda') {
+    const { data: integrantes } = await getSupabaseAdmin()
+      .from('integrante')
+      .select('id_artista')
+      .eq('id_banda', id_creador)
+      .eq('estado', 'activo');
     
-    // Crear solicitud (la banda invita a sus integrantes)
-    await crearSolicitudEvento(eventoId, eventData.creator_profile_id, integranteId, 'invitacion');
-  }
+    if (integrantes) {
+      for (const integrante of integrantes) {
+        await crearParticipacionEvento(eventoId, integrante.id_artista, 'pendiente');
+        await crearSolicitudEvento(eventoId, id_creador, integrante.id_artista, 'invitacion');
+      }
+    }}
+  
   
   // Si tiene local asignado
-  if (eventData.place_profile_id) {
-    await crearParticipacionEvento(eventoId, eventData.place_profile_id, 'pendiente');
-    await crearSolicitudEvento(eventoId, eventData.creator_profile_id, eventData.place_profile_id, 'invitacion');
+  if (tipo_perfil_participante === 'lugar') {
+    await crearParticipacionEvento(eventoId, id_participante, 'pendiente');
+    await crearSolicitudEvento(eventoId, id_creador, id_participante, 'invitacion');
+  }
+  // si tiene artistas
+  if (tipo_perfil_participante === 'artist') {
+    await crearParticipacionEvento(eventoId, id_participante, 'pendiente');
+    await crearSolicitudEvento(eventoId, id_creador, id_participante, 'invitacion');
   }
 }
 
 /**
  * Procesa evento creado por un LOCAL
  */
-async function procesarEventoLocal(eventoId: string, eventData: evento) {
+async function procesarEventoLocal(eventoId: string,id_creador:string, id_participante:string, tipo_perfil_participante:string) {
   console.log('🏠 Procesando evento de local');
   
-  if (!eventData.id_artista) return;
+
+
   
-  const artistaId = eventData.id_artista;
-  const esBanda = eventData.id_tipo_artista === 'band';
+  const esBanda = tipo_perfil_participante === 'banda';
   
   // Artista/Banda invitada
-  await crearParticipacionEvento(eventoId, artistaId, 'pendiente');
-  await crearSolicitudEvento(eventoId, eventData.creator_profile_id, artistaId, 'invitacion');
+  await crearParticipacionEvento(eventoId, id_participante, 'pendiente');
+  await crearSolicitudEvento(eventoId, id_creador, id_participante, 'invitacion');
   
   // Si es banda, también invitar a sus integrantes
   if (esBanda) {
     const { data: integrantes } = await getSupabaseAdmin()
       .from('integrante')
       .select('id_artista')
-      .eq('id_banda', artistaId)
+      .eq('id_banda', id_participante)
       .eq('estado', 'activo');
     
     if (integrantes) {
       for (const integrante of integrantes) {
         await crearParticipacionEvento(eventoId, integrante.id_artista, 'pendiente');
-        await crearSolicitudEvento(eventoId, eventData.creator_profile_id, integrante.id_artista, 'invitacion');
+        await crearSolicitudEvento(eventoId, id_creador, integrante.id_artista, 'invitacion');
       }
     }
   }
@@ -844,13 +855,188 @@ async function procesarEventoLocal(eventoId: string, eventData: evento) {
 /**
  * Procesa evento creado por un ARTISTA
  */
-async function procesarEventoArtista(eventoId: string, eventData: evento) {
+async function procesarEventoArtista(eventoId: string,id_creador:string, id_participante:string, tipo_perfil_participante:string) {
   console.log('🎤 Procesando evento de artista');
   
   // Si tiene local asignado
-  if (eventData.place_profile_id) {
-    await crearParticipacionEvento(eventoId, eventData.place_profile_id, 'pendiente');
-    await crearSolicitudEvento(eventoId, eventData.creator_profile_id, eventData.place_profile_id, 'invitacion');
+  if (tipo_perfil_participante === 'lugar') {
+    await crearParticipacionEvento(eventoId, id_participante, 'pendiente');
+    await crearSolicitudEvento(eventoId, id_creador, id_participante, 'invitacion');
+  }
+
+  if (tipo_perfil_participante === 'banda') {
+
+    // invitamoos a la banda y luego los integrantes
+    await crearParticipacionEvento(eventoId, id_participante, 'pendiente');
+    await crearSolicitudEvento(eventoId, id_creador, id_participante, 'invitacion');
+    //  también invitar a sus integrantes
+    const { data: integrantes } = await getSupabaseAdmin()
+      .from('integrante')
+      .select('id_artista')
+      .eq('id_banda', id_participante)
+      .eq('estado', 'activo');
+
+    if (integrantes) {
+      for (const integrante of integrantes) {
+        await crearParticipacionEvento(eventoId, integrante.id_artista, 'pendiente');
+        await crearSolicitudEvento(eventoId, id_creador, integrante.id_artista, 'invitacion');
+      }
+    }
+  }
+  if (tipo_perfil_participante === 'artista') {
+    await crearParticipacionEvento(eventoId, id_participante, 'pendiente');
+    await crearSolicitudEvento(eventoId, id_creador, id_participante, 'invitacion');
+  }
+
+}
+
+
+export async function crearEvento(eventData: EventoGuardar, participantes: ParticipanteEvento[]): Promise<{ success: boolean; evento?: evento; error?: string; message?: string }> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    // Validar campos obligatorios
+    if (!eventData.titulo || !eventData.fecha_hora_ini) {
+      return { 
+        success: false, 
+        error: 'Título y fecha de inicio son obligatorios' 
+      };
+    }
+
+    // Convertir fechas
+    const fechaInicio = typeof eventData.fecha_hora_ini === 'string' 
+      ? new Date(eventData.fecha_hora_ini) 
+      : eventData.fecha_hora_ini;
+    
+    const fechaFin = eventData.fecha_hora_fin 
+      ? (typeof eventData.fecha_hora_fin === 'string' 
+          ? new Date(eventData.fecha_hora_fin) 
+          : eventData.fecha_hora_fin)
+      : null;
+
+    // Validar fecha fin posterior
+    if (fechaFin && fechaFin <= fechaInicio) {
+      return { 
+        success: false, 
+        error: 'La fecha de fin debe ser posterior a la fecha de inicio' 
+      };
+    }
+
+    // Validar que no existan eventos en el mismo rango
+    const { data: eventosExistentes, error: errorConsulta } = await supabaseAdmin
+      .from('participacion_evento')
+      .select(`
+        evento_id,
+        evento!inner(
+          id,
+          titulo,
+          fecha_hora_ini,
+          fecha_hora_fin
+        )
+      `)
+      .eq('perfil_id', eventData.id_creador)
+      .filter('evento.fecha_hora_ini', 'lt', fechaFin?.toISOString() || fechaInicio.toISOString())
+      .filter('evento.fecha_hora_fin', 'gt', fechaInicio.toISOString());
+
+    if (errorConsulta) {
+      console.error('Error al verificar eventos existentes:', errorConsulta);
+      return { 
+        success: false, 
+        error: 'Error al verificar disponibilidad de fechas' 
+      };
+    }
+
+    if (eventosExistentes && eventosExistentes.length > 0) {
+      return { 
+        success: false, 
+        error: 'Ya tienes eventos programados en ese rango de fechas. Por favor, selecciona otras fechas.' 
+      };
+    }
+
+    // Preparar datos para insertar
+    const eventoParaInsertar = {
+      titulo: eventData.titulo.trim(),
+      descripcion: eventData.descripcion?.trim() || '',
+      fecha_hora_ini: fechaInicio.toISOString(),
+      fecha_hora_fin: fechaFin?.toISOString() || null,
+      id_categoria: eventData.id_categoria || null,
+      flyer_url: eventData.flyer_url?.trim() || null,
+      video_url: eventData.video_url?.trim() || null,
+      id_creador: eventData.id_creador,
+      creador_tipo_perfil: eventData.creador_tipo_perfil,
+      id_lugar: eventData.id_lugar || null,
+      nombre_lugar: eventData.nombre_lugar?.trim() || null,
+      direccion_lugar: eventData.direccion_lugar?.trim() || null,
+      lat_lugar: eventData.lat_lugar || null,
+      lon_lugar: eventData.lon_lugar || null,
+      id_productor: eventData.id_productor || null,
+      tickets_evento: eventData.tickets_evento?.trim() || null,
+      es_publico: eventData.es_publico !== undefined ? eventData.es_publico : true,
+      es_bloqueado: eventData.es_bloqueado || false,
+      motivo_bloqueo: eventData.motivo_bloqueo?.trim() || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    console.log('Creando evento con datos:', eventoParaInsertar);
+
+    // Insertar el evento
+    const { data: evento, error: eventoError } = await supabaseAdmin
+      .from('evento')
+      .insert([eventoParaInsertar])
+      .select()
+      .single();
+
+    if (eventoError) {
+      console.error('Error creando evento en Supabase:', eventoError);
+      return { 
+        success: false, 
+        error: eventoError.message || 'Error desconocido al crear el evento' 
+      };
+    }
+
+    console.log('Evento Id creado:', evento.id);
+
+    // El creador siempre es participante confirmado
+    await crearParticipacionEvento(evento.id, eventData.id_creador, 'confirmado');
+
+    // Procesar según tipo de creador PARA CADA PARTICIPANTE enviar solicitud y participacion_evento 
+    for (const participante of participantes) {
+      if(participante.id_perfil === eventData.id_creador){
+        continue; // ya creado arriba
+      }else{
+      switch (eventData.creador_tipo_perfil) {
+        case 'banda':
+          await procesarEventoBanda(evento.id, eventData.id_creador,
+             participante.id_perfil,participante.tipo );
+          break;
+          
+        case 'lugar':
+          await procesarEventoLocal(evento.id, eventData.id_creador,
+             participante.id_perfil,participante.tipo );
+          break;
+          
+        case 'artista':
+          await procesarEventoArtista(evento.id, eventData.id_creador,
+             participante.id_perfil,participante.tipo);
+          break;
+      }
+      }
+
+    }
+    
+    return { 
+      success: true, 
+      evento,
+      message: 'Evento creado exitosamente' 
+    };
+    
+  } catch (error: any) {
+    console.error('Error en crearEvento:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Error interno del servidor' 
+    };
   }
 }
 
@@ -858,15 +1044,16 @@ export const getLugaresVisibles = async (): Promise<Profile[]> => {
 
   const supabaseAdmin = getSupabaseAdmin();
   const { data: lugares, error:errorLugares } = await supabaseAdmin
-    .from('ProfilePlace')
+    .from('perfil')
     .select(`
       *, 
-      id_profile, 
-      "createdAt",
+      id_perfil, 
+      "creado_en",
       Pais(nombre_pais),     
       Region(nombre_region), 
       Comuna(nombre_comuna) 
     `)
+    .eq('tipo_perfil', 'local')
     .eq('perfil_visible', true);
 
     if(errorLugares){
@@ -874,23 +1061,17 @@ export const getLugaresVisibles = async (): Promise<Profile[]> => {
       throw new Error(`Fallo al obtener lugares visibles: ${errorLugares.message}`);
     }
       const perfilesLugares: Profile[] = (lugares || []).map(p => ({
-    id: p.id_profile, 
-    type: 'place' as ProfileType,
-    created_at: p.createdAt,
-    data: {
-      place_name: p.nombre_local,
-      address: p.direccion,
-      cityId: p.Comuna?.nombre_comuna,
-      regionId: p.Region?.nombre_region,
-      countryId: p.Pais?.nombre_pais,
-      phone: p.telefono_local,
-      place_type: p.tipo_establecimiento,
-      lat: p.latitud,
-      lng: p.longitud,
-      photo_url: p.photo_url,
-      video_url: p.photo_url,
-      
-    } as PlaceData,
+    id: p.id_perfil, 
+    tipo: 'lugar',
+    nombre: p.nombre,
+    email: p.email,
+    imagen_url: p.imagen_url,
+    video_url: p.video_url,
+    created_at: p.creado_en,
+    region_id: p.Region?.nombre_region,
+    pais_id: p.Pais?.nombre_pais,
+    ciudad_id: p.Comuna?.nombre_comuna,
+   
   }));
   return perfilesLugares;
   
@@ -900,85 +1081,67 @@ export const getArtistasVisibles = async (): Promise<Profile[]> => {
   
   // SOLO ProfileArtist con perfil_visible = true
   const { data:artistas, error:errorArtistas } = await supabaseAdmin
-    .from('ProfileArtist')
+    .from('perfil')
     .select(`
       *, 
-      id_profile, 
-      "createdAt",
+      id_perfil, 
+      "creado_en",
       Pais(nombre_pais),     
       Region(nombre_region), 
       Comuna(nombre_comuna) 
     `)
-    .eq('perfil_visible', true);
-
-   // Consulta para ProfileBand
-  const { data: bandas, error: errorBandas } = await supabaseAdmin
-    .from('ProfileBand')
-    .select(`
-      *, 
-      id_profile, 
-      "createdAt",
-      Pais(nombre_pais),     
-      Region(nombre_region), 
-      Comuna(nombre_comuna) 
-    `)
+    .in('tipo_perfil', [
+      'artista',
+      'banda'
+    ])
     .eq('perfil_visible', true);
 
   // Manejo de errores
-  if (errorArtistas || errorBandas) {
-    console.error("Error fetching visible profiles:", errorArtistas || errorBandas);
-    throw new Error(`Fallo al obtener perfiles visibles: ${(errorArtistas || errorBandas)?.message}`);
+  if (errorArtistas ) {
+    console.error("Error fetching visible profiles:", errorArtistas );
+    throw new Error(`Fallo al obtener perfiles visibles: ${(errorArtistas )?.message}`);
   }
-  // Mapeo de artistas
-  const perfilesArtistas: Profile[] = (artistas || []).map(p => ({
-    id: p.id_profile, 
-    type: 'artist' as ProfileType,
-    created_at: p.createdAt,
-    data: {
-      name: p.nombre_artistico, // Ajusta según el campo real en ProfileArtist
-      phone: p.telefono_contacto,
-      email: p.email,
-      countryId: p.Pais?.nombre_pais,
-      regionId: p.Region?.nombre_region,
-      cityId: p.Comuna?.nombre_comuna,
-      image_url: p.image_url,
-      perfil_visible: p.perfil_visible,
-      tipo_perfil: 'artist',
-
-    } as ArtistData,
+   const perfilesVisibles: Profile[] = (artistas || []).map(p => ({
+    id: p.id_perfil, 
+    tipo: p.tipo_perfil,
+    nombre: p.nombre,
+    email: p.email,
+    imagen_url: p.imagen_url,
+    video_url: p.video_url,
+    created_at: p.creado_en,
+    region_id: p.Region?.nombre_region,
+    pais_id: p.Pais?.nombre_pais,
+    ciudad_id: p.Comuna?.nombre_comuna,
+   
   }));
-
-  // Mapeo de bandas (ajusta los nombres de campos según tu tabla ProfileBand)
-  const perfilesBandas: Profile[] = (bandas || []).map(p => ({
-    id: p.id_profile, 
-    type: 'band' as ProfileType, // Asumiendo que tienes este tipo
-    created_at: p.createdAt,
-    data: {
-      name: p.nombre_banda, // Ajusta al campo correcto en ProfileBand
-      phone: p.telefono_contacto,
-      email: p.email,
-      countryId: p.Pais?.nombre_pais,
-      regionId: p.Region?.nombre_region,
-      cityId: p.Comuna?.nombre_comuna,
-      image_url: p.image_url,
-      perfil_visible: p.perfil_visible,
-        tipo_perfil: 'band',
-      
-    } as ArtistData, // O crea un tipo BandData si es diferente
-  }));
-
-  // Combinar y ordenar
-  const perfilesVisibles = [...perfilesArtistas, ...perfilesBandas];
-  
-  // Ordenar por nombre
-  perfilesVisibles.sort((a, b) => {
-    const nameA = 'name' in a.data ? a.data.name : 'band_name' in a.data ? a.data.band_name : a.data.place_name;
-    const nameB = 'name' in b.data ? b.data.name : 'band_name' in b.data ? b.data.band_name : b.data.place_name;
-    return nameA.localeCompare(nameB);
-  });
-  
   return perfilesVisibles;
+  
+};
+export const getCategoriasVisibles = async (): Promise<categoriaEvento[]> => {
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  // SOLO ProfileArtist con perfil_visible = true
+  const { data:categoria, error:errorCategoria } = await supabaseAdmin
+    .from('categoria_evento')
+    .select(`
+      * 
+    `)
+    .eq('estado', 'activo');
 
+  // Manejo de errores
+  if (errorCategoria ) {
+    console.error("Error fetching visible profiles:", errorCategoria );
+    throw new Error(`Fallo al obtener perfiles visibles: ${(errorCategoria )?.message}`);
+  }
+   const categoriasVisibles: categoriaEvento[] = (categoria || []).map(p => ({
+    id_categoria: p.id,
+    nombre_categoria: p.nombre,
+    descripcion_categoria: p.descripcion,
+    estado: p.visible,
+   
+  }));
+  return categoriasVisibles;
+  
 };
 
 
@@ -1008,113 +1171,18 @@ export const getProfiles = async (userId: string): Promise<Profile[]> => {
   // 3. Mapear cada perfil según su tipo
   const allProfiles: Profile[] = data.map((p: any) => {
     // Datos base comunes
-    const baseData = {
-      countryId: p.Pais?.nombre_pais || '',
-      regionId: p.Region?.nombre_region || '',
-      cityId: p.Comuna?.nombre_comuna || '',
-      perfil_visible: p.perfil_visible || true,
-      email: p.email || '',
-      updateAt: p.actualizado_en || p.creado_en
+    return {
+      id: p.id_perfil, 
+      tipo: p.tipo_perfil,
+      nombre: p.nombre,
+      email: p.email,
+      imagen_url: p.imagen_url,
+      video_url: p.video_url,
+      created_at: p.creado_en,
+      region_id: p.Region?.nombre_region,
+      pais_id: p.Pais?.nombre_pais,
+      ciudad_id: p.Comuna?.nombre_comuna,
     };
-
-    // Según el tipo de perfil, construir la data específica
-    switch (p.tipo_perfil) {
-      case 'artista':
-        return {
-          id: p.id_perfil,
-          type: 'Artista' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            name: p.nombre,
-            phone: p.telefono_contacto || '',
-            image_url: p.imagen_url || '',
-            tipo_perfil: p.tipo_perfil,
-            ...p.artista_data  // Merge con datos específicos del artista
-          } as ArtistData
-        };
-
-      case 'banda':
-        return {
-          id: p.id_perfil,
-          type: 'Banda' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            band_name: p.nombre,
-            style: p.banda_data?.estilo_banda || '',
-            music_type: p.banda_data?.tipo_musica || '',
-            is_tribute: p.banda_data?.es_tributo || false,
-            contact_phone: p.telefono_contacto || '',
-            photo_url: p.imagen_url || '',
-            video_url: p.video_url || '',
-            integrante: p.banda_data?.integrantes || [],
-            tipo_perfil: p.tipo_perfil,
-            ...p.banda_data  // Mantener otros datos de banda_data
-          } as BandData
-        };
-
-      case 'local':
-        // Para los booleanos, necesitamos consultar la tabla de intereses
-        // Por ahora los dejamos como false (después los implementarás)
-        return {
-          id: p.id_perfil,
-          type: 'Local' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            place_name: p.nombre,
-            address: p.direccion || '',
-            phone: p.telefono_contacto || '',
-            place_type: p.local_data?.tipo_establecimiento as any || 'other',
-            lat: p.lat || 0,
-            lng: p.lon || 0,
-            photo_url: p.imagen_url || '',
-            video_url: p.video_url || '',
-            singer: false,  // Por defecto false (luego con intereses)
-            band: false,
-            actor: false,
-            comedian: false,
-            impersonator: false,
-            tribute: false,
-            tipo_perfil: p.tipo_perfil,
-            ...p.local_data  // Mantener otros datos de local_data
-          } as PlaceData
-        };
-
-      case 'productor':
-      case 'representante':
-        // Para los nuevos tipos, por ahora los mapeamos como artistas
-        // o puedes crear nuevas interfaces después
-        return {
-          id: p.id_perfil,
-          type: 'Representante' as ProfileType, // Temporal
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            name: p.nombre,
-            phone: p.telefono_contacto || '',
-            image_url: p.imagen_url || '',
-            tipo_perfil: p.tipo_perfil,
-            ...(p.tipo_perfil === 'productor' ? p.productor_data : p.representante_data)
-          } as ArtistData
-        };
-
-      default:
-        // Tipo desconocido, usar datos mínimos
-        return {
-          id: p.id_perfil,
-          type: 'Usuario' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            name: p.nombre,
-            phone: p.telefono_contacto || '',
-            image_url: p.imagen_url || '',
-            tipo_perfil: p.tipo_perfil || 'artista'
-          } as ArtistData
-        };
-    }
   });
 
   return allProfiles;
@@ -1152,7 +1220,7 @@ export async function updateEvent(eventData: any) {
       .from('participacion_evento')
       .select(`
         evento_id,
-        events!inner(
+        evento!inner(
           id,
           title,
           fecha_hora_ini,

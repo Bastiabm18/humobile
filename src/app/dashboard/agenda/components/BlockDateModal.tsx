@@ -5,12 +5,9 @@ import { format } from 'date-fns';
 import { HiX, HiLockClosed, HiCalendar } from 'react-icons/hi';
 import { blockDateRange, createDateBlock } from '../actions/actions';
 import RespuestaModal from './RespuestaModal';
+import { Profile } from '@/types/profile';
 
-interface Profile {
-  id: string;
-  type: 'artist' | 'band' | 'place';
-  name?: string;
-}
+
 
 interface BlockDateModalProps {
   open: boolean;
@@ -55,7 +52,7 @@ export default function BlockDateModal({ open, onClose, profile, initialDate }: 
 
     const result = await createDateBlock({
       creator_profile_id: perfil.id,
-      creator_type: perfil.type,
+      creator_type: perfil.tipo,
       title: title.trim(),
       reason: reason.trim(),
       fecha_hora_ini: new Date(startDateTime),

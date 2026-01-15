@@ -70,8 +70,8 @@ export default function AgendaContent({
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {profiles.map((profile) => {
-                  const data = profile.data as any;
-                  const name = data.name || data.band_name || data.place_name || 'Sin nombre';
+                  const data = profile as any;
+                  const name = data.nombre|| 'Sin nombre';
                   const imagenUrl = data.imagen_url || data.photo_url || data.image_url || '';
                 
                   return (
@@ -130,7 +130,7 @@ export default function AgendaContent({
                               group-hover:text-green-300
                               transition-colors
                             ">
-                              {profile.type}
+                              {profile.tipo}
                             </p>
                           </div>
 
@@ -163,7 +163,7 @@ export default function AgendaContent({
   
     {/* Imagen de fondo si existe */}
     {(() => {
-      const data = selectedProfile.data as any;
+      const data = selectedProfile as any;
       const imageUrl = data?.imagen_url || data?.photo_url || data?.image_url;
       
       if (imageUrl) {
@@ -214,7 +214,7 @@ export default function AgendaContent({
 ">
   {/* Imagen de fondo */}
   {(() => {
-    const data = selectedProfile.data as any;
+    const data = selectedProfile as any;
     const imageUrl = data?.imagen_url || data?.photo_url || data?.image_url;
     
     return imageUrl ? (
@@ -243,13 +243,13 @@ export default function AgendaContent({
       {/* Badge de tipo */}
       <div className="flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border border-neutral-600/50 bg-black/30">
         <FaTag className="w-4 h-4 text-blue-400" />
-        <span className="font-medium text-white">{selectedProfile.type}</span>
+        <span className="font-medium text-white">{selectedProfile.tipo}</span>
       </div>
       
       {/* Ubicación */}
       {(() => {
-        const data = selectedProfile.data as any;
-        const location = data?.cityId || data?.regionId || data?.countryId;
+        const data = selectedProfile as any;
+        const location = data?.ciudad_id || data?.region_id || data?.pais_id;
         
         return location ? (
           <div className="flex items-center gap-2 px-4 py-2 bg-black/50 rounded-full backdrop-blur-sm border border-neutral-600/50">
@@ -266,22 +266,22 @@ export default function AgendaContent({
       <div>
         <h1 className="text-3xl font-bold text-white mb-3">
           {(() => {
-            const data = selectedProfile.data as any;
-            return data?.name || data?.band_name || data?.place_name || 'Sin nombre';
+            const data = selectedProfile as any;
+            return data?.nombre || 'Sin nombre';
           })()}
         </h1>
         
         {/* Información de contacto - Badges */}
         <div className="flex flex-wrap items-center gap-2">
           {(() => {
-            const data = selectedProfile.data as any;
+            const data = selectedProfile as any;
             const badges = [];
             
-            if (data?.phone) {
+            if (data?.telefono) {
               badges.push(
                 <div key="phone" className="flex items-center gap-2 bg-green-500/20 px-3 py-2 rounded-lg border border-green-500/30">
                   <HiPhone className="w-4 h-4 text-green-400" />
-                  <span className="text-green-300 text-sm font-medium">{data.phone}</span>
+                  <span className="text-green-300 text-sm font-medium">{data.telefono}</span>
                 </div>
               );
             }

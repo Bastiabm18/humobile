@@ -11,6 +11,7 @@ import { BiUserX } from 'react-icons/bi';
 import { FaArrowLeft } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import NeonSign from '@/app/components/NeonSign';
+import { Profile } from '@/types/profile';
 
 interface AgendaContentProps {
   initialProfiles: Profile[];
@@ -18,17 +19,7 @@ interface AgendaContentProps {
   userName?: string;   
 }
 
-interface Profile {
-  id: string;
-  type: 'artist' | 'band' | 'place';
-  name?: string;
-  data?: {
-       integrante?: Array<{  
-      id: string;
-     
-    }>;
-        };
-}
+
 
 export default function AgendaContent({ 
   initialProfiles, 
@@ -71,9 +62,9 @@ export default function AgendaContent({
  
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {profiles.map((profile) => {
-                const data = profile.data as any;
-                const name = data.name || data.band_name || data.place_name || 'Sin nombre';
-                const imagenUrl = data.imagen_url || data.photo_url || data.image_url || '';
+                const data = profile 
+                const name = data.nombre ||  'Sin nombre';
+                const imagenUrl = data.imagen_url ||  '';
 
                 return (
                   <div
@@ -132,7 +123,7 @@ export default function AgendaContent({
                             group-hover:text-green-300
                             transition-colors
                           ">
-                            {profile.type}
+                            {profile.tipo}
                           </p>
                         </div>
 

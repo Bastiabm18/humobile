@@ -1,5 +1,5 @@
 // types/profile.ts
-export type ProfileType = 'artist' | 'band' | 'place'|'representative'|'producer';
+export type ProfileType = 'artista' | 'banda' | 'lugar'|'representante'|'productor';
 
 // Tipos para la data geográfica
 export interface GeoItem {
@@ -13,6 +13,43 @@ export interface GeoData {
     paises: GeoItem[];
     regiones: GeoItem[];
     comunas: GeoItem[];
+}
+
+
+export interface ParticipanteEvento {
+  id_perfil: string;
+  nombre: string;
+  tipo: 'artista' | 'banda'| 'lugar';
+}
+
+export interface categoriaEvento{
+  id_categoria: string;
+  nombre_categoria: string;
+  descripcion_categoria: string;
+  estado: string;
+}
+
+
+export interface EventoGuardar {
+  titulo: string;
+  descripcion: string;
+  fecha_hora_ini: string | Date;
+  fecha_hora_fin?: string | Date | null;
+  id_categoria?: string | null;
+  flyer_url?: string | null;
+  video_url?: string | null;
+  id_creador: string;
+  creador_tipo_perfil: ProfileType;
+  id_lugar?: string | null;
+  nombre_lugar?: string | null;
+  direccion_lugar?: string | null;
+  lat_lugar?: number | null;
+  lon_lugar?: number | null;
+  id_productor?: string | null;
+  tickets_evento?: string | null;
+  es_publico?: boolean | null;
+  es_bloqueado?: boolean | null;
+  motivo_bloqueo?: string | null;
 }
 
 
@@ -74,9 +111,15 @@ export interface PlaceData {
 
 export interface Profile {
   id: string;
-  type: ProfileType;
-  data: ArtistData | BandData | PlaceData;  // ← TIPADO CORRECTO
+  tipo: ProfileType;
+  nombre: string;
+  email?: string;
+  imagen_url?: string;
+  video_url?: string;
   created_at: string;
+  ciudad_id?: string;
+  region_id?: string;
+  pais_id?: string;
 }
 
 export interface BlockDateRangeParams {

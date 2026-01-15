@@ -5,7 +5,7 @@ import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, BlockDa
 import { revalidatePath } from 'next/cache';
 
 
-export async function getEventsByProfile(profileId: string, profileType: 'artist' | 'band' | 'place', status: string): Promise<CalendarEvent[]> {
+export async function getEventsByProfile(profileId: string, ProfileType:ProfileType, status: string): Promise<CalendarEvent[]> {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     

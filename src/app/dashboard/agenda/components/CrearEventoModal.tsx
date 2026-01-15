@@ -3,28 +3,16 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { format, addHours } from 'date-fns';
-import { HiX, HiPlus, HiClock, HiCalendar, HiLink, HiPhotograph, HiMap, HiUser, HiPhone} from 'react-icons/hi';
-import { createEvent, getArtistasVisibles,getLugaresVisibles } from '../actions/actions';
+import { HiX, HiPlus, HiClock, HiCalendar, HiLink, HiPhotograph, HiMap, HiUser, HiPhone, HiUserGroup } from 'react-icons/hi';
+import {  getArtistasVisibles, getLugaresVisibles,getCategoriasVisibles, crearEvento } from '../actions/actions';
 import { getSupabaseBrowser } from '@/lib/supabase/supabase-client';
-import { FiUploadCloud, FiX } from 'react-icons/fi';
-
+import { FiUploadCloud, FiX, FiTrash2 } from 'react-icons/fi';
 import RespuestaModal from './RespuestaModal';
+import { categoriaEvento, EventoGuardar, ParticipanteEvento, Profile } from '@/types/profile';
+import { FaCheck } from 'react-icons/fa6';
 
+// Interfaces
 
-interface Profile {
-  id: string;
-  type: 'artist' | 'band' | 'place';
-  name?: string;
-  data?: {
-    place_name?: string;
-    band_name?: string;
-    name?: string;
-       integrante?: Array<{  
-      id: string;
-     
-    }>;
-        };
-}
 
 interface CrearEventoModalProps {
   open: boolean;
@@ -33,209 +21,222 @@ interface CrearEventoModalProps {
   selectedDate: Date;
 }
 
+
+
+
 export default function CrearEventoModal({ open, onClose, profile, selectedDate }: CrearEventoModalProps) {
   const supabase = getSupabaseBrowser();
-  
-  console.log('Perfil asociado al evento:', profile);
-  // Estados para todos los campos
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    id_artista: '',
-    nombre_artista: '',
-    id_tipo_artista: '',
-    startDate: '',
-    startTime: '19:00',
-    endDate: '',
-    endTime: '23:00',
-    custom_place_name: '',
-    address: '',
-    organizer_name: '',
-    organizer_contact: '',
-    ticket_link: '',
-    instagram_link: '',
-    flyer_url: '',
-    category: 'show',
+ // console.log('crear evento perfil:' ,profile);
+  // ========== ESTADOS DEL FORMULARIO ==========
+  const [form, setForm] = useState<EventoGuardar>({
+    titulo: '',
+    descripcion: '',
+    fecha_hora_ini: new Date(),
+    fecha_hora_fin: null,
+    id_categoria: null,
+    flyer_url: null,
+    video_url: null,
+    id_creador: profile.id,
+    creador_tipo_perfil: profile.tipo,
+    id_lugar: null,
+    nombre_lugar: null,
+    direccion_lugar: null,
+    lat_lugar: null,
+    lon_lugar: null,
+    id_productor: null,
+    tickets_evento: null,
+    es_publico: true,
+    es_bloqueado: false,
+    motivo_bloqueo: null,
   });
 
-  
-
-    // NUEVO: Cargar perfiles cuando se abre el modal
-    useEffect(() => {
-      if (open) {
-        cargarPerfiles();
-        cargarLugares();
-      }
-    }, [open]);
-
-    
-  
-    const cargarLugares = async () => {
-      setLoadingLugares(true);
-      try{
-        const lugares = await getLugaresVisibles();
-        setLugaresVisibles(lugares);
-      }catch(error){
-        
-        console.error('Error:', error);
-      }
-      
-      finally{
-          setLoadingLugares(false);
-      }
-
-    }
-      // Función para cargar perfiles
-    const cargarPerfiles = async () => {
-      setLoadingPerfiles(true);
-      try {
-        const perfiles = await getArtistasVisibles();
-        setPerfilesVisibles(perfiles);
-        console.log(perfiles);
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setLoadingPerfiles(false);
-      }
-    };
-
+  // ========== ESTADOS PARA DATOS DINÁMICOS ==========
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [tipoPerfil, setTipoPerfil] = useState(profile.type);
-   const [loadingPerfiles, setLoadingPerfiles] = useState(false);
-   const [loadingLugares, setLoadingLugares] = useState(false);
-    // NUEVO: Estado para perfiles visibles
+  
+  // Estados para carga de perfiles y lugares
+  const [loadingPerfiles, setLoadingPerfiles] = useState(false);
+  const [loadingLugares, setLoadingLugares] = useState(false);
   const [perfilesVisibles, setPerfilesVisibles] = useState<any[]>([]);
   const [lugaresVisibles, setLugaresVisibles] = useState<any[]>([]);
+  const [categoriasVisibles, setCategoriasVisibles] = useState<any[]>([]);
+  const [loadingcategoria, setLoadingcategoria] = useState(false);
+  
+  // Estados para opciones personalizadas
   const [showCustomArtist, setShowCustomArtist] = useState(false);
-  const [showCustomlugar, setshowCustomlugar] = useState(false);
+  const [showCustomLugar, setShowCustomLugar] = useState(false);
   const [customArtistName, setCustomArtistName] = useState('');
   const [customPlaceName, setCustomPlaceName] = useState('');
-  const [selectedPlaceId, setSelectedPlaceId] = useState('');
-
   
-  // estados para el modal de respuesta para el back
-
-    const [modalState, setModalState] = useState({
+  // ========== ESTADO PARA PARTICIPANTES ==========
+  const [participantes, setParticipantes] = useState<ParticipanteEvento[]>([
+    // El creador se agrega automáticamente si es artista o banda
+    ...(profile.tipo === 'artista' || profile.tipo === 'banda' || profile.tipo === 'lugar'? [{
+      id_perfil: profile.id,
+      nombre: profile?.nombre  || '',
+      tipo: profile.tipo
+    }] : [])
+  ]);
+  const [categorias, setCategorias] = useState<categoriaEvento[]>([]);
+  const [selectedParticipante, setSelectedParticipante] = useState<string>('');
+  const [selectedCategoria, setSelectedcategoria] = useState<string>('');
+  
+  // ========== ESTADO PARA MODAL DE RESPUESTA ==========
+  const [modalState, setModalState] = useState({
     isOpen: false,
     mensaje: '',
     esExito: true
   });
 
-
-  console.log('Tipo de perfil:', tipoPerfil);
-  console.log('lugares',lugaresVisibles);
-
-
+  // ========== EFECTO PARA CARGAR DATOS AL ABRIR ==========
   useEffect(() => {
-  if (lugaresVisibles.length > 0) {
-    console.log('Primer lugar disponible:', lugaresVisibles[0]);
-    console.log('Nombre del primer lugar:', lugaresVisibles[0]?.data?.place_name);
-  }
-}, [lugaresVisibles]);
-  // Inicializar fechas cuando se abre el modal
-  useEffect(() => {
-    if (open && selectedDate) {
+    if (open) {
+      cargarPerfiles();
+      cargarLugares();
+      cargarcategorias();
+      
+      // Si el creador es un lugar, asignarlo automáticamente
+      if (profile.tipo === 'lugar') {
+        setForm(prev => ({
+          ...prev,
+          id_lugar: profile.id,
+          nombre_lugar: profile?.nombre || '', 
+          
+        }));
+      }
+      
+      // Inicializar fechas
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
       const tomorrow = addHours(selectedDate, 24);
       const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
       
       setForm(prev => ({
         ...prev,
-        startDate: dateStr,
-        endDate: tomorrowStr,
+        fecha_hora_ini: `${dateStr}T19:00`,
+        fecha_hora_fin: `${tomorrowStr}T20:00`
       }));
     }
-  }, [open, selectedDate]);
+  }, [open]);
 
-  const handleChange = (field: string, value: string) => {
+  // ========== FUNCIONES PARA CARGAR DATOS ==========
+  const cargarcategorias = async () => {
+    setLoadingcategoria(true);
+    try {
+      const categorias = await getCategoriasVisibles();
+      setCategoriasVisibles(categorias);
+    } catch (error) {
+      console.error('Error cargando categorias:', error);
+    } finally {
+      setLoadingcategoria(false);
+    }
+  };
+  // ========== FUNCIONES PARA CARGAR DATOS ==========
+  const cargarLugares = async () => {
+    setLoadingLugares(true);
+    try {
+      const lugares = await getLugaresVisibles();
+      setLugaresVisibles(lugares);
+    } catch (error) {
+      console.error('Error cargando lugares:', error);
+    } finally {
+      setLoadingLugares(false);
+    }
+  };
+
+  const cargarPerfiles = async () => {
+    setLoadingPerfiles(true);
+    try {
+      const perfiles = await getArtistasVisibles();
+      setPerfilesVisibles(perfiles);
+    } catch (error) {
+      console.error('Error cargando perfiles:', error);
+    } finally {
+      setLoadingPerfiles(false);
+    }
+  };
+
+  // ========== MANEJADORES DE CAMBIOS ==========
+  const handleChange = (field: keyof EventoGuardar, value: any) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
-  // Función para subir imagen del flyer
+  // ========== MANEJO DE PARTICIPANTES ==========
+  const agregarParticipante = () => {
+    if (!selectedParticipante) return;
+    
+    const perfilSeleccionado = perfilesVisibles.find(p => p.id === selectedParticipante);
+    if (!perfilSeleccionado) return;
+    
+    // Verificar si ya existe
+    const existe = participantes.some(p => p.id_perfil === selectedParticipante);
+    if (existe) {
+      alert('Este participante ya fue agregado');
+      return;
+    }
+    
+    setParticipantes(prev => [...prev, {
+      id_perfil: perfilSeleccionado.id,
+      nombre: perfilSeleccionado.nombre || '',
+      tipo: perfilSeleccionado.tipo
+    }]);
+    
+    setSelectedParticipante('');
+  };
+
+  const eliminarParticipante = (id: string) => {
+    // No permitir eliminar al creador si es artista/banda
+    if (id === profile.id && (profile.tipo === 'artista' || profile.tipo === 'banda')) {
+      alert('No puedes eliminar al creador del evento');
+      return;
+    }
+    
+    setParticipantes(prev => prev.filter(p => p.id_perfil !== id));
+  };
+
+  // ========== SUBIDA DE FLYER ==========
   const uploadFlyer = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
       const file = event.target.files?.[0];
+      if (!file) throw new Error('No se seleccionó archivo');
       
-      if (!file) {
-        throw new Error('No se seleccionó ningún archivo');
-      }
-
-      const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validImageTypes.includes(file.type)) {
-        throw new Error('Formato de archivo no válido. Solo se permiten imágenes (JPG, PNG, GIF, WebP)');
-      }
-
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        throw new Error('La imagen es demasiado grande. El tamaño máximo es 5MB');
-      }
-
+      // Validaciones
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) throw new Error('Formato no válido');
+      if (file.size > 5 * 1024 * 1024) throw new Error('Máximo 5MB');
+      
       const previewUrl = URL.createObjectURL(file);
       setPreview(previewUrl);
       
+      // Subir a Supabase Storage
       const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const filePath = `flyers/${fileName}`;
-
-      console.log('Subiendo flyer a:', filePath);
-
+      
       const { error: uploadError } = await supabase.storage
         .from('perfiles')
-        .upload(filePath, file, { 
-          upsert: true,
-          cacheControl: '3600',
-          contentType: file.type
-        });
-
-      if (uploadError) {
-        URL.revokeObjectURL(previewUrl);
-        
-        console.error('Error detallado de subida:', uploadError);
-        if (uploadError.message.includes('403') || uploadError.message.includes('unauthorized')) {
-          throw new Error('No tienes permisos para subir imágenes. Contacta al administrador.');
-        } else if (uploadError.message.includes('payload too large')) {
-          throw new Error('La imagen es demasiado grande');
-        } else {
-          throw new Error(`Error al subir imagen: ${uploadError.message}`);
-        }
-      }
-
+        .upload(filePath, file, { upsert: true });
+      
+      if (uploadError) throw uploadError;
+      
       const { data: urlData } = supabase.storage
         .from('perfiles')
         .getPublicUrl(filePath);
-
-      if (!urlData?.publicUrl) {
-        throw new Error('No se pudo obtener la URL pública del flyer');
-      }
-
-      const publicUrl = urlData.publicUrl;
-      console.log('URL pública generada:', publicUrl);
-
-      setPreview(publicUrl);
-      setForm(prev => ({ 
-        ...prev, 
-        flyer_url: publicUrl
-      }));
-
+      
+      setPreview(urlData.publicUrl);
+      setForm(prev => ({ ...prev, flyer_url: urlData.publicUrl }));
       setUploadSuccess(true);
       setTimeout(() => setUploadSuccess(false), 3000);
-
+      
       URL.revokeObjectURL(previewUrl);
-
     } catch (error: any) {
-      console.error('Error en uploadFlyer:', error);
-      
-      const errorMessage = error.message || 'Error desconocido al subir la imagen';
-      alert(`Error: ${errorMessage}`);
-      
+      console.error('Error subiendo flyer:', error);
+      alert(`Error: ${error.message}`);
       setPreview(null);
-      setForm(prev => ({ ...prev, flyer_url: '' }));
-      
+      setForm(prev => ({ ...prev, flyer_url: null }));
     } finally {
       setUploading(false);
     }
@@ -243,32 +244,29 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate 
 
   const removeFlyer = () => {
     setPreview(null);
-    setForm(prev => ({ ...prev, flyer_url: '' }));
-    setUploadSuccess(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    setForm(prev => ({ ...prev, flyer_url: null }));
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  
+  const eliminarLugarComoParticipante = (lugarId: string) => {
+  setParticipantes(prev => prev.filter(p => p.id_perfil !== lugarId));
+};
+
+
+  // ========== ENVÍO DEL FORMULARIO ==========
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validaciones básicas
-    if (!form.title.trim()) {
+    if (!form.titulo.trim()) {
       alert('El título es obligatorio');
       return;
     }
     
-    const startDateTime = new Date(`${form.startDate}T${form.startTime}`);
-    const endDateTime = new Date(`${form.endDate}T${form.endTime}`);
+    const startDateTime = new Date(form.fecha_hora_ini);
+    const endDateTime = form.fecha_hora_fin ? new Date(form.fecha_hora_fin) : null;
     
-    if (!startDateTime || !endDateTime) {
-      alert('Fechas y horas son obligatorias');
-      return;
-    }
-    
-    if (startDateTime >= endDateTime) {
+    if (endDateTime && startDateTime >= endDateTime) {
       alert('La fecha/hora de inicio debe ser anterior a la de fin');
       return;
     }
@@ -276,100 +274,35 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate 
     setLoading(true);
 
     try {
-      let placeProfileId = '';
-      if (tipoPerfil === 'place') {
-      // Si es local, usar su propio ID
-      placeProfileId = profile.id;
-    } else if (form.custom_place_name && selectedPlaceId) {
-      // Si seleccionó un lugar de la lista
-      placeProfileId = selectedPlaceId;
-    }
-
-       // Determinar el nombre del artista
-       let artistaNombre = '';
-        let artistaId = '';
-        let lugarId = '';
-        let lugarNombre = '';
-
-        if (tipoPerfil === 'place') {
-          // Si es local, usar lo que seleccionó
-          lugarId = profile.id;
-           lugarNombre = profile.data?.name || profile.name || '';
-          if (form.id_artista === '' && customArtistName.trim()) {
-            artistaNombre = customArtistName.trim();
-            artistaId = '';
-          } else if (form.id_artista) {
-            const perfilSeleccionado = perfilesVisibles.find(p => p.id === form.id_artista);
-            artistaNombre = perfilSeleccionado?.data?.name || '';
-            artistaId = form.id_artista;
-          }
-        } else {
-          // Si es artista o banda, usar su propio perfil
-          artistaNombre = profile.type === 'band' 
-            ? profile.data?.band_name || profile.data?.name || profile.name || ''
-            : profile.data?.name || profile.name || '';
-          artistaId = profile.id;
-
-          if (form.custom_place_name === '' && customPlaceName.trim()) {
-            lugarNombre = customPlaceName.trim();
-          } else if (form.custom_place_name) {
-            lugarNombre = form.custom_place_name;
-          }
-
-        }
-      // Preparar datos del evento según la interfaz
+      // Preparar datos para el backend
       const eventData = {
-        id: '',
-        creator_profile_id: profile.id,
-        creator_type: profile.type,
-        nombre_artista: artistaNombre == '' ? profile.name || '' : artistaNombre,
-        id_artista:form.id_artista,
-        id_tipo_artista: perfilesVisibles.find(p => p.id === form.id_artista)?.type || '',
-        integrantes: profile.type === 'band' 
-        ? (profile.data?.integrante || []).map((i:any)=>i.id || '')
-        : [],
-        title: form.title.trim(),
-        description: form.description.trim(),
-        fecha_hora_ini: startDateTime,
-        fecha_hora_fin: endDateTime,
-        place_profile_id: placeProfileId, 
-        custom_place_name: form.custom_place_name.trim() || lugarNombre || customPlaceName.trim(),
-        address: form.address.trim() || '',
-        organizer_name: form.organizer_name.trim() || '',
-        organizer_contact: form.organizer_contact.trim() || '',
-        ticket_link: form.ticket_link.trim() || '',
-        instagram_link: form.instagram_link.trim() || '',
-        flyer_url: form.flyer_url.trim() || '',
-        category: form.category,
-        status: 'pending',
-        is_blocked: false,
-        blocked_reason: '',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        ...form,
+        // Asegurar que las fechas sean strings ISO
+        fecha_hora_ini: startDateTime.toISOString(),
+        fecha_hora_fin: endDateTime?.toISOString() || null,
+        // Si hay lugar personalizado, usar esos datos
+        ...(showCustomLugar && customPlaceName && {
+          nombre_lugar: customPlaceName,
+          id_lugar: null
+        }),
+        id_categoria: selectedCategoria || null
+        
+
       };
 
-      console.log('Datos del evento a crear:', eventData);
-      // Llamar a la acción del servidor
-      const result = await createEvent(eventData);
-
+      console.log('Datos del evento:', eventData);
+      console.log('Participantes:', participantes);
+      
+      // Llamar a la acción del servidor (debes crear esta función)
+       const result = await crearEvento(eventData, participantes);
+      
       setLoading(false);
-
-      if (result?.success) {
-         setModalState({
-          isOpen: true,
-          mensaje: 'Evento creado exitosamente',
-          esExito: true
-        });
-        //onClose();
-        // Opcional: refresh del calendario
-      //  window.location.reload();
-      } else {
-        setModalState({
-          isOpen: true,
-          mensaje: result?.error || 'Error desconocido al crear el evento',
-          esExito: false
-        });
-      }
+      setModalState({
+        isOpen: true,
+        mensaje: 'Evento creado exitosamente',
+        esExito: true
+      });
+      
     } catch (error: any) {
       setLoading(false);
       setModalState({
@@ -380,87 +313,52 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate 
     }
   };
 
+  // ========== MANEJADORES DEL MODAL DE RESPUESTA ==========
+  const handleCloseModal = () => {
+    setModalState(prev => ({ ...prev, isOpen: false }));
+    if (modalState.esExito) onClose();
+  };
 
-        const handleCloseModal = () => {
-        setModalState(prev => ({ ...prev, isOpen: false }));
-        
-        // Si fue éxito, cerrar el formulario también
-        if (modalState.esExito && onClose) {
-          onClose();
-        }
-      };
-    
-      const handleAceptarModal = () => {
-        setModalState(prev => ({ ...prev, isOpen: false }));
+  const handleAceptarModal = () => {
+    setModalState(prev => ({ ...prev, isOpen: false }));
+    if (modalState.esExito) onClose();
+  };
 
-        // Si fue éxito, cerrar el formulario también
-        if (modalState.esExito && onClose) {
-          onClose();
-        }
-        // Opcional: refresh del calendario si fue éxito
-        // if (modalState.esExito) {
-        //   window.location.reload();
-        // }
-      };
   if (!open) return null;
 
+  // ========== RENDERIZADO ==========
   return (
-   <>
-   <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      {/* Contenedor principal - Responsivo */}
-      <div className="
-        bg-neutral-800 rounded-2xl border border-neutral-700 
-        w-full max-w-7xl  /* Aumentado para desktop */
-        max-h-[90vh] 
-        overflow-y-auto
-        md:max-h-[95vh] md:overflow-y-hidden /* Ocultar scroll vertical en desktop */
-        flex flex-col
-      ">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-neutral-700 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <HiPlus className="text-green-500" size={28} />
-            <h2 className="text-xl font-bold text-white">Crear Nuevo Evento</h2>
+    <>
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+        <div className="bg-neutral-800 rounded-2xl border border-neutral-700 w-full max-w-7xl max-h-[90vh] overflow-y-auto md:max-h-[95vh] md:overflow-y-hidden flex flex-col">
+          
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-neutral-700">
+            <div className="flex items-center gap-3">
+              <HiPlus className="text-green-500" size={28} />
+              <h2 className="text-xl font-bold text-white">Crear Nuevo Evento</h2>
+            </div>
+            <button onClick={onClose} className="text-gray-400 hover:text-white transition">
+              <HiX size={24} />
+            </button>
           </div>
-          <button 
-            onClick={onClose} 
-            className="text-gray-400 hover:text-white transition"
-            disabled={loading || uploading}
-          >
-            <HiX size={24} />
-          </button>
-        </div>
 
-        {/* Contenido con scroll solo en móvil, grid en desktop */}
-        <div className="
-          flex-1 overflow-y-auto custom-scrollbar 
-          md:overflow-y-hidden md:grid md:grid-cols-3 md:gap-6
-          p-6
-        ">
-          {/* Columna izquierda - Imagen y campos principales */}
-          <div className="space-y-5 md:overflow-y-scroll custom-scrollbar md:pr-2">
-            {/* Upload de Flyer */}
-            <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
-              <label className="block text-sm font-medium text-gray-300 mb-3 text-center">
-                <HiPhotograph className="inline mr-2" size={18} />
-                Flyer del Evento (opcional)
-              </label>
-              
-              <div className="flex flex-col items-center">
-                {/* Vista previa */}
-                <div className="relative mb-4">
+          {/* Contenido principal - Grid de 3 columnas */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar md:overflow-y-hidden md:grid md:grid-cols-3 md:gap-6 p-6">
+            
+            {/* Columna 1: Información básica */}
+            <div className="space-y-5 md:overflow-y-scroll custom-scrollbar md:pr-2">
+              {/* Flyer */}
+              <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
+                <label className="block text-sm font-medium text-gray-300 mb-3 text-center">
+                  <HiPhotograph className="inline mr-2" size={18} />
+                  Flyer del Evento
+                </label>
+                <div className="flex flex-col items-center">
                   {preview ? (
-                    <div className="relative group">
-                      <img 
-                        src={preview} 
-                        alt="Flyer preview" 
-                        className="w-full max-w-xs h-48 object-contain rounded-lg border-2 border-green-600/50"
-                      />
-                      <button
-                        type="button"
-                        onClick={removeFlyer}
-                        className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
-                      >
+                    <div className="relative mb-4 group">
+                      <img src={preview} alt="Flyer preview" className="w-full max-w-xs h-48 object-contain rounded-lg border-2 border-green-600/50" />
+                      <button onClick={removeFlyer} className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition">
                         <FiX size={16} />
                       </button>
                     </div>
@@ -470,438 +368,331 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate 
                       <p className="text-sm text-gray-400">Subir flyer</p>
                     </div>
                   )}
+                  <label className="cursor-pointer">
+                    <span className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${uploading ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white shadow-lg'}`}>
+                      {uploading ? 'Subiendo...' : preview ? 'Cambiar Flyer' : 'Subir Flyer'}
+                      {!uploading && <FiUploadCloud size={16} />}
+                    </span>
+                    <input ref={fileInputRef} type="file" accept="image/*" disabled={uploading} onChange={uploadFlyer} className="hidden" />
+                  </label>
+                  {uploadSuccess && <p className="text-green-500 text-sm mt-2 animate-pulse">✓ Flyer subido correctamente</p>}
+                  <p className="text-xs text-gray-500 mt-2">JPG, PNG hasta 5MB</p>
                 </div>
-
-                {/* Botón de subida */}
-                <label className="cursor-pointer">
-                  <span className={`
-                    px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2
-                    ${uploading 
-                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
-                      : 'bg-green-600 hover:bg-green-700 text-white shadow-lg'
-                    }
-                  `}>
-                    {uploading ? 'Subiendo...' : preview ? 'Cambiar Flyer' : 'Subir Flyer'}
-                    {!uploading && <FiUploadCloud size={16} />}
-                  </span>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    disabled={uploading}
-                    onChange={uploadFlyer}
-                    className="hidden"
-                  />
-                </label>
-                
-                {/* Mensaje de éxito */}
-                {uploadSuccess && (
-                  <p className="text-green-500 text-sm mt-2 animate-pulse">
-                    ✓ Flyer subido correctamente
-                  </p>
-                )}
-                
-                <p className="text-xs text-gray-500 mt-2">JPG, PNG hasta 5MB</p>
               </div>
+
+              {/* Título y Descripción */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Título del evento *</label>
+                <input type="text" value={form.titulo} onChange={(e) => handleChange('titulo', e.target.value)} placeholder="Ej: Show en Rock Bar..." className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition" required />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Descripción *</label>
+                <textarea value={form.descripcion} onChange={(e) => handleChange('descripcion', e.target.value)} placeholder="Detalles del evento..." rows={3} className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition resize-none" maxLength={500} required />
+              </div>
+
+              {/* Categoría */}
+                  <div className="flex gap-2 mb-5">
+                    <select value={selectedCategoria} onChange={(e) => setSelectedcategoria(e.target.value)} className="flex-1 px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition text-sm">
+                      <option value="">Agregar categoría</option>
+                      {categoriasVisibles
+                        .filter(p => !categorias.some(part => part.id_categoria === p.id_categoria))
+                        .map((categoria) => (
+                          <option key={categoria.id} value={categoria.id_categoria}>
+                            {categoria.nombre_categoria || 'Sin nombre'} 
+                          </option>
+                        ))
+                      }
+                    </select>
+             
+                  </div>
             </div>
 
-            {/* Título y Descripción */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Título del evento *
-              </label>
-              <input
-                type="text"
-                value={form.title}
-                onChange={(e) => handleChange('title', e.target.value)}
-                placeholder="Ej: Show en Rock Bar, Presentación, Ensayo..."
-                className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition"
-                maxLength={100}
-                required
-                disabled={loading || uploading}
-              />
-            </div>
+            {/* Columna 2: Fechas, Lugar y Participantes */}
+            <div className="space-y-5 mt-5 md:mt-0 md:overflow-y-auto md:pl-2">
+              {/* Fechas */}
+              <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
+                <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
+                  <HiCalendar size={16} /> Fechas y Horarios *
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Inicio</label>
+                    <input type="datetime-local" value={form.fecha_hora_ini as string} onChange={(e) => handleChange('fecha_hora_ini', e.target.value)} className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition text-sm" required />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Fin</label>
+                    <input type="datetime-local" value={form.fecha_hora_fin as string || ''} onChange={(e) => handleChange('fecha_hora_fin', e.target.value || null)} className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition text-sm" />
+                  </div>
+                </div>
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Descripción
-              </label>
-              <textarea
-                value={form.description}
-                onChange={(e) => handleChange('description', e.target.value)}
-                placeholder="Detalles del evento..."
-                rows={3}
-                className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition resize-none"
-                maxLength={500}
-                disabled={loading || uploading}
-              />
-            </div>
+                  {/* Lugar */}  
+           <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
+            <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
+              <HiMap size={16} /> Lugar
+            </h3>
+            <div className="space-y-3">
+              {/* Si es LOCAL, mostrar info fija SIN posibilidad de cambiar */}
+              {profile.tipo === 'lugar' ? (
+                <div className="space-y-2">
+                  <div className="bg-black/50 border border-green-600/30 rounded-xl px-4 py-3">
+                    <p className="text-white font-medium">
+                      {profile?.nombre || 'Este lugar'}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">Local - Sede del evento (asignado automáticamente)</p>
+                  </div>
+                  <p className="text-xs text-yellow-500">
+                    ⚠️ Como eres un local, este será el lugar del evento
+                  </p>
+                </div>
+              ) : (
+                /* Si NO es local, mostrar selector de lugares */
+                <>
+                  {loadingLugares ? (
+                    <div className="bg-black/50 border border-green-600/30 rounded-xl px-4 py-3 flex items-center gap-3">
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-green-500"></div>
+                      <span className="text-gray-400">Cargando lugares...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <select
+                          value={form.id_lugar || ''}
+                          onChange={(e) => {
+                            const lugarId = e.target.value;
+                            console.log('Lugar seleccionado:', lugarId);
 
-            {/* Categoría */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Categoría
-              </label>
-              <select
-                value={form.category}
-                onChange={(e) => handleChange('category', e.target.value)}
-                className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition"
-                disabled={loading || uploading}
-              >
-                <option value="show">Show/Concierto</option>
-                <option value="rehearsal">Ensayo</option>
-                <option value="meeting">Reunión</option>
-                <option value="recording">Grabación</option>
-                <option value="workshop">Taller</option>
-                <option value="other">Otro</option>
-              </select>
+                            if (lugarId === '') {
+                              // Si selecciona "Otro lugar"
+                              setShowCustomLugar(true);
+                              setForm(prev => ({
+                                ...prev,
+                                id_lugar: null,
+                                nombre_lugar: null,
+                                direccion_lugar: null,
+                                lat_lugar: null,
+                                lon_lugar: null
+                              }));
+
+                              // Remover cualquier lugar que haya sido agregado como participante
+                              setParticipantes(prev => prev.filter(p => 
+                                lugaresVisibles.findIndex(l => l.id === p.id_perfil) === -1
+                              ));
+                            } else {
+                              // Si selecciona un lugar de la lista
+                              setShowCustomLugar(false);
+                              const lugar = lugaresVisibles.find(l => l.id === lugarId);
+
+                              if (lugar) {
+                                setForm(prev => ({
+                                  ...prev,
+                                  id_lugar: lugarId,
+                                  nombre_lugar: lugar.nombre || '',
+                                  direccion_lugar: lugar.direccion || '',
+                                  lat_lugar: lugar.lat || null,
+                                  lon_lugar: lugar.lon || null
+                                }));
+
+                                // Agregar el lugar como participante
+                                const lugarComoParticipante = {
+                                  id_perfil: lugarId,
+                                  nombre: lugar.nombre || '',
+                                  tipo: lugar.tipo
+                                };
+
+                                // Verificar si ya está en la lista
+                                const yaExiste = participantes.some(p => p.id_perfil === lugarId);
+
+                                if (!yaExiste) {
+                                  setParticipantes(prev => [...prev, lugarComoParticipante]);
+                                }
+                              }
+                            }
+                          }}
+                          className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition text-sm"
+                          disabled={form.id_lugar !== null && form.id_lugar !== ''}
+                        >
+                          <option value="">Seleccionar un lugar</option>
+                          {lugaresVisibles.map((lugar) => (
+                            <option 
+                              key={lugar.id} 
+                              value={lugar.id}  
+                              disabled={form.id_lugar === lugar.id}
+                            >
+                              {lugar.nombre || 'Sin nombre'}
+                            </option>
+                          ))}
+                          <option value="">Otro lugar (especificar)</option>
+                        </select>
+                      
+                      {/* Si ya seleccionó un lugar, mostrar info y opción para cambiar */}
+                      {form.id_lugar && !showCustomLugar && (
+                        <div className="mt-3">
+                          <div className="flex items-center justify-between bg-black/50 border border-green-600/30 rounded-xl px-4 py-3">
+                            <div>
+                              <p className="text-white font-medium">
+                                {lugaresVisibles.find(l => l.id === form.id_lugar)?.nombre || 'Lugar seleccionado'}
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">Lugar asignado al evento</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setForm(prev => ({
+                                  ...prev,
+                                  id_lugar: null,
+                                  nombre_lugar: null,
+                                  direccion_lugar: null
+                                }));
+                                setShowCustomLugar(false);
+                              }}
+                              className="p-1 text-red-400 hover:text-red-300"
+                            >
+                              <FiX size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Campos para lugar personalizado */}
+                      {showCustomLugar && (
+                        <div className="space-y-2 mt-3 animate-fadeIn">
+                          <input
+                            type="text"
+                            value={form.nombre_lugar || ''}
+                            onChange={(e) => handleChange('nombre_lugar', e.target.value)}
+                            placeholder="Nombre del lugar..."
+                            className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm"
+                          />
+                          <input
+                            type="text"
+                            value={form.direccion_lugar || ''}
+                            onChange={(e) => handleChange('direccion_lugar', e.target.value)}
+                            placeholder="Dirección completa..."
+                            className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm"
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
-          {/* Columna derecha - Fechas, lugar y contactos */}
-          <div className="space-y-5 mt-5 md:mt-0 md:overflow-y-auto md:pl-2">
-            {/* Fechas y horas */}
-            <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
-              <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
-                <HiCalendar size={16} />
-                Fechas y Horarios *
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">
-                    Inicio
-                  </label>
-                  <div className="flex flex-col gap-2">
-                    <input
-                      type="date"
-                      value={form.startDate}
-                      onChange={(e) => handleChange('startDate', e.target.value)}
-                      className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition text-sm"
-                      required
-                      disabled={loading || uploading}
-                    />
-                    <input
-                      type="time"
-                      value={form.startTime}
-                      onChange={(e) => handleChange('startTime', e.target.value)}
-                      className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition text-sm"
-                      required
-                      disabled={loading || uploading}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">
-                    Fin
-                  </label>
-                  <div className="flex flex-col gap-2">
-                    <input
-                      type="date"
-                      value={form.endDate}
-                      onChange={(e) => handleChange('endDate', e.target.value)}
-                      min={form.startDate}
-                      className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition text-sm"
-                      required
-                      disabled={loading || uploading}
-                    />
-                    <input
-                      type="time"
-                      value={form.endTime}
-                      onChange={(e) => handleChange('endTime', e.target.value)}
-                      className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition text-sm"
-                      required
-                      disabled={loading || uploading}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          
-          {/* Lugar */}
-                <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
-                  <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
-                    <HiMap size={16} />
-                    Lugar (opcional)
-                  </h3>
-
-                  <div className="space-y-3">
-                    {/* Si es LOCAL, mostrar su info fija */}
-                    {tipoPerfil === 'place' ? (
-                      <div className="bg-black/50 border border-green-600/30 rounded-xl px-4 py-3">
-                        <p className="text-white font-medium">
-                          {profile.data?.place_name || 'Este local'}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">Local - Sede del evento</p>
-                      </div>
-                    ) : (
-                      /* Si es ARTISTA o BANDA, mostrar select de lugares */
-                      <>
-                        {loadingLugares ? (
-                          <div className="bg-black/50 border border-green-600/30 rounded-xl px-4 py-3 flex items-center gap-3">
-                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-green-500"></div>
-                            <span className="text-gray-400">Cargando lugares...</span>
+              {/* Participantes */}
+              <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
+                <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
+                  <HiUserGroup size={16} /> Participantes
+                </h3>
+                <div className="space-y-3">
+                  {/* Lista de participantes */}
+                  {participantes.length > 0 && (
+                    <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+                      {participantes.map((participante) => (
+                        <div key={participante.id_perfil} className="flex items-center justify-between bg-neutral-900/50 border border-neutral-700 rounded-lg p-3">
+                          <div className="flex items-center gap-3">
+                            <HiUser className="text-green-400" />
+                            <div>
+                              <p className="text-white text-sm">{participante.nombre}</p>
+                              <p className="text-xs text-gray-400 capitalize">{participante.tipo}</p>
+                            </div>
                           </div>
-                        ) : (
-                          <select
-                            value={form.custom_place_name}
-                            onChange={(e) => {
-                              const selectedIndex = e.target.selectedIndex;
-                              const selectedOption = e.target.options[selectedIndex];
-                              const placeId = selectedOption.dataset.id || '';
-                            handleChange('custom_place_name', e.target.value);
-                            
-                            setshowCustomlugar(e.target.value === '');
-                             setSelectedPlaceId(e.target.value ? placeId : ''); // guardamos id del place
-                            if (e.target.value !== '') {
-                              setCustomArtistName('');
-                            }
-                          }}
-                            className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm"
-                            disabled={loading || uploading}
-                          >
-                            <option value="">Selecciona un lugar</option>
-                            {lugaresVisibles.map((lugar) => (
-                              <option key={lugar.id}
-                                      value={lugar.data?.place_name || ''}
-                                      data-id= {lugar.id}
-                                      // agregar id
-                                      >
-                                {lugar.data?.place_name || lugar.place_name || 'Sin nombre'}
-                              </option>
-                            ))}
-                            <option value="">Otro lugar (especificar abajo)</option>
-                          </select>
-                        )}
-                      </>
-                    )}
-
-                    {/* Campo para dirección (siempre visible) */}
-                    <div>
-               {showCustomlugar && (
-                  <div className="mt-3 animate-fadeIn">
-                    <label className="block text-xs text-gray-400 mb-1">
-                      Lugar del evento
-                    </label>
-                    <input
-                      type="text"
-                      value={customPlaceName}
-                      onChange={(e) => setCustomPlaceName(e.target.value)}
-                      placeholder="Escribe el nombre del lugar..."
-                      className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm"
-                      disabled={loading || uploading}
-                    />
-                      <label className="block text-xs text-gray-400 mb-1">
-                        Dirección
-                      </label>
-                      <input
-                        type="text"
-                        value={form.address}
-                        onChange={(e) => handleChange('address', e.target.value)}
-                        placeholder="Dirección completa..."
-                        className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm"
-                        disabled={loading || uploading}
-                      />
-                  </div>
-                )} 
-                    </div>
-                  </div>
-                </div>
-
-                {tipoPerfil === 'place' ? (
-                  <>
-                    <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
-                      <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
-                        <HiMap size={16} />
-                        Artistas (opcional)
-                      </h3>  
-                      {loadingPerfiles ? (
-                        <div className="bg-black/50 border border-green-600/30 rounded-xl px-4 py-3 flex items-center gap-3">
-                          <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-green-500"></div>
-                          <span className="text-gray-400">Cargando perfiles...</span>
+                          {participante.id_perfil !== profile.id && (
+                            <button type="button" onClick={() => eliminarParticipante(participante.id_perfil)} className="p-1 text-red-400 hover:text-red-300">
+                              <FiTrash2 size={16} />
+                            </button>
+                          )}
                         </div>
-                      ) : (
-                        <select
-                          name="id_artista"
-                          value={form.id_artista}
-                          onChange={(e) => {
-                            handleChange('id_artista', e.target.value);
-                            setShowCustomArtist(e.target.value === '');
-                            if (e.target.value !== '') {
-                              setCustomArtistName('');
-                            }
-                          }}
-                          className="w-full px-4 py-3 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition"
-                        >
-                          <option value="">Selecciona un artista/banda</option>
-                          {perfilesVisibles.map((perfil) => (
-                            <option key={perfil.id} value={perfil.id}>
-                              {perfil.data?.name || 'Sin nombre'}
-                            </option>
-                          ))}
-                          <option value="">Otro (especificar...)</option>
-                        </select>
-                      )}
+                      ))}
                     </div>
-                  </>
-                ) : (
-                  // Cuando es artista o banda, mostrar solo su info
-                  <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
-                    <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
-                      <HiMap size={16} />
-                      Artista/Banda del evento
-                    </h3>
-                    <div className="bg-black/50 border border-green-600/30 rounded-xl px-4 py-3">
-                      <p className="text-white font-medium">
-                        {profile.type === 'band' 
-                          ? profile.data?.band_name || profile.data?.name || profile.name
-                          : profile.data?.name || profile.name
-                        }
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {profile.type === 'band' ? 'Banda' : 'Artista'} - Creador del evento
-                      </p>
-                    </div>
-                  </div>
-                )}
+                  )}
 
-                {showCustomArtist && (
-                  <div className="mt-3 animate-fadeIn">
-                    <label className="block text-xs text-gray-400 mb-1">
-                      Nombre del artista/banda
-                    </label>
-                    <input
-                      type="text"
-                      value={customArtistName}
-                      onChange={(e) => setCustomArtistName(e.target.value)}
-                      placeholder="Escribe el nombre del artista o banda..."
-                      className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm"
-                      disabled={loading || uploading}
-                    />
+                  {/* Agregar nuevo participante */}
+                  <div className="flex gap-2">
+                    <select value={selectedParticipante} onChange={(e) => setSelectedParticipante(e.target.value)} className="flex-1 px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition text-sm">
+                      <option value="">Agregar participante</option>
+                      {perfilesVisibles
+                        .filter(p => !participantes.some(part => part.id_perfil === p.id))
+                        .map((perfil) => (
+                          <option key={perfil.id} value={perfil.id}>
+                            {perfil.nombre || 'Sin nombre'} | {perfil.tipo.toUpperCase()}
+                          </option>
+                        ))
+                      }
+                    </select>
+                    <button type="button" onClick={agregarParticipante} disabled={!selectedParticipante} className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-600/30 disabled:cursor-not-allowed text-white rounded-lg">
+                      <HiPlus size={20} />
+                    </button>
                   </div>
-                )}                    
+
+                  {/* Opción para artista personalizado */}
+                  {(profile.tipo === 'lugar' || showCustomArtist) && (
+                    <div className="mt-3">
+                      <label className="block text-xs text-gray-400 mb-1">Artista/banda personalizado</label>
+                      <input type="text" value={customArtistName} onChange={(e) => setCustomArtistName(e.target.value)} placeholder="Nombre del artista/banda..." className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm" />
+                    </div>
+                  )}
+                </div>
               </div>
+            </div>
 
-
+            {/* Columna 3: Información adicional */}
             <div className="space-y-5 mt-5 md:mt-0 md:overflow-y-auto custom-scrollbar md:pl-2">
-            
-            {/* Organizador */}
-            <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
-              <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
-                <HiUser size={16} />
-                Organizador (opcional)
-              </h3>
-              
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">
-                    Nombre
-                  </label>
-                  <input
-                    type="text"
-                    value={form.organizer_name}
-                    onChange={(e) => handleChange('organizer_name', e.target.value)}
-                    placeholder="Nombre del organizador..."
-                    className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm"
-                    disabled={loading || uploading}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">
-                    Contacto
-                  </label>
-                  <input
-                    type="text"
-                    value={form.organizer_contact}
-                    onChange={(e) => handleChange('organizer_contact', e.target.value)}
-                    placeholder="Teléfono o email..."
-                    className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm"
-                    disabled={loading || uploading}
-                  />
+              {/* Tickets y Enlaces */}
+              <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
+                <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
+                  <HiLink size={16} /> Tickets y Enlaces
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Enlace a tickets</label>
+                    <input type="url" value={form.tickets_evento || ''} onChange={(e) => handleChange('tickets_evento', e.target.value)} placeholder="https://..." className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Video del evento (URL)</label>
+                    <input type="url" value={form.video_url || ''} onChange={(e) => handleChange('video_url', e.target.value)} placeholder="https://youtube.com/..." className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm" />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Links */}
-            <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
-              <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
-                <HiLink size={16} />
-                Enlaces (opcional)
-              </h3>
-              
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">
-                    Tickets
-                  </label>
-                  <input
-                    type="url"
-                    value={form.ticket_link}
-                    onChange={(e) => handleChange('ticket_link', e.target.value)}
-                    placeholder="https://..."
-                    className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm"
-                    disabled={loading || uploading}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">
-                    Instagram
-                  </label>
-                  <input
-                    type="url"
-                    value={form.instagram_link}
-                    onChange={(e) => handleChange('instagram_link', e.target.value)}
-                    placeholder="https://instagram.com/..."
-                    className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm"
-                    disabled={loading || uploading}
-                  />
-                </div>
+              {/* Productor (opcional) */}
+              <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
+                <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
+                  <HiUser size={16} /> Productor (opcional)
+                </h3>
+                <select value={form.id_productor || ''} onChange={(e) => handleChange('id_productor', e.target.value || null)} className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition text-sm">
+                  <option value="">Seleccionar productor</option>
+                  {/* Aquí se cargarían los perfiles de tipo 'productor' */}
+                </select>
+              </div>
+
+              {/* Información del creador */}
+              <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-4">
+                <p className="text-xs text-gray-400 mb-1">Creador del evento:</p>
+                <p className="text-white font-medium text-sm capitalize">{profile.nombre || `Perfil ${profile.tipo}`}</p>
+                <p className="text-xs text-gray-400 mt-2">Tipo: {profile.tipo}</p>
+                <p className="text-xs text-gray-400">Fecha seleccionada: {format(selectedDate, 'dd/MM/yyyy')}</p>
               </div>
             </div>
+          </div>
 
-            {/* Info resumen */}
-            <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-4">
-              <p className="text-xs text-gray-400 mb-1">Perfil asociado:</p>
-              <p className="text-white font-medium text-sm">
-                {profile.name || `Perfil ${profile.type} #${profile.id.substring(0, 8)}...`}
-              </p>
-              <p className="text-xs text-gray-400 mt-2">
-                Fecha seleccionada: {selectedDate ? format(selectedDate, 'dd/MM/yyyy') : 'N/A'}
-              </p>
+          {/* Footer con botones */}
+          <div className="border-t border-neutral-700 p-4">
+            <div className="flex gap-3">
+              <button type="button" onClick={onClose} className="flex-1 py-3 bg-neutral-600 hover:bg-gray-600 text-white font-medium rounded-lg transition" disabled={loading || uploading}>
+                Cancelar
+              </button>
+              <button type="button" onClick={handleSubmit} disabled={loading || uploading} className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition disabled:opacity-70 flex items-center justify-center gap-2">
+                {loading ? 'Creando...' : 'Crear Evento'}
+                <HiPlus size={20} />
+              </button>
             </div>
-        </div>
-        </div>
-
-      
-
-        {/* Footer fijo con botones */}
-        <div className="border-t border-neutral-700 p-4 flex-shrink-0">
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-3 bg-neutral-600 hover:bg-gray-600 text-white font-medium rounded-lg transition"
-              disabled={loading || uploading}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              onClick={handleSubmit}
-              disabled={loading || uploading}
-              className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition disabled:opacity-70 flex items-center justify-center gap-2"
-            >
-              {loading ? 'Creando...' : 'Crear Evento'}
-              <HiPlus size={20} />
-            </button>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Modal de respuesta */}
       <RespuestaModal
         isOpen={modalState.isOpen}
         mensaje={modalState.mensaje}

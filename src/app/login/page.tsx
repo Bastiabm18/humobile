@@ -104,7 +104,7 @@ export default function LoginPage() {
             {/* Botón Google */}
             <button 
             onClick={handleGoogleSignIn}
-              className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 font-medium py-3 rounded-lg hover:bg-gray-100 transition-colors">
+              className="w-full flex items-center cursor-pointer justify-center gap-3 bg-white text-gray-800 font-medium py-3 rounded-lg hover:bg-gray-100 transition-colors">
               <FcGoogle size={24} />
               Continuar con Google
             </button>

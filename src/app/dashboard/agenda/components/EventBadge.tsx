@@ -9,7 +9,7 @@ import { HiLockClosed } from 'react-icons/hi';
 
 interface EventBadgeProps {
   events: CalendarEvent[];
-  profile:Profile[];
+  profile:Profile;
   date: Date;
   view: string;
   slotTime?: Date;

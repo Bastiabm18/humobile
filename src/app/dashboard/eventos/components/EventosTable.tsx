@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { FaCheckCircle, FaTimesCircle, FaClock, FaEdit, FaTrash, FaEye, FaCalendarPlus, FaLock, FaSort, FaSortUp, FaSortDown, FaCheck } from 'react-icons/fa';
 import { HiCalendar, HiLocationMarker, HiUser } from 'react-icons/hi';
 import { filterProps, motion } from 'framer-motion';
-import { CalendarEvent } from '@/types/profile';
+import { CalendarEvent, Profile } from '@/types/profile';
 import { eliminarEvento, getEventsByProfile } from '../actions/actions';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -19,12 +19,7 @@ import RespuestaModal from './RespuestaModal';
 
 
 interface EventosTableProps {
-  profile: {
-    id: string;
-    type: 'artist' | 'band' | 'place';
-    name?: string;
-    data?: any;
-  };
+  profile:Profile
   onCreateEvent?: () => void;
   onBlockDate?: () => void;
 }
@@ -67,7 +62,7 @@ const [respuestaModalProps, setRespuestaModalProps] = useState({
    console.log('Profile en EventosTable:', profile);
   useEffect(() => {
     loadEvents(statusFilter || '');
-  }, [profile.id, profile.type, statusFilter]);
+  }, [profile.id, profile.tipo, statusFilter]);
 
   const handleFilterChange = (status: string | null) => {
   setStatusFilter(status);
@@ -95,7 +90,7 @@ const getFilterButtonClass = (filterStatus: string | null) => {
   const loadEvents = async (filterStatus?: string | null) => {
     try {
       setLoading(true);
-      const data = await getEventsByProfile(profile.id, profile.type, filterStatus || ''  );
+      const data = await getEventsByProfile(profile.id, profile.tipo, filterStatus || ''  );
       setEvents(data);
       console.log('Loaded Events:', data);
     } catch (err: any) {
@@ -370,7 +365,7 @@ const handleConfirmAction = async () => {
       {/* HEADER CON BOTONES */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
         <div>
-          <h2 className="text-2xl font-bold text-white">Eventos de {profile.data.name || 'Perfil'}</h2>
+          <h2 className="text-2xl font-bold text-white">Eventos de {profile.nombre || 'Perfil'}</h2>
        <p className="text-gray-400 mt-1">
           {events.length} evento{events.length !== 1 ? 's' : ''} 
           {statusFilter && ` ${getStatusText(statusFilter).toLowerCase()}`}

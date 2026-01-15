@@ -195,19 +195,19 @@ export async function createRepresentativeProfile(userId: string, data: any) {
  */
 export const createProfile = async (userId: string, type: ProfileType, data: any) => {
     switch (type) {
-        case 'artist':
+        case 'artista':
             await createArtistProfile(userId, data as ArtistData);
             break; 
-        case 'band':
+        case 'banda':
             await createBandProfile(userId, data as BandData);
             break; 
-        case 'place':
+        case 'lugar':
             await createPlaceProfile(userId, data as PlaceData);
             break;
-        case 'producer':
+        case 'productor':
             await createProducerProfile(userId, data);
             break;
-        case 'representative':
+        case 'representante':
             await createRepresentativeProfile(userId, data);
             break; 
         default:
