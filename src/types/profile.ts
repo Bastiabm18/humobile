@@ -120,6 +120,7 @@ export interface Profile {
   ciudad_id?: string;
   region_id?: string;
   pais_id?: string;
+  telefono?:string;
 }
 
 export interface BlockDateRangeParams {

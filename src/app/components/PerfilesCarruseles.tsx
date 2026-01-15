@@ -9,31 +9,31 @@ export default async function PerfilesComponent() {
 
   // Filtramos y mapeamos la data
   const artistas = profiles
-    .filter(profile => profile.type === 'artist')
+    .filter(profile => profile.tipo === 'artista')
     .map(profile => ({
       id: profile.id,
-      name: (profile.data as any).name || 'Artista',
-      imageUrl: (profile.data as any).image_url,
+      name: profile.nombre || 'Artista',
+      imageUrl: profile.imagen_url,
       fallbackIcon: <FaUser />,
       type:'artista'
     }));
 
   const bandas = profiles
-    .filter(profile => profile.type === 'band')
+    .filter(profile => profile.tipo === 'banda')
     .map(profile => ({
       id: profile.id,
-      name: (profile.data as any).band_name || 'Banda',
-      imageUrl: (profile.data as any).photo_url,
+      name: profile.nombre || 'Banda',
+      imageUrl: profile.imagen_url,
       fallbackIcon: <FaUsers />,
       type:'banda'
     }));
 
   const lugares = profiles
-    .filter(profile => profile.type === 'place')
+    .filter(profile => profile.tipo === 'lugar')
     .map(profile => ({
       id: profile.id,
-      name: (profile.data as any).place_name || 'Local',
-      imageUrl: (profile.data as any).photo_url,
+      name: profile.nombre || 'Local',
+      imageUrl: profile.imagen_url,
       fallbackIcon: <FaStore />,
       type:'lugar'
     }));

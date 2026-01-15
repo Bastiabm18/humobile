@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import CarruselEventosBase from './CarruselEventosBase';
-import { CalendarEvent } from '@/types/profile';
+import { CalendarEvent, ProfileType } from '@/types/profile';
 import { getEventosMostrarPerfil, getEventsByProfile } from '@/app/actions/actions';
 import EventoModal from './EventoModal';
 import NeonSign from '@/app/components/NeonSign';
@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 
 interface PerfilEventosProps {
   perfilId: string;
-  perfilType: 'artist' | 'band' | 'place';
+  perfilType: ProfileType
 }
 
 export default function PerfilEventos({ perfilId, perfilType }: PerfilEventosProps) {

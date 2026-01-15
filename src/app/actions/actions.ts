@@ -71,111 +71,20 @@ export const getProfilesPublic = async (): Promise<Profile[]> => {
   if (!data) return [];
 
   // 3. Mapear cada perfil según su tipo
-  const allProfiles: Profile[] = data.map((p: any) => {
-    // Datos base comunes
-    const baseData = {
-      countryId: p.Pais?.nombre_pais || '',
-      regionId: p.Region?.nombre_region || '',
-      cityId: p.Comuna?.nombre_comuna || '',
-      email: p.email || '',
-      updateAt: p.actualizado_en || p.creado_en
-    };
-
-    // Según el tipo de perfil, construir la data específica
-    switch (p.tipo_perfil) {
-      case 'artista':
-        return {
-          id: p.id_perfil,
-          type: 'artist' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            name: p.nombre,
-            phone: p.telefono_contacto || '',
-            image_url: p.imagen_url || '',
-            tipo_perfil: p.tipo_perfil,
-            ...p.artista_data
-          } as ArtistData
-        };
-
-      case 'banda':
-        return {
-          id: p.id_perfil,
-          type: 'band' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            band_name: p.nombre,
-            style: p.banda_data?.estilo_banda || '',
-            music_type: p.banda_data?.tipo_musica || '',
-            is_tribute: p.banda_data?.es_tributo || false,
-            contact_phone: p.telefono_contacto || '',
-            photo_url: p.imagen_url || '',
-            video_url: p.video_url || '',
-            tipo_perfil: p.tipo_perfil,
-            ...p.banda_data
-          } as BandData
-        };
-
-      case 'local':
-        return {
-          id: p.id_perfil,
-          type: 'place' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            place_name: p.nombre,
-            address: p.direccion || '',
-            phone: p.telefono_contacto || '',
-            place_type: p.local_data?.tipo_establecimiento as any || 'other',
-            lat: p.lat || 0,
-            lng: p.lon || 0,
-            photo_url: p.imagen_url || '',
-            video_url: p.video_url || '',
-            singer: false,
-            band: false,
-            actor: false,
-            comedian: false,
-            impersonator: false,
-            tribute: false,
-            tipo_perfil: p.tipo_perfil,
-            ...p.local_data
-          } as PlaceData
-        };
-
-      case 'productor':
-      case 'representante':
-        return {
-          id: p.id_perfil,
-          type: 'artist' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            name: p.nombre,
-            phone: p.telefono_contacto || '',
-            image_url: p.imagen_url || '',
-            tipo_perfil: p.tipo_perfil,
-            ...(p.tipo_perfil === 'productor' ? p.productor_data : p.representante_data)
-          } as ArtistData
-        };
-
-      default:
-        return {
-          id: p.id_perfil,
-          type: 'artist' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            name: p.nombre,
-            phone: p.telefono_contacto || '',
-            image_url: p.imagen_url || '',
-            tipo_perfil: p.tipo_perfil || 'artista'
-          } as ArtistData
-        };
-    }
-  });
-
-  return allProfiles;
+   const perfilesVisibles: Profile[] = (data || []).map(p => ({
+    id: p.id_perfil, 
+    tipo: p.tipo_perfil,
+    nombre: p.nombre,
+    email: p.email,
+    imagen_url: p.imagen_url,
+    video_url: p.video_url,
+    created_at: p.creado_en,
+    region_id: p.Region?.nombre_region,
+    pais_id: p.Pais?.nombre_pais,
+    ciudad_id: p.Comuna?.nombre_comuna,
+   
+  }));
+  return perfilesVisibles;
 };
 export const getProfile = async (id_perfil: string, tipo?: string): Promise<Profile[]> => {
   const supabaseAdmin = getSupabaseAdmin();
@@ -196,7 +105,7 @@ export const getProfile = async (id_perfil: string, tipo?: string): Promise<Prof
     const tipoPerfilMap: Record<string, string> = {
       'artista': 'artista',
       'banda': 'banda',
-      'lugar': 'local',
+      'lugar': 'lugar',
       'producer': 'productor',
       'representative': 'representante'
     };
@@ -218,107 +127,19 @@ export const getProfile = async (id_perfil: string, tipo?: string): Promise<Prof
   }
 
   // 3. Mapear los perfiles según su tipo
-  const profiles: Profile[] = data.map((p: any) => {
-    const baseData = {
-      countryId: p.Pais?.nombre_pais || '',
-      regionId: p.Region?.nombre_region || '',
-      cityId: p.Comuna?.nombre_comuna || '',
-      email: p.email || '',
-      updateAt: p.actualizado_en || p.creado_en
-    };
-
-    switch (p.tipo_perfil) {
-      case 'artista':
-        return {
-          id: p.id_perfil,
-          type: 'artist' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            name: p.nombre,
-            phone: p.telefono_contacto || '',
-            image_url: p.imagen_url || '',
-            tipo_perfil: p.tipo_perfil,
-            ...p.artista_data
-          } as ArtistData
-        };
-
-      case 'banda':
-        return {
-          id: p.id_perfil,
-          type: 'band' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            band_name: p.nombre,
-            style: p.banda_data?.estilo_banda || '',
-            music_type: p.banda_data?.tipo_musica || '',
-            is_tribute: p.banda_data?.es_tributo || false,
-            contact_phone: p.telefono_contacto || '',
-            photo_url: p.imagen_url || '',
-            video_url: p.video_url || '',
-            tipo_perfil: p.tipo_perfil,
-            ...p.banda_data
-          } as BandData
-        };
-
-      case 'local':
-        return {
-          id: p.id_perfil,
-          type: 'place' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            place_name: p.nombre,
-            address: p.direccion || '',
-            phone: p.telefono_contacto || '',
-            place_type: p.local_data?.tipo_establecimiento as any || 'other',
-            lat: p.lat || 0,
-            lng: p.lon || 0,
-            photo_url: p.imagen_url || '',
-            video_url: p.video_url || '',
-            singer: false,
-            band: false,
-            actor: false,
-            comedian: false,
-            impersonator: false,
-            tribute: false,
-            tipo_perfil: p.tipo_perfil,
-            ...p.local_data
-          } as PlaceData
-        };
-
-      case 'productor':
-      case 'representante':
-        return {
-          id: p.id_perfil,
-          type: 'artist' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            name: p.nombre,
-            phone: p.telefono_contacto || '',
-            image_url: p.imagen_url || '',
-            tipo_perfil: p.tipo_perfil,
-            ...(p.tipo_perfil === 'productor' ? p.productor_data : p.representante_data)
-          } as ArtistData
-        };
-
-      default:
-        return {
-          id: p.id_perfil,
-          type: 'artist' as ProfileType,
-          created_at: p.creado_en,
-          data: {
-            ...baseData,
-            name: p.nombre,
-            phone: p.telefono_contacto || '',
-            image_url: p.imagen_url || '',
-            tipo_perfil: p.tipo_perfil || 'artista'
-          } as ArtistData
-        };
-    }
-  });
+   const profiles: Profile[] = (data || []).map(p => ({
+    id: p.id_perfil, 
+    tipo: p.tipo_perfil,
+    nombre: p.nombre,
+    email: p.email,
+    imagen_url: p.imagen_url,
+    video_url: p.video_url,
+    created_at: p.creado_en,
+    region_id: p.Region?.nombre_region,
+    pais_id: p.Pais?.nombre_pais,
+    ciudad_id: p.Comuna?.nombre_comuna,
+   
+  }));
 
   return profiles;
 };
@@ -427,7 +248,7 @@ export async function getEventsByProfile(profileId: string, profileType: 'artist
     throw error;
   }
 }
-export async function getEventosMostrarPerfil(profileId: string, profileType: 'artist' | 'band' | 'place'): Promise<CalendarEvent[]> {
+export async function getEventosMostrarPerfil(profileId: string, profileType:ProfileType): Promise<CalendarEvent[]> {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     

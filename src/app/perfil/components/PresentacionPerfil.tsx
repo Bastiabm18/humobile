@@ -5,63 +5,44 @@ import { motion } from 'framer-motion';
 import { HiPhone, HiUser, HiUsers } from 'react-icons/hi';
 import { FaGuitar, FaMapMarkerAlt } from 'react-icons/fa';
 import { HiBuildingOffice } from 'react-icons/hi2';
+import { Profile } from '@/types/profile';
 
 interface PresentacionPerfilProps {
-  perfil: {
-    type: 'artista' | 'banda' | 'lugar';
-    data: {
-      // Campos comunes
-      name?: string;              // artist
-      band_name?: string;         // band  
-      place_name?: string;        // place
-      phone?: string;             // común
-      contact_phone?: string;     // band
-      email?: string;             // artist
-      cityId?: string;            // común
-      regionId?: string;          // común
-      
-      // Campos de imagen (diferentes nombres)
-      image_url?: string;         // artist
-      photo_url?: string;         // band/place
-      
-      // Campos específicos
-      music_type?: string;        // band
-      place_type?: string;        // place
-      instrumento?: string;       // artist
-    };
-  };
+  perfil: Profile
 }
 
 export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) {
   // Normalizar datos
-  const type = perfil.type;
-  const data = perfil.data;
+  const type = perfil.tipo;
+  const data = perfil;
+
+  console.log(data);
   
   // Obtener nombre según tipo
   const getName = () => {
     switch (type) {
-      case 'artista': return data.name || 'Sin nombre';
-      case 'banda': return data.band_name || 'Sin nombre';
-      case 'lugar': return data.place_name || 'Sin nombre';
+      case 'artista': return data.nombre || 'Sin nombre';
+      case 'banda': return data.nombre || 'Sin nombre';
+      case 'lugar': return data.nombre || 'Sin nombre';
     }
   };
   
   // Obtener imagen
   const getImageUrl = () => {
-    return data.image_url || data.photo_url || '';
+    return data.imagen_url || '';
   };
   
   // Obtener teléfono
   const getPhone = () => {
-    return data.phone || data.contact_phone || 'Sin teléfono';
+    return data.telefono || 'Sin teléfono';
   };
   
   // Obtener ubicación
   const getLocation = () => {
-    if (data.cityId && data.regionId) {
-      return `${data.cityId}, ${data.regionId}`;
+    if (data.ciudad_id && data.region_id) {
+      return `${data.ciudad_id}, ${data.region_id}`;
     }
-    return data.cityId || data.regionId || 'Sin ubicación';
+    return data.ciudad_id || data.region_id || 'Sin ubicación';
   };
   
   // Obtener icono según tipo
@@ -91,23 +72,11 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
     }
   };
   
-  // Obtener información adicional según tipo
-  const getAdditionalInfo = () => {
-    switch (type) {
-      case 'artista':
-        return data.instrumento || 'Artista musical';
-      case 'banda':
-        return data.music_type || 'Banda musical';
-      case 'lugar':
-        return data.place_type || 'Establecimiento';
-    }
-  };
-  
+
   const name = getName();
   const imageUrl = getImageUrl();
   const phone = getPhone();
   const location = getLocation();
-  const additionalInfo = getAdditionalInfo();
 
   return (
     <motion.div
@@ -154,7 +123,7 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
           {/* Icono de fallback */}
           <div className="absolute inset-0 flex items-center justify-center text-neutral-600">
             {getTypeIcon()}
-            <span className="ml-2 text-3xl font-bold opacity-30">{name.charAt(0)}</span>
+            <span className="ml-2 text-3xl font-bold opacity-30">{}</span>
           </div>
         </div>
       )}
@@ -188,10 +157,8 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
             
             {/* Información adicional */}
             <div className="flex items-center gap-4">
-              <p className="text-neutral-300 font-medium">
-                {additionalInfo}
-              </p>
-              
+
+
               {/* Línea decorativa */}
               <div className="h-6 w-[1px] bg-gradient-to-b from-transparent via-neutral-500 to-transparent" />
               

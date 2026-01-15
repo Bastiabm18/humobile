@@ -10,6 +10,7 @@ import { MdArrowBack } from 'react-icons/md';
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { Profile } from '@/types/profile';
 // Función para decodificar
 const decodeProfileData = (encoded: string): { id: string; type: 'artist' | 'band' | 'place' } | null => {
     
@@ -41,7 +42,7 @@ const decodeProfileData = (encoded: string): { id: string; type: 'artist' | 'ban
 
 export default function PerfilPage() {
   const searchParams = useSearchParams();
-  const [profileData, setProfileData] = useState<any>(null);
+  const [profileData, setProfileData] = useState<Profile>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -77,11 +78,9 @@ export default function PerfilPage() {
         
         // El resultado es un array, tomamos el primer elemento
         if (Array.isArray(resultado) && resultado.length > 0) {
-          setProfileData({
-            type: decodedData.type,
-            data: resultado[0].data,
-            id: resultado[0].id
-          });
+          setProfileData(
+           resultado[0]
+          );
         } else {
           throw new Error('No se encontraron datos del perfil');
         }
@@ -140,7 +139,7 @@ export default function PerfilPage() {
            {/* Componente de eventos */}
       <PerfilEventos
         perfilId={profileData.id}
-        perfilType={profileData.type}
+        perfilType={profileData.tipo}
       />
           </div>
         </div>
