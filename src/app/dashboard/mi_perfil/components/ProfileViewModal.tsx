@@ -16,16 +16,12 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
   if (!isOpen) return null;
 
   console.log(profile)
-  const data = profile.data as any;
+  const data = profile
 
-  const profileImage =
-    profile.type === "artist" ? data.image_url :
-    profile.type === "band" ? data.photo_url :
-    profile.type === "place" ? data.photo_url : null;
 
-  const videoUrl =
-    profile.type === "band" ? data.video_url :
-    profile.type === "place" ? data.video_url : null;
+
+  const videoUrl =  data.video_url || '' ;
+  const profileImage = profile.imagen_url;
 
   return (
     <>
@@ -57,7 +53,7 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
           <div className="relative h-48 md:h-64 lg:h-80 flex-shrink-0">
             {profileImage ? (
               <img
-                src={profileImage}
+                src={profile.imagen_url}
                 alt="Perfil"
                 className="w-full h-full object-cover"
               />
@@ -70,14 +66,10 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent">
               <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
                 <h2 className="text-3xl md:text-5xl font-bold text-white drop-shadow-2xl">
-                  {profile.type === "artist" && (data.name || "Artista")}
-                  {profile.type === "band" && (data.band_name || "Banda")}
-                  {profile.type === "place" && (data.place_name || "Local")}
+                  {data.nombre}
                 </h2>
                 <p className="text-lg md:text-2xl text-blue-400 font-medium drop-shadow-lg">
-                  {profile.type === "artist" && "Perfil de Artista"}
-                  {profile.type === "band" && "Perfil de Banda"}
-                  {profile.type === "place" && "Perfil de Local"}
+                 perfil de {data.tipo}
                 </p>
               </div>
 
@@ -93,45 +85,35 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
           {/* CONTENIDO CON SCROLL */}
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-8">
             {/* TU CONTENIDO EXISTENTE (sin cambios) */}
-            {profile.type === "artist" && (
+            {profile.tipo === "artista" && (
               <div className="grid md:grid-cols-2 gap-8">
                 <div>
                   <p className="text-gray-400 text-sm mb-1">Nombre completo</p>
-                  <p className="text-2xl font-bold text-white">{data.name || "—"}</p>
+                  <p className="text-2xl font-bold text-white">{data.nombre || "—"}</p>
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm mb-1">Teléfono</p>
-                  <p className="text-2xl font-bold text-blue-400">{data.phone || "—"}</p>
+                  <p className="text-2xl font-bold text-blue-400">{data.telefono || "—"}</p>
                 </div>
                 <div className="md:col-span-2 flex items-center gap-3">
                   <FaMapPin className="w-6 h-6 text-blue-400" />
                   <p className="text-xl text-white">
-                    {data.cityName || data.cityId || "Ubicación no especificada"}, Chile
+                    {data.ciudad_id || "Ubicación no especificada"}, Chile
                   </p>
                 </div>
               </div>
             )}
 
             {/* BANDA */}
-            {profile.type === "band" && (
+            {profile.tipo === "banda" && (
               <div className="space-y-8">
                 <div className="grid md:grid-cols-2 gap-8">
                   <div>
                     <p className="text-gray-400 text-sm mb-1">Nombre de la banda</p>
-                    <p className="text-3xl font-bold text-white">{data.band_name}</p>
+                    <p className="text-3xl font-bold text-white">{data.nombre}</p>
                   </div>
-                  <div>
-                    <p className="text-gray-400 text-sm mb-1">Estilo musical</p>
-                    <p className="text-2xl font-bold text-blue-400">{data.style}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-sm mb-1">Tipo de música</p>
-                    <p className="text-xl text-white">{data.music_type}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-sm mb-1">¿Es tributo?</p>
-                    <p className="text-xl font-bold text-white">{data.is_tribute ? "Sí" : "No"}</p>
-                  </div>
+
+
 
 
                   <div>
@@ -146,7 +128,6 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
                               <span className="text-sm text-gray-400 ml-1">
                                 ({integrante.tipo || 'miembro'})
                               </span>
-                              {index < data.integrante.length - 1 && <span className="mx-2 text-gray-600">•</span>}
                             </span>
                           ))}
                         </div>
@@ -155,12 +136,12 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm mb-1">Teléfono</p>
-                    <p className="text-2xl font-bold text-blue-400">{data.contact_phone}</p>
+                    <p className="text-2xl font-bold text-blue-400">{data.telefono}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <FaMapPin className="w-6 h-6 text-blue-400" />
                     <p className="text-xl text-white">
-                      {data.cityName || data.cityId || "Sin ubicación"}, Chile
+                      {data.ciudad_id  || "Sin ubicación"}, Chile
                     </p>
                   </div>
                 </div>
@@ -184,34 +165,26 @@ export default function ProfileViewModal({ profile, isOpen, onClose }: Props) {
             )}
 
             {/* LOCAL */}
-            {profile.type === "place" && (
+            {profile.tipo === "lugar" && (
               <div className="space-y-8">
                 <div className="grid md:grid-cols-2 gap-8">
                   <div>
                     <p className="text-gray-400 text-sm mb-1">Nombre del local</p>
-                    <p className="text-3xl font-bold text-white">{data.place_name}</p>
+                    <p className="text-3xl font-bold text-white">{data.nombre}</p>
                   </div>
-                  <div>
-                    <p className="text-gray-400 text-sm mb-1">Tipo de local</p>
-                    <p className="text-xl font-bold text-blue-400">
-                      {data.place_type === "pub" ? "Pub" :
-                       data.place_type === "bar" ? "Bar" :
-                       data.place_type === "event_center" ? "Centro de eventos" :
-                       data.place_type === "disco" ? "Discoteca" : "Otro"}
-                    </p>
-                  </div>
+
                   <div>
                     <p className="text-gray-400 text-sm mb-1">Dirección</p>
-                    <p className="text-xl text-white">{data.address}</p>
+                    <p className="text-xl text-white">{data.direccion}</p>
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm mb-1">Teléfono</p>
-                    <p className="text-2xl font-bold text-blue-400">{data.phone}</p>
+                    <p className="text-2xl font-bold text-blue-400">{data.telefono}</p>
                   </div>
                   <div className="md:col-span-2 flex items-center gap-3">
                     <FaMapPin className="w-6 h-6 text-blue-400" />
                     <p className="text-xl text-white">
-                      {data.cityName || data.cityId || "Sin ubicación"}, Chile
+                      {data.ciudad_id  || "Sin ubicación"}, Chile
                     </p>
                   </div>
                 </div>

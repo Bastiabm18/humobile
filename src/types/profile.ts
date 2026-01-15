@@ -121,6 +121,8 @@ export interface Profile {
   region_id?: string;
   pais_id?: string;
   telefono?:string;
+  integrante?:string[];
+  direccion?:string;
 }
 
 export interface BlockDateRangeParams {
