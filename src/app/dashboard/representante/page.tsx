@@ -30,11 +30,8 @@ export default async function AgendaPage() {
   }
 //console.log('Agenda - UserData →', userData);
 
-   const profiles = await getPerfilRepresentante(userData.uid);
-   const typedProfiles = profiles.map(p => ({
-   ...p,
-   data: p.data || {}
- })) as any[]; // Cast a any para evitar el error
+   const typedProfiles = await getPerfilRepresentante(userData.uid);
+   
     
   return (
     <DashboardLayout
