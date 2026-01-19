@@ -5,12 +5,12 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { HiChevronLeft, HiChevronRight, HiCalendar } from 'react-icons/hi';
 import CarruselEvento from './CarruselEvento';
-import { CalendarEvent } from '@/types/profile';
+import { EventoCalendario } from '@/types/profile'; // Asegúrate de que la ruta sea correcta
 
 interface CarruselEventosProps {
-  eventos: CalendarEvent[];
+  eventos: EventoCalendario[];
   title?: string;
-  onEventClick?: (evento: CalendarEvent) => void;
+  onEventClick?: (evento: EventoCalendario) => void;
 }
 
 export default function CarruselEventosBase({ 
@@ -84,7 +84,7 @@ export default function CarruselEventosBase({
     );
   }
 
-  const handleEventClick = (evento: CalendarEvent) => {
+  const handleEventClick = (evento: EventoCalendario) => {
     if (onEventClick) {
       onEventClick(evento);
     } else {
