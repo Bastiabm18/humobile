@@ -132,8 +132,8 @@ export default function CarruselEventosBase({
           <div
             ref={carruselRef}
             className="
-              flex overflow-x-auto gap-5 py-4
-              w-full
+              flex overflow-x-auto gap-5 py-4 px-5
+              w-[95vw]
               [&::-webkit-scrollbar]:hidden
               [-ms-overflow-style:none]
               [scrollbar-width:none]

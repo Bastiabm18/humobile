@@ -137,7 +137,7 @@ export default function Contacto({}: ContactoProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-neutral-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-neutral-700"
+            className="bg-neutral-950/70 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-neutral-700"
           >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
@@ -262,7 +262,7 @@ export default function Contacto({}: ContactoProps) {
               variants={itemVariants}
               whileHover={{ scale: 1.02 }}
               onClick={handleCall}
-              className="cursor-pointer bg-neutral-800 rounded-2xl border border-neutral-700 p-6 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="cursor-pointer bg-neutral-950/70 rounded-2xl border border-neutral-700 p-6 shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-xl bg-emerald-900/30">
@@ -287,7 +287,7 @@ export default function Contacto({}: ContactoProps) {
               variants={itemVariants}
               whileHover={{ scale: 1.02 }}
               onClick={() => setIsModalOpen(true)}
-              className="cursor-pointer bg-neutral-800 rounded-2xl border border-neutral-700 p-6 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="cursor-pointer bg-neutral-950/70 rounded-2xl border border-neutral-700 p-6 shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-xl bg-amber-900/30">
@@ -310,7 +310,7 @@ export default function Contacto({}: ContactoProps) {
             {/* Horarios */}
             <motion.div
               variants={itemVariants}
-              className="bg-neutral-800 rounded-2xl border border-neutral-700 p-6 shadow-lg"
+              className="bg-neutral-950/70 rounded-2xl border border-neutral-700 p-6 shadow-lg"
             >
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-xl bg-purple-900/30">
@@ -330,7 +330,7 @@ export default function Contacto({}: ContactoProps) {
             {/* Dirección */}
             <motion.div
               variants={itemVariants}
-              className="bg-neutral-800 rounded-2xl border border-neutral-700 p-6 shadow-lg"
+              className="bg-neutral-950/70 rounded-2xl border border-neutral-700 p-6 shadow-lg"
             >
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-xl bg-cyan-900/30">
@@ -355,7 +355,7 @@ export default function Contacto({}: ContactoProps) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-neutral-800 rounded-2xl border border-neutral-700 p-8 mb-8"
+              className="bg-neutral-950/70 rounded-2xl border border-neutral-700 p-8 mb-8"
             >
               <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
                 <BsStars className="text-neutral-300" />
@@ -396,7 +396,7 @@ export default function Contacto({}: ContactoProps) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-neutral-800 rounded-2xl border border-neutral-700 p-8"
+              className="bg-neutral-950/70 rounded-2xl border border-neutral-700 p-8"
             >
               <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
                 <FaHeadset className="text-neutral-300" />
