@@ -1,15 +1,14 @@
-// app/perfil/components/EventoModal.tsx
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiX, HiCalendar, HiClock, HiMap, HiUser, HiLink, HiOutlineTicket, HiOutlineUserGroup } from 'react-icons/hi';
-import { FaInstagram, FaTicketAlt } from 'react-icons/fa';
+import { HiX, HiCalendar, HiClock, HiMap, HiUser, HiOutlineTicket, HiOutlineUserGroup } from 'react-icons/hi';
+import { FaInstagram } from 'react-icons/fa';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarEvent } from '@/types/profile';
+import { EventoCalendario } from '@/types/profile';
 
 interface EventoModalProps {
-  evento: CalendarEvent;
+  evento: EventoCalendario;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -17,22 +16,24 @@ interface EventoModalProps {
 export default function EventoModal({ evento, isOpen, onClose }: EventoModalProps) {
   if (!isOpen || !evento) return null;
 
-  // Formatear fechas
-  const fecha = format(evento.start, "EEEE d 'de' MMMM yyyy", { locale: es });
-  const horaInicio = format(evento.start, "HH:mm");
-  const horaFin = format(evento.end, "HH:mm");
+  // Formatear fechas con la data nueva
+  const start = new Date(evento.inicio);
+  const end = evento.fin ? new Date(evento.fin) : new Date(evento.inicio);
+  
+  const fecha = format(start, "EEEE d 'de' MMMM yyyy", { locale: es });
+  const horaInicio = format(start, "HH:mm");
+  const horaFin = format(end, "HH:mm");
 
-  // Obtener datos del recurso
-  const resource = evento.resource;
-  const lugar = resource.custom_place_name || resource.address || 'Por confirmar';
-  const flyerUrl = resource.flyer_url || '';
-  const descripcion = evento.description || '';
+  // Mapeo de variables manteniendo la estructura anterior
+  const lugar = evento.nombre_lugar || evento.direccion_lugar || 'Por confirmar';
+  const flyerUrl = evento.flyer_url || '';
+  const descripcion = evento.descripcion || '';
   
   // Datos adicionales
-  const hasTickets = resource.ticket_link;
-  const hasInstagram = resource.instagram_link;
-  const hasParticipants = 0 > 0;
-  const organizer = resource.organizer_name || 'Organizador';
+  const hasTickets = !!evento.tickets_evento;
+  const hasInstagram = !!evento.video_url;
+  const hasParticipants = true; // Se mantiene por UI
+  const organizer = evento.nombre_creador || 'Organizador';
 
   return (
     <AnimatePresence>
@@ -89,7 +90,7 @@ export default function EventoModal({ evento, isOpen, onClose }: EventoModalProp
                 
                 <div>
                   <h2 className="text-2xl font-bold text-white">
-                    {evento.title}
+                    {evento.titulo}
                   </h2>
                   <div className="flex items-center gap-3 mt-1">
                     <span className="
@@ -101,7 +102,7 @@ export default function EventoModal({ evento, isOpen, onClose }: EventoModalProp
                       border border-neutral-600/50
                       backdrop-blur-sm
                     ">
-                      {evento.category === 'show' ? '🎵 Concierto' : '🤝 Reunión'}
+                      {evento.nombre_categoria?.toLowerCase().includes('show') ? '🎵 Concierto' : '🤝 Evento'}
                     </span>
                     {organizer && (
                       <span className="text-neutral-400 text-sm flex items-center gap-1">
@@ -148,7 +149,7 @@ export default function EventoModal({ evento, isOpen, onClose }: EventoModalProp
                   <div className="relative group">
                     <img 
                       src={flyerUrl} 
-                      alt={evento.title}
+                      alt={evento.titulo}
                       className="
                         w-full h-80 
                         object-cover 
@@ -189,7 +190,7 @@ export default function EventoModal({ evento, isOpen, onClose }: EventoModalProp
                   </div>
                 )}
                 
-                {/* Estadísticas de participación (si existen) */}
+                {/* Estadísticas de participación (Simuladas como estaban antes) */}
                 {hasParticipants && (
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
@@ -212,13 +213,13 @@ export default function EventoModal({ evento, isOpen, onClose }: EventoModalProp
                       <div className="flex items-center gap-4">
                         <div className="text-center">
                           <div className="text-green-400 font-bold">
-                         0
+                           0
                           </div>
                           <div className="text-xs text-neutral-500">Confirmados</div>
                         </div>
                         <div className="text-center">
                           <div className="text-yellow-400 font-bold">
-                         0
+                           0
                           </div>
                           <div className="text-xs text-neutral-500">Pendientes</div>
                         </div>
@@ -259,7 +260,7 @@ export default function EventoModal({ evento, isOpen, onClose }: EventoModalProp
                         flex items-center justify-center
                       ">
                         <span className="text-neutral-300 font-medium">
-                          {format(evento.start, "dd")}
+                          {format(start, "dd")}
                         </span>
                       </div>
                       <div>
@@ -316,7 +317,7 @@ export default function EventoModal({ evento, isOpen, onClose }: EventoModalProp
                     <motion.a
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      href={resource.ticket_link}
+                      href={evento.tickets_evento || ''}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="
@@ -340,7 +341,7 @@ export default function EventoModal({ evento, isOpen, onClose }: EventoModalProp
                     <motion.a
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      href={resource.instagram_link}
+                      href={evento.video_url || ''}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="

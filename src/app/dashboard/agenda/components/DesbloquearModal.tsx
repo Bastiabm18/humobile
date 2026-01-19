@@ -1,7 +1,7 @@
 // components/calendar/DesbloquearModal.tsx
 'use client';
 
-import { CalendarEvent } from '@/types/profile';
+import { EventoCalendario } from '@/types/profile';
 import { FaLock, FaCalendarAlt, FaClock, FaTrash, FaUnlock, FaExclamationTriangle } from 'react-icons/fa';
 import { HiX } from 'react-icons/hi';
 import { format } from 'date-fns';
@@ -10,7 +10,7 @@ import { useState } from 'react';
 import { eliminarBloqueo } from '../actions/actions';
 
 interface DesbloquearModalProps {
-  event: CalendarEvent | null;
+  event: EventoCalendario | null;
   isOpen: boolean;
   onClose: () => void;
   onBlockDeleted?: () => void;
@@ -20,9 +20,9 @@ export default function DesbloquearModal({ event, isOpen, onClose, onBlockDelete
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(false);
   
-  if (!isOpen || !event || !event.resource?.is_blocked) return null;
+  if (!isOpen || !event || !event.es_bloqueo) return null;
 
-  // Formatear fechas
+  // Formatear fechas (sin cambios)
   const formatDateTime = (date: Date) => {
     return format(date, "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es });
   };
@@ -36,8 +36,8 @@ export default function DesbloquearModal({ event, isOpen, onClose, onBlockDelete
   };
 
   const calculateDuration = () => {
-    const start = new Date(event.start);
-    const end = new Date(event.end);
+    const start = new Date(event.inicio);
+    const end = new Date(event.fin);
     const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
     
     if (hours < 1) {
@@ -53,7 +53,8 @@ export default function DesbloquearModal({ event, isOpen, onClose, onBlockDelete
   };
 
   const handleDeleteBlock = async () => {
-      console.log("id del events:"+ event.id );
+    console.log("id del evento:"+ event.id );
+
     if (!event.id) {
       alert('Error: El bloqueo no tiene ID');
       return;
@@ -63,7 +64,6 @@ export default function DesbloquearModal({ event, isOpen, onClose, onBlockDelete
     try {
       const result = await eliminarBloqueo(event.id);
       if (result.success) {
-        //alert('Bloqueo eliminado exitosamente');
         if (onBlockDeleted) {
           onBlockDeleted();
         }
@@ -79,7 +79,7 @@ export default function DesbloquearModal({ event, isOpen, onClose, onBlockDelete
     }
   };
 
-  // Helper para verificar si es el mismo día
+  // Helper para verificar si es el mismo día (sin cambios)
   const isSameDay = (date1: Date, date2: Date): boolean => {
     return (
       date1.getFullYear() === date2.getFullYear() &&
@@ -117,14 +117,14 @@ export default function DesbloquearModal({ event, isOpen, onClose, onBlockDelete
           <div className="space-y-6">
             {/* Título y motivo */}
             <div>
-              <h3 className="text-xl font-bold text-red-300 mb-2">{event.title}</h3>
-              {event.resource?.blocked_reason && (
+              <h3 className="text-xl font-bold text-red-300 mb-2">{event.titulo}</h3>
+              {event.motivo_bloqueo && (
                 <div className="bg-red-900/30 border border-red-800/50 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <FaExclamationTriangle className="text-red-400" />
                     <span className="text-red-300 font-medium">Motivo del bloqueo:</span>
                   </div>
-                  <p className="text-red-200">{event.resource.blocked_reason}</p>
+                  <p className="text-red-200">{event.motivo_bloqueo}</p>
                 </div>
               )}
             </div>
@@ -137,11 +137,11 @@ export default function DesbloquearModal({ event, isOpen, onClose, onBlockDelete
                   <span className="text-sm text-gray-400">Fecha</span>
                 </div>
                 <p className="text-white font-medium">
-                  {formatDateOnly(new Date(event.start))}
+                  {formatDateOnly(new Date(event.inicio))}
                 </p>
-                {!isSameDay(new Date(event.start), new Date(event.end)) && (
+                {!isSameDay(new Date(event.inicio), new Date(event.fin)) && (
                   <p className="text-white font-medium mt-1">
-                    al {formatDateOnly(new Date(event.end))}
+                    al {formatDateOnly(new Date(event.fin))}
                   </p>
                 )}
               </div>
@@ -152,7 +152,7 @@ export default function DesbloquearModal({ event, isOpen, onClose, onBlockDelete
                   <span className="text-sm text-gray-400">Horario</span>
                 </div>
                 <p className="text-white font-medium">
-                  {formatTimeOnly(new Date(event.start))} - {formatTimeOnly(new Date(event.end))}
+                  {formatTimeOnly(new Date(event.inicio))} - {formatTimeOnly(new Date(event.fin))}
                 </p>
                 <p className="text-gray-400 text-sm mt-1">
                   Duración: {calculateDuration()}
@@ -161,10 +161,10 @@ export default function DesbloquearModal({ event, isOpen, onClose, onBlockDelete
             </div>
 
             {/* Detalles adicionales */}
-            {event.description && (
+            {event.descripcion && (
               <div className="bg-neutral-800/30 rounded-lg p-4 border border-gray-700">
                 <h4 className="text-sm font-medium text-gray-300 mb-2">Notas adicionales</h4>
-                <p className="text-gray-300">{event.description}</p>
+                <p className="text-gray-300">{event.descripcion}</p>
               </div>
             )}
 
@@ -172,7 +172,7 @@ export default function DesbloquearModal({ event, isOpen, onClose, onBlockDelete
             <div className="text-xs text-gray-500">
               <p>ID: <span className="text-gray-400 font-mono">{event.id}</span></p>
               <p className="mt-1">
-                Creado el: {format(new Date(event.resource?.created_at || event.start), 'dd/MM/yyyy HH:mm')}
+                Creado el: {format(new Date(event.created_at || event.inicio), 'dd/MM/yyyy HH:mm')}
               </p>
             </div>
           </div>

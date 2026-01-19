@@ -99,7 +99,7 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
   const tiposPerfil = [
     { id: 'artista', label: 'Artista/Solista', icon: <FaUserSolid />, color: 'bg-blue-500' },
     { id: 'banda', label: 'Grupo/Banda', icon: <FaUsers />, color: 'bg-purple-500' },
-    { id: 'local', label: 'Espacio/Lugar', icon: <FaBuilding />, color: 'bg-green-500' },
+    { id: 'lugar', label: 'Espacio/Lugar', icon: <FaBuilding />, color: 'bg-green-500' },
     { id: 'productor', label: 'Productor', icon: <FaHeadphones />, color: 'bg-yellow-500' },
     { id: 'representante', label: 'Representante', icon: <FaBriefcase />, color: 'bg-red-500' }
   ];

@@ -1,3 +1,5 @@
+import { string } from "zod";
+
 // types/profile.ts
 export type ProfileType = 'artista' | 'banda' | 'lugar'|'representante'|'productor';
 
@@ -19,7 +21,7 @@ export interface GeoData {
 export interface ParticipanteEvento {
   id_perfil: string;
   nombre: string;
-  tipo: 'artista' | 'banda'| 'lugar';
+  tipo: string;
 }
 
 export interface categoriaEvento{
@@ -51,6 +53,31 @@ export interface EventoGuardar {
   es_bloqueado?: boolean | null;
   motivo_bloqueo?: string | null;
 }
+
+export interface EventoActualizar  {
+  id: string;
+  titulo: string;
+  descripcion?: string | null;
+  fecha_hora_ini: string;
+  fecha_hora_fin?: string | null;
+  id_categoria?: string | null;
+  flyer_url?: string | null;
+  video_url?: string | null;
+  tickets_evento?: string | null;
+  es_publico: boolean;
+
+  id_lugar?: string | null;
+  nombre_lugar?: string | null;
+  direccion_lugar?: string | null;
+  lat_lugar?: number | null;
+  lon_lugar?: number | null;
+
+  participantes: Array<{
+    id_perfil: string;
+    nombre: string;
+    tipo: string;
+  }>;
+};
 
 
 // Data para el formulario de Artista
@@ -123,6 +150,16 @@ export interface Profile {
   telefono?:string;
   integrante?:string[];
   direccion?:string;
+  lat?:number;
+  lon?:number;
+  pertenece_a_grupo?:ArtistaEnBanda[]
+}
+
+export interface ArtistaEnBanda{
+  id_banda:string
+  nombre_banda:string;
+  tipo:string;
+  desde:Date;
 }
 
 export interface BlockDateRangeParams {
@@ -347,6 +384,62 @@ export type UserWithMembership = {
   membership_estado: string;
 };
 
+export interface EventoCalendario {
+
+  id:string;
+  titulo:string;
+  descripcion:string;
+  inicio:Date;
+  fin:Date;
+  id_categoria:string;
+  nombre_categoria:string;
+  flyer_url?:string;
+  video_url?:string;
+  id_creador:string;
+  nombre_creador:string;
+  tipo_perfil_creador:string;
+  id_lugar:string;
+  nombre_lugar:string;
+  direccion_lugar:string;
+  lat_lugar:string;
+  lon_lugar:string;
+  id_productor?:string;
+  nombre_productor?:string;
+  tickets_evento:string;
+  es_publico:boolean;
+  es_bloqueo:boolean;
+  motivo_bloqueo?:string;
+  created_at:Date;
+  updated_at:Date;
+
+  //Participantes extras
+
+ participantes:IntegranteBandaEvento [];
+
+
+  // Estadísticas de participación
+  total_participantes?: number;
+  pendientes?: number;
+  confirmados?: number;
+  rechazados?: number;
+  porcentaje_aprobacion?: number;
+
+
+
+
+
+}
+
+export interface IntegranteBandaEvento {
+
+  id_participante:string;
+  nombre_participante:string;
+  tipo_perfil_participante:string;
+  integrantes_banda?:{
+      id_integrante:string;
+      nombre_integrante:string;
+      } []; // el [] para que sea un array de integrantes si son N cantidad
+}
 
 // types/calendar.ts
 export interface CalendarEvent {

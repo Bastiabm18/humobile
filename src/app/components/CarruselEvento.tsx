@@ -5,14 +5,13 @@ import { motion } from 'framer-motion';
 import { HiCalendar, HiClock, HiMap } from 'react-icons/hi';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarEvent } from '@/types/profile';
+import { EventoCalendario } from '@/types/profile';
 import { FaTasks } from 'react-icons/fa';
 import { RiCalendarEventLine } from 'react-icons/ri';
 
-
 interface CarruselEventoProps {
-  evento: CalendarEvent;
-  onClick?: (evento: CalendarEvent) => void;
+  evento: EventoCalendario;
+  onClick?: (evento: EventoCalendario) => void;
 }
 
 export default function CarruselEvento({ evento, onClick }: CarruselEventoProps) {
@@ -20,36 +19,76 @@ export default function CarruselEvento({ evento, onClick }: CarruselEventoProps)
     if (onClick) onClick(evento);
   };
 
- // console.log(evento);
-
+  // Usar valores por defecto para estadísticas opcionales
+  const totalParticipantes = evento.total_participantes || 0;
+  const confirmados = evento.confirmados || 0;
+  
   const getCategoryColor = () => {
-    switch (evento.category) {
-      case 'show': return 'bg-red-600/20 text-red-400 border-red-500/30';
-      case 'reunion': return 'bg-blue-600/20 text-blue-400 border-blue-500/30';
-      default: return 'bg-neutral-600/20 text-neutral-400 border-neutral-500/30';
+    switch (evento.nombre_categoria?.toLowerCase()) {
+      case 'show':
+      case 'concierto':
+      case 'conciertos':
+        return 'bg-red-600/20 text-red-400 border-red-500/30';
+      case 'reunión':
+      case 'reunion':
+      case 'reuniones':
+        return 'bg-blue-600/20 text-blue-400 border-blue-500/30';
+      case 'festival':
+        return 'bg-purple-600/20 text-purple-400 border-purple-500/30';
+      case 'privado':
+      case 'private':
+        return 'bg-green-600/20 text-green-400 border-green-500/30';
+      default: 
+        return 'bg-neutral-600/20 text-neutral-400 border-neutral-500/30';
     }
   };
 
   const getCategoryLabel = () => {
-    switch (evento.category) {
-      case 'show': return 'Concierto';
-      case 'reunion': return 'Reunión';
-      default: return evento.category || 'Evento';
+    if (evento.nombre_categoria) {
+      return evento.nombre_categoria;
     }
+    
+    const titleLower = evento.titulo.toLowerCase();
+    if (titleLower.includes('concierto') || titleLower.includes('show') || titleLower.includes('conciertos')) {
+      return 'Concierto';
+    }
+    if (titleLower.includes('reunión') || titleLower.includes('reunion')) {
+      return 'Reunión';
+    }
+    if (titleLower.includes('festival')) {
+      return 'Festival';
+    }
+    
+    return 'Evento';
   };
 
-  // Formatear fecha y hora
-  const fecha = format(evento.start, "EEEE d 'de' MMMM", { locale: es });
-  const horaInicio = format(evento.start, "HH:mm");
-  const horaFin = format(evento.end, "HH:mm");
+  // Formatear fecha y hora - USAR evento.inicio y evento.fin
+  // Primero asegurarse de que son fechas válidas
+  const inicioDate = evento.inicio instanceof Date ? evento.inicio : new Date(evento.inicio);
+  const finDate = evento.fin instanceof Date ? evento.fin : new Date(evento.fin);
+  
+  // Verificar si las fechas son válidas
+  const isValidInicio = !isNaN(inicioDate.getTime());
+  const isValidFin = !isNaN(finDate.getTime());
+  
+  const fecha = isValidInicio ? format(inicioDate, "EEEE d 'de' MMMM", { locale: es }) : 'Fecha no disponible';
+  const horaInicio = isValidInicio ? format(inicioDate, "HH:mm") : '--:--';
+  const horaFin = isValidFin ? format(finDate, "HH:mm") : '--:--';
 
   // Lugar
-  const lugar = evento.resource.custom_place_name || 
-                evento.resource.address || 
-                'Por confirmar';
+  const lugar = evento.nombre_lugar || evento.direccion_lugar || 'Por confirmar';
 
   // Flyer o imagen
-  const imageUrl = evento.resource.flyer_url || '';
+  const imageUrl = evento.flyer_url || '';
+
+  // Verificar si hay estadísticas disponibles
+  const tieneEstadisticas = totalParticipantes > 0;
+  const todosConfirmados = tieneEstadisticas && confirmados === totalParticipantes;
+  
+  // Crear título con estadísticas de confirmación (solo si hay datos)
+  const tituloConEstadisticas = tieneEstadisticas
+    ? `${evento.titulo} (${confirmados}/${totalParticipantes} ✓)`
+    : evento.titulo;
 
   return (
     <motion.div
@@ -83,7 +122,7 @@ export default function CarruselEvento({ evento, onClick }: CarruselEventoProps)
         <div className="absolute inset-0">
           <img 
             src={imageUrl} 
-            alt={evento.title}
+            alt={evento.titulo}
             className="
               w-full h-full object-fill
               group-hover:scale-110
@@ -119,8 +158,18 @@ export default function CarruselEvento({ evento, onClick }: CarruselEventoProps)
 
         {/* Título */}
         <h3 className="text-2xl font-bold text-white leading-tight drop-shadow-lg group-hover:text-red-300 transition-colors duration-300 mb-3">
-          {evento.title}
+          {tituloConEstadisticas}
         </h3>
+
+        {/* Estadísticas de confirmación (solo si hay datos) */}
+        {tieneEstadisticas && (
+          <div className="flex items-center gap-2 text-green-400 mb-2">
+            <FaTasks className="w-4 h-4" />
+            <span className="text-sm">
+              {confirmados} de {totalParticipantes} confirmados
+            </span>
+          </div>
+        )}
 
         {/* Fecha y hora */}
         <div className="flex items-center gap-2 text-neutral-300 mb-2">
@@ -144,6 +193,16 @@ export default function CarruselEvento({ evento, onClick }: CarruselEventoProps)
         {/* Línea decorativa */}
         <div className="h-[2px] w-16 bg-gradient-to-r from-red-500 to-red-500/20 group-hover:w-24 transition-all duration-300 self-start" />
       </div>
+
+      {/* Badge de confirmación si todos están confirmados */}
+      {todosConfirmados && (
+        <div className="absolute top-4 right-4 z-20">
+          <div className="px-2 py-1 bg-green-600/90 backdrop-blur-sm text-white text-xs font-semibold rounded-full flex items-center gap-1">
+            <span className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span>
+            100% Confirmado
+          </div>
+        </div>
+      )}
 
       {/* Efectos */}
       <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-red-500/30 transition-colors duration-300 pointer-events-none" />

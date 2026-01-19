@@ -1,16 +1,14 @@
-// app/perfil/components/CarruselEventosBase.tsx
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { HiChevronLeft, HiChevronRight, HiCalendar } from 'react-icons/hi';
 import CarruselEvento from './CarruselEvento';
-import { CalendarEvent } from '@/types/profile';
-
+import { EventoCalendario } from '@/types/profile';
 interface CarruselEventosProps {
-  eventos: CalendarEvent[];
+  eventos: EventoCalendario[];
   title?: string;
-  onEventClick?: (evento: CalendarEvent) => void;
+  onEventClick?: (evento: EventoCalendario) => void;
 }
 
 export default function CarruselEventosBase({ 
@@ -84,7 +82,7 @@ export default function CarruselEventosBase({
     );
   }
 
-  const handleEventClick = (evento: CalendarEvent) => {
+  const handleEventClick = (evento: EventoCalendario) => {
     if (onEventClick) {
       onEventClick(evento);
     } else {
@@ -93,11 +91,11 @@ export default function CarruselEventosBase({
   };
 
   return (
-    <div className="w-full mx-auto px-0 py-2  overflow-hidden">
+    <div className="w-full mx-auto px-0 py-2 overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <HiCalendar className="text-2xl text-sky-600/70" />
-        <h2 className="text-2xl font-bold text-white">Proximos Confirmados</h2>
+        <h2 className="text-2xl font-bold text-white">Próximos Confirmados</h2>
         <span className="bg-neutral-700/50 text-neutral-300 text-sm px-3 py-1 rounded-full">
           {eventos.length}
         </span>
@@ -138,7 +136,6 @@ export default function CarruselEventosBase({
               [-ms-overflow-style:none]
               [scrollbar-width:none]
               scroll-smooth
-            
             "
             style={{ 
               justifyContent: 'flex-start',
@@ -154,9 +151,6 @@ export default function CarruselEventosBase({
                 />
               </div>
             ))}
-            
-            {/* Espacio extra al final para que se vea el último elemento */}
-          
           </div>
         </div>
 

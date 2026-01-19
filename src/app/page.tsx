@@ -9,6 +9,7 @@ import PermisoUbicacion from "./components/PermisoUbicacion";
 import LugareCercanosMap from "./components/MultipleLocationMap";
 import PreguntaFrecuenteComponente from "./components/Pregunta_frecuente";
 import PreguntaFrecuente from "./components/Pregunta_frecuente";
+import Contacto from "./components/Contacto";
 
 export default function Home() {
 
@@ -40,6 +41,10 @@ export default function Home() {
 </section>
 <section className="max-w-screen flex items-center justify-center">
   <PreguntaFrecuente/>
+</section>
+<section className="max-w-screen flex items-center justify-center">
+
+  <Contacto/>
 </section>
 
 <section  id="Footer" className="w-full h-full flex ">

@@ -3,33 +3,32 @@
 
 import { useState, useEffect } from 'react';
 import CarruselEventosBase from './CarruselEventosBase';
-import { CalendarEvent } from '@/types/profile';
-import { getEventsByProfile, getEventsPorEstado } from '@/app/actions/actions';
+import { CalendarEvent, EventoCalendario } from '@/types/profile';
+import { getEventosConfirmados, getEventsByProfile, getEventsPorEstado } from '@/app/actions/actions';
 import NeonSign from '@/app/components/NeonSign';
 import { Router } from 'next/router';
 import { useRouter } from 'next/navigation';
 
-
 interface PerfilEventosProps {
   perfilId: string;
-  perfilType: 'artist' | 'band' | 'place';
+  perfilType:string;
 }
 
 export default function EventosCarrusel() {
-  const [eventos, setEventos] = useState<CalendarEvent[]>([]);
+  const [eventos, setEventos] = useState<EventoCalendario[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null); // <-- Nuevo estado
-  const [modalOpen, setModalOpen] = useState(false); // <-- Nuevo estado
+  const [selectedEvent, setSelectedEvent] = useState<EventoCalendario | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
- useEffect(() => {
+  useEffect(() => {
     const fetchEventos = async () => {
       setLoading(true);
       setError(null);
       try {
-        const eventosData = await getEventsPorEstado();
+        const eventosData = await getEventosConfirmados();
         setEventos(eventosData);
         setLoading(false);
         
@@ -45,7 +44,7 @@ export default function EventosCarrusel() {
   }, []);
 
 
-  const handleEventClick = (evento: CalendarEvent) => {
+  const handleEventClick = (evento: EventoCalendario) => {
       console.log('Evento seleccionado:', evento.id);
       // Codificar el ID del evento
       const encodedId = encodeEventId(evento.id);
@@ -53,25 +52,25 @@ export default function EventosCarrusel() {
       // Redirigir con el ID codificado
       router.push(`/evento?id=${encodedId}`);
 
-    setSelectedEvent(evento); // <-- Guardar el evento seleccionado
-    setModalOpen(true); // <-- Abrir el modal
+    setSelectedEvent(evento);
+    setModalOpen(true);
   };
 
   // Función para codificar el ID del evento
-const encodeEventId = (eventId: string): string => {
-  // Crear objeto con el ID
-  const data = { id: eventId };
-  
-  // Convertir a JSON y luego a base64
-  const jsonString = JSON.stringify(data);
-  const base64 = btoa(jsonString);
-  
-  // Convertir a base64url (seguro para URLs)
-  return base64
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-};
+  const encodeEventId = (eventId: string): string => {
+    // Crear objeto con el ID
+    const data = { id: eventId };
+    
+    // Convertir a JSON y luego a base64
+    const jsonString = JSON.stringify(data);
+    const base64 = btoa(jsonString);
+    
+    // Convertir a base64url (seguro para URLs)
+    return base64
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+  };
 
   
   const handleCloseModal = () => {

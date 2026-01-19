@@ -1,8 +1,9 @@
 'use server'; 
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
-import { ArtistData, BandData, PlaceData, ProfileType, GeoData,ParticipanteEvento, Profile, BlockDateRangeParams, evento, CalendarEvent, eventoCompleto, categoriaEvento, EventoGuardar } from '@/types/profile'; 
+import { ArtistData, BandData, PlaceData,EventoActualizar, ProfileType, GeoData,ParticipanteEvento, Profile, BlockDateRangeParams, evento, CalendarEvent, eventoCompleto, categoriaEvento, EventoGuardar, EventoCalendario, IntegranteBandaEvento } from '@/types/profile'; 
 import { revalidatePath } from 'next/cache';
+import { format } from 'date-fns';
 
 
 /**
@@ -70,53 +71,41 @@ export async function createDateBlock({
 }) {
   const supabase = getSupabaseAdmin();
 
-  // Validar que no existan eventos en el mismo rango de fechas para el creador
-const { data: eventosExistentes, error: errorConsulta } = await supabase
-  .from('participacion_evento')
-  .select(`
-    evento_id,
-    evento!inner(
-      id,
-      title,
-      fecha_hora_ini,
-      fecha_hora_fin
-    )
-  `)
-  .eq('perfil_id', creator_profile_id)  // Mismo perfil
-  .filter('events.fecha_hora_ini', 'lt', fecha_hora_fin.toISOString())  // Inicio existente < Fin nuevo
-  .filter('events.fecha_hora_fin', 'gt', fecha_hora_ini.toISOString());  // Fin existente > Inicio nuevo
-          
-        if (errorConsulta) {
-          console.error('Error al verificar eventos existentes:', errorConsulta);
-          return { 
-            success: false, 
-            error: 'Error al verificar disponibilidad de fechas' 
-          };
-        }
+  // 1. Validar que no existan eventos/bloqueos en el mismo rango para este creador
+  const { data: eventosExistentes, error: errorConsulta } = await supabase
+    .from('evento')
+    .select('id, titulo, fecha_hora_ini, fecha_hora_fin')
+    .eq('id_creador', creator_profile_id)
+    .or(`and(fecha_hora_ini.lt.${fecha_hora_fin.toISOString()},fecha_hora_fin.gt.${fecha_hora_ini.toISOString()})`);
 
-        if (eventosExistentes && eventosExistentes.length > 0) {
-          return { 
-            success: false, 
-            error: 'Ya tienes eventos programados en ese rango de fechas. Por favor, selecciona otras fechas.' 
-          };
-        }
+  if (errorConsulta) {
+    console.error('Error al verificar eventos existentes:', errorConsulta);
+    return { 
+      success: false, 
+      error: 'Error al verificar disponibilidad de fechas' 
+    };
+  }
 
+  if (eventosExistentes && eventosExistentes.length > 0) {
+    return { 
+      success: false, 
+      error: 'Ya tienes eventos programados en ese rango de fechas. Por favor, selecciona otras fechas.' 
+    };
+  }
 
+  // 2. Insertar el bloqueo en la tabla evento
   const { data: eventoInsertado, error } = await supabase
-    .from('events')
+    .from('evento')
     .insert({
-      creator_profile_id,
-      creator_type,
-      title: title.trim(),
-      description: reason.trim(),
+      titulo: title.trim(),
+      descripcion: reason.trim(),
       fecha_hora_ini,
       fecha_hora_fin,
-      is_blocked: true,
-      blocked_reason: reason.trim(),
-      status: 'approved',
-      organizer_name: 'Bloqueo Usuario', // <- Campo requerido
-      organizer_contact: 'N/A',
-      category: 'bloqueo',
+      id_creador: creator_profile_id,
+      creador_tipo_perfil: creator_type,
+      es_bloqueo: true,
+      motivo_bloqueo: reason.trim(),
+      es_publico: false,  
     })
     .select()
     .single();
@@ -126,77 +115,168 @@ const { data: eventosExistentes, error: errorConsulta } = await supabase
     return { success: false, error: error.message };
   }
 
-
-  
-    // 2. Insertar el creador en participacion_evento usando el id del evento
+  // 3. Insertar participación del creador como confirmado
   const { error: errorParticipacion } = await supabase
     .from('participacion_evento')
     .insert({
-      evento_id: eventoInsertado.id, // Aquí usamos el id del evento insertado
+      evento_id: eventoInsertado.id,
       perfil_id: creator_profile_id,
       estado: 'confirmado'
     });
 
-      if (errorParticipacion) {
+  if (errorParticipacion) {
     console.error('Error al crear participación:', errorParticipacion);
-    
-    // Opcional: Eliminar el evento si falla la participación
+
+    // Rollback: eliminar el evento si falla la participación
     await supabase
-      .from('events')
+      .from('evento')
       .delete()
       .eq('id', eventoInsertado.id);
-    
+
     return { success: false, error: errorParticipacion.message };
   }
 
-  
+  // revalidatePath('/dashboard/agenda');  ← descomenta si lo necesitas
 
- // revalidatePath('/dashboard/agenda');
   return { success: true, eventoInsertado };
 }
-
 export async function eliminarBloqueo(eventId: string): Promise<{ success: boolean; error?: string }> {
-
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    const { data, error } = await supabaseAdmin
-       .from('events')
-      .select('id, is_blocked')
+
+    // 1. Verificar que existe y es bloqueo (opcional pero recomendado)
+    const { data, error: checkError } = await supabaseAdmin
+      .from('evento')
+      .select('id, es_bloqueo')
       .eq('id', eventId)
-      .eq('is_blocked', true)
+      .eq('es_bloqueo', true)
       .single();
 
-
-      
-    if (error) {
-      console.error('Error obteniendo evento:', error);
-      throw new Error(`Error al obtener el evento: ${error.message}`);
+    if (checkError || !data) {
+      console.error('Error verificando bloqueo:', checkError);
+      return { success: false, error: 'El bloqueo no existe o no es válido' };
     }
 
-    if(!data){
-      return { success: false, error: 'El evento no es un bloqueo o no existe' };
+    // 2. Eliminar de participacion_evento (primero, para no violar FK si hay)
+    const { error: participacionError } = await supabaseAdmin
+      .from('participacion_evento')
+      .delete()
+      .eq('evento_id', eventId);
+
+    if (participacionError) {
+      console.error('Error eliminando participaciones:', participacionError);
+      return { success: false, error: participacionError.message };
     }
 
-
+    // 3. Eliminar el bloqueo de la tabla evento
     const { error: deleteError } = await supabaseAdmin
-    .from('events')
-    .delete()
-    .eq('id', eventId)
-    .eq('is_blocked', true)
+      .from('evento')
+      .delete()
+      .eq('id', eventId);
 
     if (deleteError) {
       console.error('Error eliminando bloqueo:', deleteError);
       return { success: false, error: deleteError.message };
     }
 
-    return { success: true};
-
-  }catch (error){
-
+    return { success: true };
+  } catch (error: any) {
     console.error('Error en eliminarBloqueo:', error);
-    return { success: false, error: (error as Error).message };
+    return { success: false, error: error.message || 'Error desconocido' };
   }
+}
 
+
+export async function getEventosByPerfilParticipacion(
+  profileId: string,
+  estadoParticipacion?: string, // 'confirmado' | 'pendiente' | 'rechazado' | undefined = todos
+  fechaDesde?: Date,
+  fechaHasta?: Date
+): Promise<EventoCalendario[]> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const params: any = {
+      p_id_perfil: profileId,
+    };
+
+    if (estadoParticipacion) {
+      params.p_estado = estadoParticipacion;
+    }
+
+    if (fechaDesde) {
+      params.p_fecha_desde = fechaDesde.toISOString();
+    }
+
+    if (fechaHasta) {
+      params.p_fecha_hasta = fechaHasta.toISOString();
+    }
+
+    const { data: eventosDB, error } = await supabaseAdmin
+      .rpc('get_eventos_perfil_estados', params);
+
+    if (error) {
+      console.error(' Error al llamar a get_eventos_perfil_estados:', error);
+      throw new Error(`Error al obtener eventos: ${error.message}`);
+    }
+
+    if (!eventosDB || eventosDB.length === 0) {
+      return [];
+    }
+
+    // Opcional: log para depuración
+    // console.log('📊 Primer evento recibido:', Object.keys(eventosDB[0]));
+
+    const eventosMapeados: EventoCalendario[] = eventosDB.map((evento: any) => {
+      // Participantes ya vienen en el formato que necesitamos
+      const participantes: IntegranteBandaEvento[] = evento.participantes || [];
+
+      // Convertimos lat/lon a string (como espera tu interfaz)
+      const latStr = evento.lat_lugar != null ? String(evento.lat_lugar) : '';
+      const lonStr = evento.lon_lugar != null ? String(evento.lon_lugar) : '';
+
+      return {
+        id: evento.id,
+        titulo: evento.titulo,
+        descripcion: evento.descripcion || '',
+        inicio: new Date(evento.inicio),
+        fin: evento.fin ? new Date(evento.fin) : new Date(evento.inicio), // fallback si no hay fin
+        id_categoria: evento.id_categoria || '',
+        nombre_categoria: evento.nombre_categoria || '',
+        flyer_url: evento.flyer_url,
+        video_url: evento.video_url,
+
+        id_creador: evento.id_creador,
+        nombre_creador: evento.nombre_creador || 'Desconocido',
+        tipo_perfil_creador: evento.tipo_perfil_creador || '',
+
+        id_lugar: evento.id_lugar || '',
+        nombre_lugar: evento.nombre_lugar || '',
+        direccion_lugar: evento.direccion_lugar || '',
+        lat_lugar: latStr,
+        lon_lugar: lonStr,
+
+        id_productor: evento.id_productor,
+        nombre_productor: evento.nombre_productor,
+
+        tickets_evento: evento.tickets_evento || '',
+        es_publico: evento.es_publico ?? true,
+        es_bloqueo: evento.es_bloqueo ?? false,
+        motivo_bloqueo: evento.motivo_bloqueo,
+
+        created_at: new Date(evento.created_at),
+        updated_at: new Date(evento.updated_at),
+
+        // Participantes ya vienen en el formato correcto
+        participantes,
+      };
+    });
+
+    return eventosMapeados;
+  } catch (error: any) {
+    console.error('Error en getEventosByPerfilParticipacion:', error);
+    throw error;
+  }
 }
 
 export async function getEventsByProfile(profileId: string, estadoEvento:string ): Promise<CalendarEvent[]> {
@@ -307,104 +387,60 @@ export async function getEventsByProfile(profileId: string, estadoEvento:string 
     throw error;
   }
 }
-export async function getEventoById(id_evento: string): Promise<eventoCompleto | null> {
-  try {
-    const supabaseAdmin = getSupabaseAdmin();
-    
-    // Llamar a la función PostgreSQL obtener_evento_completo
-    const { data, error } = await supabaseAdmin
-      .rpc('obtener_evento_completo', {
-        p_evento_id: id_evento
-      })
-      .single() as { data: eventoCompleto; error: any }; // .single() porque esperamos un solo evento
-    
-    if (error) {
-      console.error('❌ Error en la función PostgreSQL obtener_evento_completo:', error);
-      console.error('Detalles del error:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint
-      });
-      throw new Error(`Error al obtener el evento: ${error.message}`);
-    }
+export async function getEventoById(idEvento: string): Promise<EventoCalendario | null> {
+  const supabase = getSupabaseAdmin();
 
-    if (!data) {
-      return null;
-    }
+  const { data, error } = await supabase
+    .rpc('obtener_evento_completo', {
+      p_evento_id: idEvento
+    })
+    .single();
 
-    // Verificar estructura del evento
-    console.log('📊 Estructura del evento completo:', Object.keys(data));
-    console.log('📈 Participantes del evento:', {
-      total_participantes: data.participantes?.length || 0,
-      total_artistas: data.artistas?.length || 0,
-      total_bandas: data.bandas?.length || 0,
-      total_lugares: data.lugares?.length || 0
-    });
-
-    // Convertir a la interfaz eventoCompleto
-    const eventoCompletoData: eventoCompleto = {
-      // Campos de events
-      id: data.id,
-      creator_profile_id: data.creator_profile_id,
-      creator_type: data.creator_type as 'artist' | 'band' | 'place',
-      title: data.title,
-      description: data.description || '',
-      place_profile_id: data.place_profile_id,
-      custom_place_name: data.custom_place_name,
-      address: data.address,
-      organizer_name: data.organizer_name || '',
-      organizer_contact: data.organizer_contact,
-      ticket_link: data.ticket_link,
-      instagram_link: data.instagram_link,
-      flyer_url: data.flyer_url,
-      category: data.category,
-      status: data.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
-      created_at: data.created_at,
-      updated_at: data.updated_at,
-      fecha_hora_ini: data.fecha_hora_ini,
-      fecha_hora_fin: data.fecha_hora_fin,
-      is_blocked: data.is_blocked || false,
-      blocked_reason: data.blocked_reason,
-      id_artista: data.id_artista,
-      id_tipo_artista: data.id_tipo_artista,
-      nombre_artista: data.nombre_artista,
-      
-      // Arrays (ya vienen como JSONB desde PostgreSQL)
-      participantes: Array.isArray(data.participantes) ? data.participantes : [],
-      artistas: Array.isArray(data.artistas) ? data.artistas : [],
-      bandas: Array.isArray(data.bandas) ? data.bandas : [],
-      lugares: Array.isArray(data.lugares) ? data.lugares : [],
-      integrantes: Array.isArray(data.integrantes) ? data.integrantes : []
-    };
-
-    return eventoCompletoData;
-    
-  } catch (error: any) {
-    console.error('Error en getEventoCompleto:', error);
-    throw error;
+  if (error || !data) {
+    console.error('Error al obtener evento:', error);
+    return null;
   }
+
+  
+
+  return data as EventoCalendario;
+}
+export async function getEventoByIdV2(idEvento: string): Promise<EventoCalendario | null> {
+  const supabase = getSupabaseAdmin(); // o el cliente que uses
+
+  const { data, error } = await supabase
+    .rpc('get_evento_calendario_por_perfil', {
+      p_id_evento: idEvento,
+      // p_id_perfil: currentUserProfileId,  ← opcional si quieres usarlo después
+    })
+    .single();
+
+  if (error) {
+    console.error('Error al obtener evento:', error);
+    return null;
+  }
+
+  return data as EventoCalendario;
 }
 
 export async function getEventsByDiaYPerfilId(
   fecha: Date, 
   perfilId: string
-): Promise<CalendarEvent[]> {
+): Promise<EventoCalendario[]> {
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    
+
     // Formatear fecha a YYYY-MM-DD
-    const fechaStr = fecha.toISOString().split('T')[0];
-    
-    // Llamar a la función PostgreSQL
+    const fechaStr = format(fecha, 'yyyy-MM-dd');
+
     const { data: eventosDB, error } = await supabaseAdmin
       .rpc('obtener_eventos_por_dia', {
         p_fecha: fechaStr,
         p_perfil_id: perfilId
       });
-    
+
     if (error) {
-      console.error('❌ Error en obtener_eventos_por_dia:', error);
+      console.error('Error en obtener_eventos_por_dia:', error);
       throw new Error(`Error al obtener eventos del día: ${error.message}`);
     }
 
@@ -412,52 +448,20 @@ export async function getEventsByDiaYPerfilId(
       return [];
     }
 
-    console.log(`📊 Eventos encontrados para ${fechaStr}:`, eventosDB.length);
+    // Ya viene en formato EventoCalendario, solo convertimos fechas si es necesario
+    const eventos: EventoCalendario[] = eventosDB.map((ev: any) => ({
+      ...ev,
+      inicio: new Date(ev.inicio),
+      fin: ev.fin ? new Date(ev.fin) : null,
+      created_at: new Date(ev.created_at),
+      updated_at: new Date(ev.updated_at),
+      // Participantes ya vienen como jsonb/array
+      participantes: ev.participantes || []
+    }));
 
-    // Convertir a CalendarEvent[]
-    const calendarEvents: CalendarEvent[] = eventosDB.map((evento: any) => {
-      const fechaIni = new Date(evento.fecha_hora_ini);
-      const fechaFin = new Date(evento.fecha_hora_fin);
-      
-      return {
-        id: evento.id,
-        title: evento.title,
-        start: fechaIni,
-        end: fechaFin,
-        description: evento.description || '',
-        category: evento.category || '',
-        status: evento.status || '',
-        tipo: evento.creator_type === 'artist' ? 'artist' : 
-              evento.creator_type === 'band' ? 'band' : 
-              evento.creator_type === 'place' ? 'place' : '',
-        
-        resource: {
-          creator_profile_id: evento.creator_profile_id,
-          creator_type: evento.creator_type as 'artist' | 'band' | 'place',
-          fecha_hora_ini: fechaIni,
-          fecha_hora_fin: fechaFin,
-          place_profile_id: evento.place_profile_id || '',
-          custom_place_name: evento.custom_place_name || '',
-          address: evento.address || '',
-          organizer_name: evento.organizer_name || '',
-          organizer_contact: evento.organizer_contact || '',
-          ticket_link: evento.ticket_link || '',
-          instagram_link: evento.instagram_link || '',
-          flyer_url: evento.flyer_url || '',
-          category: evento.category || '',
-          status: evento.status || '',
-          created_at: evento.created_at,
-          updated_at: evento.updated_at,
-          is_blocked: evento.is_blocked || false,
-          blocked_reason: evento.blocked_reason || ''
-        }
-      };
-    });
-
-    return calendarEvents;
-    
+    return eventos;
   } catch (error: any) {
-    console.error('Error en getEventsByDayAndProfile:', error);
+    console.error('Error en getEventsByDiaYPerfilId:', error);
     throw error;
   }
 }
@@ -972,7 +976,7 @@ export async function crearEvento(eventData: EventoGuardar, participantes: Parti
       id_productor: eventData.id_productor || null,
       tickets_evento: eventData.tickets_evento?.trim() || null,
       es_publico: eventData.es_publico !== undefined ? eventData.es_publico : true,
-      es_bloqueado: eventData.es_bloqueado || false,
+      es_bloqueo: eventData.es_bloqueado || false,
       motivo_bloqueo: eventData.motivo_bloqueo?.trim() || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -1053,7 +1057,7 @@ export const getLugaresVisibles = async (): Promise<Profile[]> => {
       Region(nombre_region), 
       Comuna(nombre_comuna) 
     `)
-    .eq('tipo_perfil', 'local')
+    .eq('tipo_perfil', 'lugar')
     .eq('perfil_visible', true);
 
     if(errorLugares){
@@ -1187,6 +1191,168 @@ export const getProfiles = async (userId: string): Promise<Profile[]> => {
 
   return allProfiles;
 };
+
+
+export async function updateEvento(data: EventoActualizar) {
+  const supabase = getSupabaseAdmin();
+
+  try {
+    // 1. Obtener datos actuales del evento (incluyendo fechas para comparar)
+    const { data: eventoActual, error: fetchError } = await supabase
+      .from('evento')
+      .select('id, id_creador, creador_tipo_perfil, fecha_hora_ini, fecha_hora_fin')
+      .eq('id', data.id)
+      .single();
+
+    if (fetchError || !eventoActual) {
+      return { success: false, error: 'Evento no encontrado o sin permisos' };
+    }
+
+    const idCreador = eventoActual.id_creador;
+    const tipoCreador = eventoActual.creador_tipo_perfil;
+
+    // 2. Obtener participantes actuales (para saber qué eliminar/agregar)
+    const { data: participacionesActuales, error: partsError } = await supabase
+      .from('participacion_evento')
+      .select('perfil_id, estado')
+      .eq('evento_id', data.id);
+
+    if (partsError) {
+      console.error('Error al obtener participantes actuales:', partsError);
+      return { success: false, error: 'Error al leer participantes actuales' };
+    }
+
+    // Mapa: id_perfil → estado actual (para conservar estados existentes)
+    const actualesMap = new Map(
+      (participacionesActuales || []).map(p => [p.perfil_id, p.estado])
+    );
+
+    // Set de IDs actuales
+    const idsActuales = new Set(actualesMap.keys());
+
+    // 3. Preparar nuevas fechas
+    const fechaIniNueva = new Date(data.fecha_hora_ini);
+    const fechaFinNueva = data.fecha_hora_fin ? new Date(data.fecha_hora_fin) : null;
+
+    if (fechaFinNueva && fechaIniNueva >= fechaFinNueva) {
+      return { success: false, error: 'La fecha/hora de inicio debe ser anterior a la de fin' };
+    }
+
+    // Comparar si las fechas/horas cambiaron realmente
+    const fechaIniActual = new Date(eventoActual.fecha_hora_ini);
+    const fechaFinActual = eventoActual.fecha_hora_fin ? new Date(eventoActual.fecha_hora_fin) : null;
+
+    const fechasCambiaron =
+      fechaIniNueva.getTime() !== fechaIniActual.getTime() ||
+      (fechaFinNueva?.getTime() ?? null) !== (fechaFinActual?.getTime() ?? null);
+
+    // 4. Validar conflicto SOLO si cambiaron las fechas
+    if (fechasCambiaron) {
+      const { data: conflictos, error: conflictoError } = await supabase
+        .from('participacion_evento')
+        .select(`
+          evento_id,
+          evento!inner (
+            id,
+            fecha_hora_ini,
+            fecha_hora_fin
+          )
+        `)
+        .eq('perfil_id', idCreador)
+        .neq('evento_id', data.id) // Excluimos el evento actual
+        .or(
+          `and(evento.fecha_hora_ini.lt.${fechaFinNueva?.toISOString() || fechaIniNueva.toISOString()},` +
+          `evento.fecha_hora_fin.gt.${fechaIniNueva.toISOString()})`
+        );
+
+      if (conflictoError) {
+        console.error('Error verificando conflictos:', conflictoError);
+        return { success: false, error: 'Error al verificar disponibilidad de fechas' };
+      }
+
+      if (conflictos?.length > 0) {
+        return { success: false, error: 'Conflicto de fechas con otros eventos del creador' };
+      }
+    }
+
+    // 5. Actualizar campos principales del evento
+    const { error: updateError } = await supabase
+      .from('evento')
+      .update({
+        titulo: data.titulo.trim(),
+        descripcion: data.descripcion?.trim() ?? null,
+        fecha_hora_ini: fechaIniNueva.toISOString(),
+        fecha_hora_fin: fechaFinNueva?.toISOString() ?? null,
+        id_categoria: data.id_categoria ?? null,
+        flyer_url: data.flyer_url?.trim() ?? null,
+        video_url: data.video_url?.trim() ?? null,
+        tickets_evento: data.tickets_evento?.trim() ?? null,
+        es_publico: data.es_publico,
+        id_lugar: data.id_lugar ?? null,
+        nombre_lugar: data.nombre_lugar?.trim() ?? null,
+        direccion_lugar: data.direccion_lugar?.trim() ?? null,
+        lat_lugar: data.lat_lugar ?? null,
+        lon_lugar: data.lon_lugar ?? null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', data.id);
+
+    if (updateError) {
+      console.error('Error actualizando evento:', updateError);
+      return { success: false, error: updateError.message };
+    }
+
+    // 6. Manejo preciso de participantes (diff)
+
+    // IDs deseados (del frontend)
+    const idsDeseados = new Set(data.participantes.map(p => p.id_perfil));
+    idsDeseados.add(idCreador); // el creador SIEMPRE debe quedar
+
+    // A. Eliminados: estaban antes pero ya no están
+    const eliminados = [...idsActuales].filter(id => !idsDeseados.has(id));
+
+    if (eliminados.length > 0) {
+      const { error: deleteError } = await supabase
+        .from('participacion_evento')
+        .delete()
+        .eq('evento_id', data.id)
+        .in('perfil_id', eliminados);
+
+      if (deleteError) {
+        console.error('Error eliminando participantes quitados:', deleteError);
+        // No bloqueamos la actualización, pero logueamos
+      }
+    }
+
+    // B. Nuevos: están deseados pero no estaban antes
+    const nuevos = data.participantes.filter(p => !idsActuales.has(p.id_perfil));
+
+    for (const nuevo of nuevos) {
+      await crearParticipacionEvento(data.id, nuevo.id_perfil, 'pendiente');
+      await crearSolicitudEvento(data.id, idCreador, nuevo.id_perfil, 'invitacion');
+    }
+
+    // C. Existentes: no tocamos nada (mantienen su estado anterior)
+
+    // 7. Asegurar que el creador esté confirmado (seguridad extra)
+    const estadoCreadorActual = actualesMap.get(idCreador);
+    if (estadoCreadorActual !== 'confirmado') {
+      await supabase
+        .from('participacion_evento')
+        .upsert(
+          { evento_id: data.id, perfil_id: idCreador, estado: 'confirmado' },
+          { onConflict: 'evento_id, perfil_id' }
+        );
+    }
+
+    revalidatePath('/dashboard/agenda');
+
+    return { success: true, message: 'Evento actualizado correctamente' };
+  } catch (err: any) {
+    console.error('[updateEvento] Error crítico:', err);
+    return { success: false, error: err.message || 'Error inesperado al actualizar' };
+  }
+}
 
 export async function updateEvent(eventData: any) {
   try {

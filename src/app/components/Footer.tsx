@@ -7,6 +7,8 @@ export default function Footer() {
   return (
     <footer className="py-12 px-6 md:px-8 lg:px-12 w-full">
       {/* CONTENIDO PRINCIPAL */}
+
+       <div className=" pt-6 border-t border-gray-600"></div>
       
       <div className="max-w-none mx-auto flex flex-col md:flex-row justify-evenly gap-8 md:gap-12 text-gray-200">
         

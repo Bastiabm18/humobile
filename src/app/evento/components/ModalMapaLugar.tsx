@@ -209,7 +209,7 @@ export default function ModalMapaLugar({
                       }}
                       className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors"
                     >
-                       Como llegar
+                       Buscar ruta
                     </button>
                   </div>
                 )}

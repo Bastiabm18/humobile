@@ -2,25 +2,24 @@
 'use server';
 
 import { getSupabaseAdmin } from "@/lib/supabase/supabase-admin";
+import { EventoCalendario } from "@/types/profile";
 
-export async function getEventoById(eventoId: string) {
+export async function getEventoById(eventoId: string): Promise<EventoCalendario> {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     
-    // Obtener el evento principal
-    const { data:evento, error:eventoError } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .rpc('obtener_evento_completo', {
         p_evento_id: eventoId
       })
-      .single();
+      .single(); 
 
-    if (eventoError) {
-      console.error('Error obteniendo evento:', eventoError);
-      throw new Error(eventoError.message);
+    if (error) {
+      console.error('Error obteniendo evento:', error);
+      throw new Error(error.message);
     }
 
-   
-    return evento;
+    return data as EventoCalendario;
   } catch (error: any) {
     console.error('Error en getEventoById:', error);
     throw error;

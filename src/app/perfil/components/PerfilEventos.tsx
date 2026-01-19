@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import CarruselEventosBase from './CarruselEventosBase';
-import { CalendarEvent, ProfileType } from '@/types/profile';
+import { CalendarEvent, EventoCalendario, ProfileType } from '@/types/profile';
 import { getEventosMostrarPerfil, getEventsByProfile } from '@/app/actions/actions';
 import EventoModal from './EventoModal';
 import NeonSign from '@/app/components/NeonSign';
@@ -16,12 +16,12 @@ interface PerfilEventosProps {
 }
 
 export default function PerfilEventos({ perfilId, perfilType }: PerfilEventosProps) {
-  const [eventos, setEventos] = useState<CalendarEvent[]>([]);
+  const [eventos, setEventos] = useState<EventoCalendario[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null); // <-- Nuevo estado
+  const [selectedEvent, setSelectedEvent] = useState<EventoCalendario | null>(null); // <-- Nuevo estado
   const [modalOpen, setModalOpen] = useState(false); // <-- Nuevo estado
 
  useEffect(() => {
@@ -45,10 +45,10 @@ export default function PerfilEventos({ perfilId, perfilType }: PerfilEventosPro
   }, [perfilId, perfilType]);
 
 
-  const handleEventClick = (evento: CalendarEvent) => {
+  const handleEventClick = (evento: EventoCalendario) => {
       console.log('Evento seleccionado:', evento.id);
     //  console.log(evento);
-   // setSelectedEvent(evento); // <-- Guardar el evento seleccionado
+   // setSelectedEvent(evento); // <-- Guardar el evento seleccionado  OBSOLOTE AHORA REDIRIGE
    // setModalOpen(true); // <-- Abrir el modal
     const encodedId = encodeEventId(evento.id);
       

@@ -2,21 +2,30 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { HiPhone, HiUser, HiUsers } from 'react-icons/hi';
+import { HiOutlineUserGroup, HiPhone, HiUser, HiUsers } from 'react-icons/hi';
 import { FaGuitar, FaMapMarkerAlt } from 'react-icons/fa';
 import { HiBuildingOffice } from 'react-icons/hi2';
 import { Profile } from '@/types/profile';
+import MapaLugar from '@/app/dashboard/mi_perfil/components/MapaLugar';
+import { useState } from 'react';
+import ModalMapaLugar from '@/app/evento/components/ModalMapaLugar';
+import { FaEarthAmericas } from 'react-icons/fa6';
 
 interface PresentacionPerfilProps {
   perfil: Profile
 }
 
 export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) {
+
+
+  const [lat, setLat]= useState("");
+  const [lon, setLon]= useState("");
+  const [verModalMapa, setVerModalMapa]= useState(false);
   // Normalizar datos
   const type = perfil.tipo;
   const data = perfil;
 
-  console.log(data);
+  console.log(perfil);
   
   // Obtener nombre según tipo
   const getName = () => {
@@ -40,7 +49,7 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
   // Obtener ubicación
   const getLocation = () => {
     if (data.ciudad_id && data.region_id) {
-      return `${data.ciudad_id}, ${data.region_id}`;
+      return `${data.ciudad_id}, ${data.region_id}, ${data.pais_id}`;
     }
     return data.ciudad_id || data.region_id || 'Sin ubicación';
   };
@@ -79,6 +88,8 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
   const location = getLocation();
 
   return (
+
+    <>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -157,16 +168,62 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
             
             {/* Información adicional */}
             <div className="flex items-center gap-4">
-
+            {perfil.direccion!='' && (  
+              <div className="flex items-center gap-2 px-4 py-2 bg-black/50 rounded-full backdrop-blur-sm border border-neutral-600/50">
+              <FaMapMarkerAlt className="w-4 h-4 text-neutral-400" />
+              <span className="text-sm text-neutral-300">{perfil.direccion}</span>
+            </div>)}
 
               {/* Línea decorativa */}
-              <div className="h-6 w-[1px] bg-gradient-to-b from-transparent via-neutral-500 to-transparent" />
+              <div
+              
+              className="h-6 w-[1px]  bg-gradient-to-b from-transparent via-neutral-500 to-transparent" />
+
+
+            {perfil.lat!=null && perfil.lon!=null && (
+                <div
+            onClick={()=>
+              {
+              setVerModalMapa(true);
+               }
+
+              }
+            className="flex items-center cursor-pointer text-purple-300 gap-2 px-4 py-2 bg-purple-700/50 rounded-full backdrop-blur-sm border border-purple-600/50">
+              <FaEarthAmericas className="w-4 h-4 text-purple-400" />
+                Aqui estamos!
+              {/* Línea decorativa */}
+            </div>
+          
+        )} 
+        <div className="h-6 w-[1px] bg-gradient-to-b from-transparent via-neutral-500 to-transparent" />
+
+
               
               {/* Contacto */}
               <div className="flex items-center gap-2">
                 <HiPhone className="w-5 h-5 text-green-400" />
                 <span className="text-green-300 font-medium">{phone}</span>
               </div>
+              <div  className="h-6 cursor-pointer w-[1px] bg-gradient-to-b from-transparent via-neutral-500 to-transparent" />
+              {perfil.pertenece_a_grupo && perfil.pertenece_a_grupo.length > 0 && (
+                <div
+                
+                className="flex flex-row gap-3 "> {/* Contenedor para múltiples etiquetas */}
+                  {perfil.pertenece_a_grupo.map((participacion, index) => (
+                    <div 
+                      key={`${participacion.id_banda}-${index}`}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-700/30 hover:bg-blue-700/50 rounded-full backdrop-blur-sm border border-blue-600/30 transition-colors"
+                    >
+                      <HiOutlineUserGroup className="w-5 h-5 text-blue-400" />
+                      <span className="text-sm text-blue-200">
+                        <span className="font-medium capitalize">{participacion.tipo}</span>
+                        <span className="mx-1 opacity-60 text-xs">en</span>
+                        <span className="font-bold text-white">{participacion.nombre_banda}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -181,5 +238,19 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
       
       <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
     </motion.div>
+
+
+              {verModalMapa &&
+              
+                   <ModalMapaLugar
+                   isOpen={verModalMapa}
+                   onClose={() => setVerModalMapa(false)}
+                   latitud={perfil.lat ?? -36.827 }
+                   longitud={perfil.lon ?? -73.050}
+                   nombreLugar={  perfil.nombre ?? 'Perfil'}
+                   direccion={perfil.direccion}
+                   />
+                  }
+    </>
   );
 }

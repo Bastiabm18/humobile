@@ -1,18 +1,15 @@
-// app/perfil/components/CarruselEvento.tsx
 'use client';
 
 import { motion } from 'framer-motion';
 import { HiCalendar, HiClock, HiMap } from 'react-icons/hi';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarEvent } from '@/types/profile';
-import { FaTasks } from 'react-icons/fa';
 import { RiCalendarEventLine } from 'react-icons/ri';
-
+import { EventoCalendario } from '@/types/profile';
 
 interface CarruselEventoProps {
-  evento: CalendarEvent;
-  onClick?: (evento: CalendarEvent) => void;
+  evento: EventoCalendario;
+  onClick?: (evento: EventoCalendario) => void;
 }
 
 export default function CarruselEvento({ evento, onClick }: CarruselEventoProps) {
@@ -20,36 +17,29 @@ export default function CarruselEvento({ evento, onClick }: CarruselEventoProps)
     if (onClick) onClick(evento);
   };
 
-  console.log(evento);
-
   const getCategoryColor = () => {
-    switch (evento.category) {
-      case 'show': return 'bg-red-600/20 text-red-400 border-red-500/30';
-      case 'reunion': return 'bg-blue-600/20 text-blue-400 border-blue-500/30';
-      default: return 'bg-neutral-600/20 text-neutral-400 border-neutral-500/30';
+    const categoria = evento.nombre_categoria?.toLowerCase() || '';
+    if (categoria.includes('show') || categoria.includes('concierto')) {
+      return 'bg-red-600/20 text-red-400 border-red-500/30';
     }
+    if (categoria.includes('reunion') || categoria.includes('reunión')) {
+      return 'bg-blue-600/20 text-blue-400 border-blue-500/30';
+    }
+    return 'bg-neutral-600/20 text-neutral-400 border-neutral-500/30';
   };
 
-  const getCategoryLabel = () => {
-    switch (evento.category) {
-      case 'show': return 'Concierto';
-      case 'reunion': return 'Reunión';
-      default: return evento.category || 'Evento';
-    }
-  };
+  // Formatear fecha y hora usando los campos inicio y fin de EventoCalendario
+  const fecha = format(new Date(evento.inicio), "EEEE d 'de' MMMM", { locale: es });
+  const horaInicio = format(new Date(evento.inicio), "HH:mm");
+  const horaFin = evento.fin ? format(new Date(evento.fin), "HH:mm") : 'Por confirmar';
 
-  // Formatear fecha y hora
-  const fecha = format(evento.start, "EEEE d 'de' MMMM", { locale: es });
-  const horaInicio = format(evento.start, "HH:mm");
-  const horaFin = format(evento.end, "HH:mm");
-
-  // Lugar
-  const lugar = evento.resource.custom_place_name || 
-                evento.resource.address || 
+  // Lugar: Prioriza nombre del lugar, luego dirección
+  const lugar = evento.nombre_lugar || 
+                evento.direccion_lugar || 
                 'Por confirmar';
 
-  // Flyer o imagen
-  const imageUrl = evento.resource.flyer_url || '';
+  // Flyer
+  const imageUrl = evento.flyer_url || '';
 
   return (
     <motion.div
@@ -57,7 +47,7 @@ export default function CarruselEvento({ evento, onClick }: CarruselEventoProps)
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ 
         scale: 1.02,
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
         y: -5
       }}
       whileTap={{ scale: 0.98 }}
@@ -83,9 +73,9 @@ export default function CarruselEvento({ evento, onClick }: CarruselEventoProps)
         <div className="absolute inset-0">
           <img 
             src={imageUrl} 
-            alt={evento.title}
+            alt={evento.titulo}
             className="
-              w-full h-full object-fill
+              w-full h-full object-cover
               group-hover:scale-110
               transition-transform duration-700
             "
@@ -95,16 +85,17 @@ export default function CarruselEvento({ evento, onClick }: CarruselEventoProps)
         <div className="
           absolute flex items-center justify-center inset-0 
           bg-gradient-to-br from-neutral-800 to-neutral-900
+          text-neutral-600
         " >
            <RiCalendarEventLine size={120} />
         </div>
       )}
 
-      {/* Overlay oscuro */}
+      {/* Overlay oscuro para legibilidad */}
       <div className="
         absolute inset-0
         bg-gradient-to-t from-black/95 via-black/60 to-transparent
-        group-hover:bg-gradient-to-t from-black/90 via-black/50 to-transparent
+        group-hover:via-black/50
         transition-all duration-300
       " />
 
@@ -113,39 +104,37 @@ export default function CarruselEvento({ evento, onClick }: CarruselEventoProps)
         {/* Categoría */}
         <div className="self-start mb-3">
           <div className={`px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm border ${getCategoryColor()}`}>
-            {getCategoryLabel()}
+            {evento.nombre_categoria || 'Evento'}
           </div>
         </div>
 
         {/* Título */}
-        <h3 className="text-2xl font-bold text-white leading-tight drop-shadow-lg group-hover:text-red-300 transition-colors duration-300 mb-3">
-          {evento.title}
+        <h3 className="text-2xl font-bold text-white leading-tight drop-shadow-lg group-hover:text-red-300 transition-colors duration-300 mb-3 line-clamp-2">
+          {evento.titulo}
         </h3>
 
         {/* Fecha y hora */}
         <div className="flex items-center gap-2 text-neutral-300 mb-2">
-          <HiCalendar className="w-4 h-4" />
-          <span className="text-sm">{fecha}</span>
+          <HiCalendar className="w-4 h-4 text-red-500" />
+          <span className="text-sm capitalize">{fecha}</span>
         </div>
 
         <div className="flex items-center gap-2 text-neutral-300 mb-3">
-          <HiClock className="w-4 h-4" />
+          <HiClock className="w-4 h-4 text-red-500" />
           <span className="text-sm">{horaInicio} - {horaFin}</span>
         </div>
 
         {/* Lugar */}
-        {lugar && (
-          <div className="flex items-center gap-2 text-neutral-300 mb-4">
-            <HiMap className="w-4 h-4" />
-            <span className="text-sm truncate">{lugar}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2 text-neutral-300 mb-4">
+          <HiMap className="w-4 h-4 text-red-500" />
+          <span className="text-sm truncate">{lugar}</span>
+        </div>
 
         {/* Línea decorativa */}
-        <div className="h-[2px] w-16 bg-gradient-to-r from-red-500 to-red-500/20 group-hover:w-24 transition-all duration-300 self-start" />
+        <div className="h-[2px] w-16 bg-gradient-to-r from-red-500 to-transparent group-hover:w-24 transition-all duration-300 self-start" />
       </div>
 
-      {/* Efectos */}
+      {/* Borde de resalte en Hover */}
       <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-red-500/30 transition-colors duration-300 pointer-events-none" />
     </motion.div>
   );

@@ -1,7 +1,7 @@
 'use server'; 
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
-import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, BlockDateRangeParams, SolicitudRespuesta, AceptarRechazarSolicitud, AceptarRechazarEvento, CalendarEvent } from '@/types/profile'; 
+import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, BlockDateRangeParams, SolicitudRespuesta, AceptarRechazarSolicitud, AceptarRechazarEvento, CalendarEvent, EventoCalendario, IntegranteBandaEvento } from '@/types/profile'; 
 import { revalidatePath } from 'next/cache';
 
 
@@ -77,6 +77,98 @@ export async function getEventsByProfile(profileId: string, ProfileType:ProfileT
   }
 }
 
+
+export async function getEventosByPerfilParticipacion(
+  profileId: string,
+  estadoParticipacion?: string, // 'confirmado' | 'pendiente' | 'rechazado' | undefined = todos
+  fechaDesde?: Date,
+  fechaHasta?: Date
+): Promise<EventoCalendario[]> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const params: any = {
+      p_id_perfil: profileId,
+    };
+
+    if (estadoParticipacion) {
+      params.p_estado = estadoParticipacion;
+    }
+
+    if (fechaDesde) {
+      params.p_fecha_desde = fechaDesde.toISOString();
+    }
+
+    if (fechaHasta) {
+      params.p_fecha_hasta = fechaHasta.toISOString();
+    }
+
+    const { data: eventosDB, error } = await supabaseAdmin
+      .rpc('get_eventos_perfil_estados', params);
+
+    if (error) {
+      console.error(' Error al llamar a get_eventos_perfil_estados:', error);
+      throw new Error(`Error al obtener eventos: ${error.message}`);
+    }
+
+    if (!eventosDB || eventosDB.length === 0) {
+      return [];
+    }
+
+    // Opcional: log para depuración
+    // console.log('📊 Primer evento recibido:', Object.keys(eventosDB[0]));
+
+    const eventosMapeados: EventoCalendario[] = eventosDB.map((evento: any) => {
+      // Participantes ya vienen en el formato que necesitamos
+      const participantes: IntegranteBandaEvento[] = evento.participantes || [];
+
+      // Convertimos lat/lon a string (como espera tu interfaz)
+      const latStr = evento.lat_lugar != null ? String(evento.lat_lugar) : '';
+      const lonStr = evento.lon_lugar != null ? String(evento.lon_lugar) : '';
+
+      return {
+        id: evento.id,
+        titulo: evento.titulo,
+        descripcion: evento.descripcion || '',
+        inicio: new Date(evento.inicio),
+        fin: evento.fin ? new Date(evento.fin) : new Date(evento.inicio), // fallback si no hay fin
+        id_categoria: evento.id_categoria || '',
+        nombre_categoria: evento.nombre_categoria || '',
+        flyer_url: evento.flyer_url,
+        video_url: evento.video_url,
+
+        id_creador: evento.id_creador,
+        nombre_creador: evento.nombre_creador || 'Desconocido',
+        tipo_perfil_creador: evento.tipo_perfil_creador || '',
+
+        id_lugar: evento.id_lugar || '',
+        nombre_lugar: evento.nombre_lugar || '',
+        direccion_lugar: evento.direccion_lugar || '',
+        lat_lugar: latStr,
+        lon_lugar: lonStr,
+
+        id_productor: evento.id_productor,
+        nombre_productor: evento.nombre_productor,
+
+        tickets_evento: evento.tickets_evento || '',
+        es_publico: evento.es_publico ?? true,
+        es_bloqueo: evento.es_bloqueo ?? false,
+        motivo_bloqueo: evento.motivo_bloqueo,
+
+        created_at: new Date(evento.created_at),
+        updated_at: new Date(evento.updated_at),
+
+        // Participantes ya vienen en el formato correcto
+        participantes,
+      };
+    });
+
+    return eventosMapeados;
+  } catch (error: any) {
+    console.error('Error en getEventosByPerfilParticipacion:', error);
+    throw error;
+  }
+}
 
 
 /**
