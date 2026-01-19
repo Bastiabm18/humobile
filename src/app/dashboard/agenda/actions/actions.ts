@@ -472,9 +472,10 @@ export async function deleteEvent(eventId: string, perfilId: string): Promise<{ 
     const supabaseAdmin = getSupabaseAdmin();
     
     // 1. Primero verificar que el perfil es el creador del evento
+    //cambiar a evento
     const { data: evento, error: eventoError } = await supabaseAdmin
-      .from('events')
-      .select('creator_profile_id')
+      .from('evento')
+      .select('id_creador')
       .eq('id', eventId)
       .single();
     
@@ -486,7 +487,7 @@ export async function deleteEvent(eventId: string, perfilId: string): Promise<{ 
       };
     }
     
-    if (!evento || evento.creator_profile_id !== perfilId) {
+    if (!evento || evento.id_creador !== perfilId) {
       return { 
         success: false, 
         error: 'No tienes permisos para eliminar este evento. Solo el creador puede eliminarlo.' 
@@ -503,10 +504,24 @@ export async function deleteEvent(eventId: string, perfilId: string): Promise<{ 
       console.error('Error eliminando participaciones:', deleteParticipacionesError);
       // Podemos continuar o lanzar error según tu política
     }
+
+     // eliminar solicitudes para el evento 
+      const { error: deleteSolicitudError } = await supabaseAdmin
+      .from('solicitud')
+      .delete()
+      .eq('id_evento_solicitud', eventId);
+    
+    if (deleteSolicitudError) {
+      console.error('Error eliminando evento:', deleteSolicitudError);
+      return { 
+        success: false, 
+        error: `Error al eliminar el evento: ${deleteSolicitudError.message}` 
+      };
+    }
     
     // 3. Eliminar el evento
     const { error: deleteEventError } = await supabaseAdmin
-      .from('events')
+      .from('evento')
       .delete()
       .eq('id', eventId);
     
@@ -517,6 +532,8 @@ export async function deleteEvent(eventId: string, perfilId: string): Promise<{ 
         error: `Error al eliminar el evento: ${deleteEventError.message}` 
       };
     }
+
+   
     
     return { 
       success: true,

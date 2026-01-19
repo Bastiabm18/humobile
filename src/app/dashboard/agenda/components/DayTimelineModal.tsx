@@ -46,6 +46,7 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
     try {
       const eventosDelDia = await getEventsByDiaYPerfilId(date, profile.id);
       setEvents(eventosDelDia);
+      console.log(eventosDelDia)
     } catch (err: any) {
       console.error('Error cargando eventos del día:', err);
       setError(err.message || 'Error al cargar los eventos del día');

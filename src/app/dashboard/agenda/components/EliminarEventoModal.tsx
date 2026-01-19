@@ -23,6 +23,7 @@ export default function EliminarEventoModal({
   onClose,
   onSuccess 
 }: EliminarEventoModalProps) {
+  console.log(eventId)
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     success: boolean;
