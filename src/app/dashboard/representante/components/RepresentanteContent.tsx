@@ -65,14 +65,14 @@ export default function RepresentanteContent({
       {!selectedProfile ? (
         <>
           <p className="text-center text-gray-400 mb-12">
-            Selecciona un perfil para ver su agenda
+            Selecciona un cliente para ver su agenda
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {profiles.map((profile) => {
                   const data = profile as any;
                   const name = data.nombre|| 'Sin nombre';
-                  const imagenUrl = data.imagen_url || data.photo_url || data.image_url || '';
+                  const imagenUrl = data.imagen_url || '';
                 
                   return (
                     <div

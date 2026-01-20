@@ -205,7 +205,11 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
                 <span className="text-green-300 font-medium">{phone}</span>
               </div>
               <div  className="h-6 cursor-pointer w-[1px] bg-gradient-to-b from-transparent via-neutral-500 to-transparent" />
-              {perfil.pertenece_a_grupo && perfil.pertenece_a_grupo.length > 0 && (
+           
+            </div>
+
+            <div className='w-full mt-4 grid-cols-1 md:grid-cols-3'>
+                 {perfil.pertenece_a_grupo && perfil.pertenece_a_grupo.length > 0 && (
                 <div
                 
                 className="flex flex-row gap-3 "> {/* Contenedor para múltiples etiquetas */}

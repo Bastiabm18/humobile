@@ -494,9 +494,7 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
 
           {/* Footer */}
           <div className="sticky bottom-0 p-5 border-t border-neutral-800 bg-neutral-950/90 backdrop-blur-sm flex justify-between items-center">
-            <div className="text-sm text-gray-500">
-              ID: <span className="font-mono text-gray-400">{eventData.id.substring(0, 12)}...</span>
-            </div>
+
 
             <div className="flex gap-4">
               {esCreador && (
