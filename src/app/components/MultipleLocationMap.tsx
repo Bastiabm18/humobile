@@ -1,15 +1,18 @@
 // components/LugareCercanosMap.tsx
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react'; // Añadir useState
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 
+// Añadir import de la acción
+import { obtenerLugaresCercanos} from '../actions/actions'
 // Fix del ícono por defecto de Leaflet
 import L from 'leaflet';
 import { useUbicacion } from '../hooks/useUbicacion';
+import { lugarMapa } from '@/types/mapa';
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -17,13 +20,28 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-// Marcador personalizado
-const redMarkerIcon = new Icon({
+// Marcador personalizado para el usuario
+const userMarkerIcon = new Icon({
+  iconUrl: 'data:image/svg+xml;base64,' + btoa(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44">
+    
+      <ellipse cx="22" cy="16" rx="14" ry="12" fill="#3b82f6" stroke="#1d4ed8" stroke-width="2"/>
+      <path d="M8,16 Q22,44 36,16" fill="#3b82f6" stroke="#1d4ed8" stroke-width="2"/>
+      <text x="22" y="22" font-family="Arial" font-size="10" font-weight="bold" fill="white" text-anchor="middle">TU</text>
+    </svg>
+  `),
+  iconSize: [44, 44],
+  iconAnchor: [22, 44],
+  popupAnchor: [0, -44],
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+// Marcador para los lugares (azul)
+const lugarMarkerIcon = new Icon({
   iconUrl: 'data:image/svg+xml;base64,' + btoa(`
     <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
-      <path fill="#0369a1" stroke="#0c4a6e" stroke-width="2" d="M20,3C11,3 4,10 4,19c0,13 16,23 16,23s16-10 16-23C36,10 29,3 20,3z"/>
-      <circle fill="#0ea5e9" cx="20" cy="19" r="9"/>
-      <text x="20" y="24" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle">H</text>
+      <path fill="#ef4444" stroke="#dc2626" stroke-width="2" d="M20,5 L24,15 L35,16 L27,24 L29,35 L20,30 L11,35 L13,24 L5,16 L16,15 Z"/>
+      <circle fill="#f87171" cx="20" cy="20" r="8"/>
+      <text x="20" y="22" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle">H</text>
     </svg>
   `),
   iconSize: [40, 40],
@@ -78,116 +96,115 @@ function ResetLeafletZIndex() {
   return null;
 }
 
-// TUS UBICACIONES
-const locations = [
-  {
-    lat: -36.820135,
-    lng: -73.044265,
-    name: "Casa de la Música",
-    type: "place",
-    address: "Caupolicán 1235, Concepción"
-  },
-  {
-    lat: -36.826990,
-    lng: -73.053131,
-    name: "Balmaceda Arte Joven",
-    type: "place",
-    address: "Colo Colo 1855, Concepción"
-  },
-  {
-    lat: -36.829456,
-    lng: -73.050789,
-    name: "Artistas del Acero",
-    type: "place",
-    address: "O’Higgins 1235, Concepción"
-  },
-  {
-    lat: -36.814523,
-    lng: -73.035678,
-    name: "Bar El Rincón",
-    type: "place",
-    address: "Av. Chacabuco 1780, Concepción"
-  },
-  {
-    lat: -36.785234,
-    lng: -73.089012,
-    name: "La Bodeguita de Nicanor",
-    type: "place",
-    address: "Nicanor Parra 123, San Pedro de la Paz"
-  },
-  {
-    lat: -36.828112,
-    lng: -73.048923,
-    name: "Sala 2",
-    type: "place",
-    address: "Aníbal Pinto 123, Concepción"
-  },
-  {
-    lat: -36.783456,
-    lng: -73.075432,
-    name: "El Refugio",
-    type: "place",
-    address: "Lagunillas, San Pedro de la Paz"
-  },
-  {
-    lat: -36.812345,
-    lng: -73.042198,
-    name: "La Casa del Viento",
-    type: "place",
-    address: "Barros Arana 789, Concepción"
-  },
-  {
-    lat: -36.839876,
-    lng: -73.061234,
-    name: "Rock & Blues",
-    type: "place",
-    address: "Av. Los Carrera 2345, Hualpén"
-  },
-  {
-    lat: -36.770123,
-    lng: -73.065432,
-    name: "El Túnel",
-    type: "place",
-    address: "Camino a Lenga, Hualpén"
-  }
-];
-
 export default function LugareCercanosMap() {
+  const ubicacion = useUbicacion();
+  const [lugaresReales, setLugaresReales] = useState<lugarMapa[]>([]);
+  const [cargando, setCargando] = useState(false);
+  
+  // Obtener lugares reales cuando tenemos ubicación
+  useEffect(() => {
+    if (!ubicacion?.latitud || !ubicacion?.longitud) return;
+    
+    const cargarLugares = async () => {
+      setCargando(true);
+      try {
+        const lugares = await obtenerLugaresCercanos(
+          ubicacion.latitud,
+          ubicacion.longitud,
+          10 // Radio de 10km
+        );
+        setLugaresReales(lugares);
+        console.log('Lugares encontrados:', lugares.length);
+      } catch (error) {
+        console.error('Error cargando lugares:', error);
+      } finally {
+        setCargando(false);
+      }
+    };
+    
+    cargarLugares();
+  }, [ubicacion]);
+  
+  // Usar lugares reales o ficticios si no hay resultados
+  const locations = useMemo(() => {
+    if (lugaresReales.length > 0) {
+      return lugaresReales.map(lugar => ({
+        lat: lugar.lat,
+        lng: lugar.lon,
+        name: lugar.nombre,
+        type: lugar.tipo,
+        address: lugar.direccion,
+        imagen_url: lugar.imagen_url || '',
+        distancia_km: lugar.distancia_km
+      }));
+    }
+    
+    // Si no hay lugares reales, mostrar ficticios
+    return [
+      {
+        lat: -36.820135,
+        lng: -73.044265,
+        name: "Casa de la Música",
+        type: "place",
+        address: "Caupolicán 1235, Concepción",
+        imagen_url:''
+      },
+      // ... resto de tus datos ficticios
+    ];
+  }, [lugaresReales]);
+
   const center = useMemo(() => {
+    // Si tenemos ubicación del usuario, usarla como centro
+    if (ubicacion?.latitud && ubicacion?.longitud) {
+      return [ubicacion.latitud, ubicacion.longitud] as [number, number];
+    }
+    
+    // Si no, usar promedio de locations
     if (locations.length === 0) return [-36.827, -73.050] as [number, number];
     const avgLat = locations.reduce((a, b) => a + b.lat, 0) / locations.length;
     const avgLng = locations.reduce((a, b) => a + b.lng, 0) / locations.length;
     return [avgLat, avgLng] as [number, number];
-  }, []);
+  }, [ubicacion, locations]);
 
-  const ubicacion =  useUbicacion();
-  
-  console.log('mapa ubicacion: ',ubicacion?.latitud,ubicacion?.longitud);
+  console.log('mapa ubicacion: ', ubicacion?.latitud, ubicacion?.longitud);
+  console.log('lugares cargados: ', lugaresReales.length);
 
   const accessToken = 'pk.eyJ1IjoiYXZlZ2FwNDEiLCJhIjoiY2tibWtpdGttMGl1NjJybjhjNTVxaGtpcyJ9.dLbDgSiWkdlq8SyzhREO7A';
   const tileUrl = `https://api.mapbox.com/styles/v1/mapbox/navigation-night-v1/tiles/{z}/{x}/{y}?access_token=${accessToken}`;
 
   return (
-    <div className="bg-neutral-900/90 w-[90vw] rounded-md overflow-hidden p-5 relative z-0"> {/* z-0 aquí */}
+    <div className="bg-neutral-900/90 w-[90vw] rounded-md overflow-hidden p-5 relative z-0">
       {/* HEADER */}
       <div className="p-5">
         <h2 className="text-2xl md:text-3xl font-black text-white flex items-center gap-4">
           <FaMapMarkerAlt className="text-sky-500" />
           Cerca de ti
-          <span className="text-sky-600 font-bold text-lg rounded-full bg-gray-300 px-1 ml-2">{locations.length}</span>
+          <span className="text-sky-600 font-bold text-lg rounded-full bg-gray-300 px-1 ml-2">
+            {lugaresReales.length > 0 ? lugaresReales.length : locations.length}
+          </span>
+          {cargando && (
+            <span className="text-sm text-neutral-400 ml-2">
+              <span className="animate-pulse">Cargando...</span>
+            </span>
+          )}
         </h2>
+        {ubicacion && lugaresReales.length > 0 && (
+          <p className="text-neutral-400 text-sm mt-2">
+            Mostrando {lugaresReales.length} lugares en un radio de 10km
+          </p>
+        )}
       </div>
 
       {/* MAPA con z-index controlado */}
-      <div className="h-96 md:h-screen max-h-[700px] relative z-0"> {/* z-0 aquí también */}
+      <div className="h-96 md:h-screen max-h-[700px] relative z-0">
         <MapContainer
           center={center}
-          zoom={5}
+          zoom={13}
           style={{ 
             height: '100%', 
             width: '100%',
             position: 'relative',
-            zIndex: '0' // Forzar z-index
+            zIndex: '0'
           }}
           className="leaflet-container-custom"
         >
@@ -202,13 +219,41 @@ export default function LugareCercanosMap() {
           <FitBounds locations={locations} />
           <ResetLeafletZIndex />
 
-          {locations.map((loc, i) => (
-            <Marker key={i} position={[loc.lat, loc.lng]} icon={redMarkerIcon}>
+          {/* Marcador del usuario */}
+          {ubicacion?.latitud && ubicacion?.longitud && (
+            <Marker 
+              position={[ubicacion.latitud, ubicacion.longitud]} 
+              icon={userMarkerIcon}
+            >
               <Popup>
                 <div className="text-center">
-                  <p className="font-bold text-sky-400 text-lg">{loc.name}</p>
-                  <p className="text-sm text-gray-300">Local</p>
-                  {loc.address && <p className="text-xs text-gray-400 mt-1">{loc.address}</p>}
+                  <p className="font-bold text-red-500 text-lg">Tu Ubicación</p>
+                  <p className="text-sm text-gray-600">Aquí estás tú</p>
+                </div>
+              </Popup>
+            </Marker>
+          )}
+
+          {/* Marcadores de lugares */}
+          {locations.map((loc, i) => (
+            <Marker key={i} position={[loc.lat, loc.lng]} icon={lugarMarkerIcon}>
+              <Popup>
+                <div className="text-center min-w-[200px]">
+                  <p className="font-bold text-sky-600 text-lg">{loc.name}</p>
+                  <p className="text-sm text-gray-600 capitalize">{loc.type}</p>
+                  {loc.address && <p className="text-xs text-gray-500 mt-1">{loc.address}</p>}
+                  {'distancia_km' in loc && (
+                    <p className="text-xs text-green-600 mt-2">
+                      📍 A {(loc as any).distancia_km.toFixed(1)} km
+                    </p>
+                  )}
+                  {loc.imagen_url && (
+                    <img 
+                      src={loc.imagen_url} 
+                      alt={loc.name}
+                      className="mt-2 rounded w-full h-20 object-cover"
+                    />
+                  )}
                 </div>
               </Popup>
             </Marker>

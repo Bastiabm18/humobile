@@ -3,6 +3,7 @@
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
 import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, CalendarEvent, EventoCalendario, ArtistaEnBanda, IntegranteBandaEvento } from '@/types/profile'; 
 import { pregunta_frecuente } from '@/types/externo';
+import { lugarMapa } from '@/types/mapa';
 // ===========================================
 // 1. CARGA DE DATOS GEOGRÁFICOS (PAÍS, REGIÓN, COMUNA)
 // ===========================================
@@ -550,4 +551,31 @@ export async function getPreguntasFrecuentes(): Promise<pregunta_frecuente[]> {
     console.error(' Error en getPreguntasFrecuentes:', error);
     throw error;
   }
+}
+
+export async function obtenerLugaresCercanos( latitud:number, longitud:number , radioKm:number=10):Promise<lugarMapa[]>{
+
+  const supabaseAdmin = getSupabaseAdmin();
+  try {
+    
+       const { data: lugaresCercanos, error } = await supabaseAdmin
+      .rpc('buscar_perfiles_cercanos', {
+        p_latitud: latitud,
+        p_longitud: longitud,
+        p_radio_km: radioKm
+      
+      });
+    
+    if (error) {
+      console.error('Error en RPC buscar_perfiles_cercanos:', error);
+      throw error;
+    }
+
+    return lugaresCercanos;
+  } catch (error) {
+      console.error('Error obteniendo lugares cercanos:', error);
+    throw new Error('No se pudieron obtener los lugares cercanos');
+  }
+
+
 }

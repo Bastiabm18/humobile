@@ -1,4 +1,4 @@
-import { string } from "zod";
+
 
 // types/profile.ts
 export type ProfileType = 'artista' | 'banda' | 'lugar'|'representante'|'productor';
