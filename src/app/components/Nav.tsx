@@ -14,7 +14,7 @@ const links = [
   { name: 'Inicio', href: '/' },
   { name: 'Quiénes Somos', href: '#QuienesSomos' },
   { name: 'Contacto', href: '/contacto' },
-  { name: 'Explorar', href: '/agenda' },
+  { name: 'Explorar', href: '/busqueda' },
   { name: 'Inicia sesión', href: '/login' },
 ];
 
