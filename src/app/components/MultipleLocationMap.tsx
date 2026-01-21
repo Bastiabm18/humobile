@@ -1,11 +1,12 @@
 // components/LugareCercanosMap.tsx
 'use client';
 
-import { useEffect, useMemo, useState } from 'react'; // Añadir useState
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { useEffect, useMemo, useRef, useState } from 'react'; // Añadir useState
+import { MapContainer, TileLayer, Marker, Popup, useMap,Circle } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { FaMapMarkerAlt } from 'react-icons/fa';
+import { FaEye, FaMapMarkerAlt, FaMarker, FaRedo } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 // Añadir import de la acción
 import { obtenerLugaresCercanos} from '../actions/actions'
@@ -13,6 +14,9 @@ import { obtenerLugaresCercanos} from '../actions/actions'
 import L from 'leaflet';
 import { useUbicacion } from '../hooks/useUbicacion';
 import { lugarMapa } from '@/types/mapa';
+import { FaRulerCombined, FaSpinner } from 'react-icons/fa6';
+import { CiLocationOn } from 'react-icons/ci';
+import { BsEye } from 'react-icons/bs';
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -50,14 +54,43 @@ const lugarMarkerIcon = new Icon({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-// Ajusta el zoom
-function FitBounds({ locations }: { locations: any[] }) {
+function FitBounds({ 
+  userLocation, 
+  radiusKm 
+}: { 
+  userLocation: {lat: number, lng: number} | null,
+  radiusKm: number
+}) {
   const map = useMap();
+  
   useEffect(() => {
-    if (locations.length === 0) return;
-    const bounds = L.latLngBounds(locations.map(l => [l.lat, l.lng]));
-    map.fitBounds(bounds, { padding: [65, 65], maxZoom: 15 });
-  }, [locations, map]);
+    if (!userLocation) {
+      console.log(' No hay ubicación del usuario');
+      return;
+    }
+    
+    console.log(' Ajustando vista con:', { userLocation, radiusKm });
+    
+    // 1 grado ≈ 111 km (aproximación)
+    const latDelta = radiusKm / 111;
+    const lngDelta = radiusKm / (111 * Math.cos(userLocation.lat * Math.PI / 180));
+    
+    const bounds = L.latLngBounds([
+      [userLocation.lat - latDelta, userLocation.lng - lngDelta],
+      [userLocation.lat + latDelta, userLocation.lng + lngDelta]
+    ]);
+    
+    console.log(' Bounds calculados:', bounds);
+    
+    // Ajustar vista
+    map.fitBounds(bounds, { 
+      padding: [30, 30],
+      maxZoom: 15,
+      animate: true
+    });
+    
+  }, [userLocation?.lat, userLocation?.lng, radiusKm]); // Se ejecuta cuando estos cambian
+  
   return null;
 }
 
@@ -100,6 +133,11 @@ export default function LugareCercanosMap() {
   const ubicacion = useUbicacion();
   const [lugaresReales, setLugaresReales] = useState<lugarMapa[]>([]);
   const [cargando, setCargando] = useState(false);
+  const [cargandoUbicacion, setCargandoUbicacion] = useState(false); 
+  const [radioKm, setRadioKm] = useState<number>(10); //  Radio en km
+  const [mostrarRadio, setMostrarRadio] = useState<boolean>(true); //Controlar visibilidad
+  const [sliderAbierto, setSliderAbierto] = useState<boolean>(false); // Controlar slider
+  
   
   // Obtener lugares reales cuando tenemos ubicación
   useEffect(() => {
@@ -111,7 +149,7 @@ export default function LugareCercanosMap() {
         const lugares = await obtenerLugaresCercanos(
           ubicacion.latitud,
           ubicacion.longitud,
-          10 // Radio de 10km
+          radioKm
         );
         setLugaresReales(lugares);
         console.log('Lugares encontrados:', lugares.length);
@@ -123,7 +161,7 @@ export default function LugareCercanosMap() {
     };
     
     cargarLugares();
-  }, [ubicacion]);
+  }, [ubicacion,radioKm]);
   
   // Usar lugares reales o ficticios si no hay resultados
   const locations = useMemo(() => {
@@ -165,7 +203,76 @@ export default function LugareCercanosMap() {
     const avgLng = locations.reduce((a, b) => a + b.lng, 0) / locations.length;
     return [avgLat, avgLng] as [number, number];
   }, [ubicacion, locations]);
+ // Función para cambiar el radio
+  const cambiarRadio = (nuevoRadio: number) => {
+    setRadioKm(nuevoRadio);
+    console.log(`Radio cambiado a: ${nuevoRadio}km`);
+  };
 
+  // Función para formatear el radio para display
+  const formatearRadio = (km: number) => {
+    if (km >= 100) return `${km}km`;
+    if (km >= 10) return `${km}km`;
+    return `${km}km`;
+  };
+
+
+  const actualizarUbicacion = () => {
+  if (!navigator.geolocation) {
+    alert("Tu navegador no soporta geolocalización");
+    return;
+  }
+  
+  setCargandoUbicacion(true);
+  
+  const opciones = {
+    enableHighAccuracy: true,
+    timeout: 15000,
+    maximumAge: 0
+  };
+  
+  navigator.geolocation.getCurrentPosition(
+    (posicion) => {
+      setCargandoUbicacion(false);
+      
+      const nuevaUbicacion = {
+        latitud: posicion.coords.latitude,
+        longitud: posicion.coords.longitude
+      };
+      
+      console.log('📍 Nueva ubicación obtenida:', nuevaUbicacion);
+      
+      // Guardar en localStorage
+      localStorage.setItem('ubicacionUsuario', JSON.stringify(nuevaUbicacion));
+      
+      // Forzar actualización del hook useUbicacion
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'ubicacionUsuario',
+        newValue: JSON.stringify(nuevaUbicacion),
+        oldValue: localStorage.getItem('ubicacionUsuario'),
+        storageArea: localStorage
+      }));
+      
+      
+    },
+    (error) => {
+      setCargandoUbicacion(false);
+      console.error('Error actualizando ubicación:', error);
+      
+      let mensaje = 'No se pudo obtener la nueva ubicación';
+      if (error.code === 1) {
+        mensaje = 'Permiso denegado. Debes permitir la ubicación en tu navegador.';
+      } else if (error.code === 2) {
+        mensaje = 'Ubicación no disponible. Verifica tu conexión o GPS.';
+      } else if (error.code === 3) {
+        mensaje = 'Tiempo de espera agotado. Intenta nuevamente.';
+      }
+      
+      alert(mensaje);
+    },
+    opciones
+  );
+};
   console.log('mapa ubicacion: ', ubicacion?.latitud, ubicacion?.longitud);
   console.log('lugares cargados: ', lugaresReales.length);
 
@@ -199,7 +306,7 @@ export default function LugareCercanosMap() {
       <div className="h-96 md:h-screen max-h-[700px] relative z-0">
         <MapContainer
           center={center}
-          zoom={13}
+          zoom={16}
           style={{ 
             height: '100%', 
             width: '100%',
@@ -216,8 +323,32 @@ export default function LugareCercanosMap() {
             maxZoom={22}
           />
 
-          <FitBounds locations={locations} />
+          <FitBounds  userLocation={ubicacion ? {lat: ubicacion.latitud, lng: ubicacion.longitud} : null}
+                       radiusKm={radioKm} />
           <ResetLeafletZIndex />
+
+             {/* 👇 CÍRCULO DEL RADIO - AGREGAR AQUÍ */}
+    {ubicacion?.latitud && ubicacion?.longitud && mostrarRadio && (
+      <Circle
+        center={[ubicacion.latitud, ubicacion.longitud]}
+        radius={radioKm * 1000} // Convertir km a metros
+        pathOptions={{
+          color: '#3b82f6', // azul-500
+          fillColor: '#1d4ed8', // azul-700
+          fillOpacity: 0.1,
+          weight: 2,
+          dashArray: '5, 10'
+        }}
+      >
+        <Popup>
+          <div className="text-center">
+            <p className="font-bold text-blue-600">Radio de búsqueda</p>
+            <p className="text-sm">{radioKm} km alrededor de tu ubicación</p>
+          </div>
+        </Popup>
+      </Circle>
+    )}
+
 
           {/* Marcador del usuario */}
           {ubicacion?.latitud && ubicacion?.longitud && (
@@ -243,8 +374,8 @@ export default function LugareCercanosMap() {
                   <p className="text-sm text-gray-600 capitalize">{loc.type}</p>
                   {loc.address && <p className="text-xs text-gray-500 mt-1">{loc.address}</p>}
                   {'distancia_km' in loc && (
-                    <p className="text-xs text-green-600 mt-2">
-                      📍 A {(loc as any).distancia_km.toFixed(1)} km
+                    <p className="text-xs text-green-600 mt-2 flex flex-row w-full items-center justify-center">
+                      <CiLocationOn/> A {(loc as any).distancia_km.toFixed(1)} km
                     </p>
                   )}
                   {loc.imagen_url && (
@@ -260,6 +391,116 @@ export default function LugareCercanosMap() {
           ))}
         </MapContainer>
       </div>
+
+     <div className="absolute bottom-6 right-6 z-[1000] flex flex-col items-end gap-2">
+      {/* Slider expandible */}
+      {sliderAbierto && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 10 }}
+          className="bg-neutral-800/50 backdrop-blur-sm p-4 bottom-0 absolute rounded-lg shadow-2xl border border-neutral-400/70 w-64 md:w-82"
+        >
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-bold text-white">Radio de búsqueda</h3>
+            <button
+              onClick={() => setMostrarRadio(!mostrarRadio)}
+              className={`p-1 rounded ${mostrarRadio ? 'bg-blue-500' : 'bg-neutral-600'}`}
+              title={mostrarRadio ? "Ocultar radio" : "Mostrar radio"}
+            >
+              {mostrarRadio ? <FaEye/> : <BsEye/>}
+            </button>
+          </div>
+          
+          <div className="mb-4">
+            <div className="flex justify-between mb-2">
+              <span className="text-neutral-300 text-sm">Radio actual:</span>
+              <span className="text-blue-400 font-bold">{formatearRadio(radioKm)}</span>
+            </div>
+            
+            {/* Slider */}
+            <input
+              type="range"
+              min="5"
+              max="300"
+              step="5"
+              value={radioKm}
+              onChange={(e) => cambiarRadio(parseInt(e.target.value))}
+              className="w-full h-2 bg-neutral-600 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500"
+            />
+            
+            {/* Marcas del slider */}
+            <div className="flex justify-between text-xs text-neutral-400 mt-1">
+              <span>5km</span>
+              <span>50km</span>
+              <span>150km</span>
+              <span>300km</span>
+            </div>
+          </div>
+          
+          {/* Botones de radio rápido */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            {[10, 25, 50, 75, 100, 150].map((km) => (
+              <button
+                key={km}
+                onClick={() => cambiarRadio(km)}
+                className={`py-2 rounded text-sm transition-colors ${
+                  radioKm === km 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-neutral-700 hover:bg-neutral-600 text-neutral-300'
+                }`}
+              >
+                {km}km
+              </button>
+            ))}
+          </div>
+          
+          {/* Información */}
+          <div className="text-xs text-neutral-400 border-t border-neutral-700 pt-3">
+            <p className='flex flex-row items-center justify-center gap-2'> <FaMarker/> Buscando lugares en un radio de {radioKm}km</p>
+            <p className='flex flex-row items-center justify-center gap-2'> <FaRulerCombined/> Diámetro: {radioKm * 2}km</p>
+          </div>
+        </motion.div>
+      )}
+      
+      {/* Botón principal flotante */}
+      <button
+        onClick={() => setSliderAbierto(!sliderAbierto)}
+        className="flex z-50 items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg shadow-xl transition-all hover:scale-105 active:scale-95 border border-blue-400"
+      >
+        {sliderAbierto ? (
+          <>
+            <span>✕ Cerrar</span>
+          </>
+        ) : (
+          <>
+            <FaRulerCombined /> {/* 👈 Necesitarás importar este ícono */}
+            <span>Ajustar radio ({radioKm}km)</span>
+          </>
+        )}
+      </button>
+    </div>
+    
+    {/* Botón de actualizar ubicación (mantener el anterior pero más arriba) */}
+    <div className="absolute top-36 right-6 z-[1000]">
+      <button
+        onClick={actualizarUbicacion}
+        disabled={cargandoUbicacion}
+        className="flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border border-green-400"
+      >
+        {cargandoUbicacion ? (
+          <>
+            <FaSpinner className="animate-spin" />
+            <span>Obteniendo...</span>
+          </>
+        ) : (
+          <>
+            <FaRedo />
+            <span>Actualizar ubicación</span>
+          </>
+        )}
+      </button>
+    </div>
     </div>
   );
 }

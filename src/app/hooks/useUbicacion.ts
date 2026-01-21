@@ -1,4 +1,4 @@
-// app/hooks/useUbicacion.ts - VERSIÓN SIMPLIFICADA Y FUNCIONAL
+// app/hooks/useUbicacion.ts - VERSIÓN SIMPLIFICADA
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,42 +14,43 @@ export function useUbicacion() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Leer ubicación inicial
+    // Función para leer ubicación
     const leerUbicacion = () => {
       try {
         const ubicacionGuardada = localStorage.getItem('ubicacionUsuario');
         return ubicacionGuardada ? JSON.parse(ubicacionGuardada) : null;
       } catch (error) {
-        console.error('❌ Error al parsear ubicación:', error);
+        console.error(' Error al parsear ubicación:', error);
         return null;
       }
     };
 
-    // Configurar solo al montar
-    const datosIniciales = leerUbicacion();
-    setUbicacion(datosIniciales);
+    // Leer ubicación inicial
+    setUbicacion(leerUbicacion());
 
-    // Escuchar el evento 'ubicacionObtenida' que envía PermisoUbicacion
-    const manejarUbicacionObtenida = (e: CustomEvent) => {
-      setUbicacion(e.detail);
-    };
-
-    // Escuchar cambios en localStorage (de otras pestañas)
-    const manejarCambioStorage = (e: StorageEvent) => {
-      if (e.key === 'ubicacionUsuario') {
-        const nuevaUbicacion = e.newValue ? JSON.parse(e.newValue) : null;
+    // Escuchar cambios en localStorage (cuando el botón actualiza)
+    const manejarCambioStorage = (event: StorageEvent) => {
+      if (event.key === 'ubicacionUsuario') {
+        console.log(' Storage actualizado desde botón');
+        const nuevaUbicacion = event.newValue ? JSON.parse(event.newValue) : null;
         setUbicacion(nuevaUbicacion);
       }
     };
 
-    window.addEventListener('ubicacionObtenida', manejarUbicacionObtenida as EventListener);
+    // Escuchar evento personalizado (alternativa)
+    const manejarUbicacionActualizada = (event: CustomEvent) => {
+      console.log(' Evento personalizado recibido:', event.detail);
+      setUbicacion(event.detail);
+    };
+
     window.addEventListener('storage', manejarCambioStorage);
+    window.addEventListener('ubicacion-actualizada', manejarUbicacionActualizada as EventListener);
 
     return () => {
-      window.removeEventListener('ubicacionObtenida', manejarUbicacionObtenida as EventListener);
       window.removeEventListener('storage', manejarCambioStorage);
+      window.removeEventListener('ubicacion-actualizada', manejarUbicacionActualizada as EventListener);
     };
-  }, []); // Solo se ejecuta al montar
+  }, []);
 
   return ubicacion;
 }
