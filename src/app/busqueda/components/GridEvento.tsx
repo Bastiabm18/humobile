@@ -21,7 +21,7 @@ export default function GridEvento({ evento, onClick }: GridEventoProps) {
   const getCategoryColor = () => {
     const categoria = evento.nombre_categoria?.toLowerCase() || '';
     if (categoria.includes('show') || categoria.includes('concierto')) {
-      return 'bg-red-600/20 text-red-400 border-red-500/30';
+      return 'bg-blue-600/20 text-blue-400 border-blue-500/30';
     }
     if (categoria.includes('reunion') || categoria.includes('reunión')) {
       return 'bg-blue-600/20 text-blue-400 border-blue-500/30';
@@ -62,7 +62,7 @@ export default function GridEvento({ evento, onClick }: GridEventoProps) {
         group
         cursor-pointer
         border border-neutral-700
-        hover:border-red-500/50
+        hover:border-blue-500/50
         transition-all duration-300
         flex flex-col
         bg-neutral-800/50
@@ -110,33 +110,33 @@ export default function GridEvento({ evento, onClick }: GridEventoProps) {
         </div>
 
         {/* Título */}
-        <h3 className="text-2xl font-bold text-white leading-tight drop-shadow-lg group-hover:text-red-300 transition-colors duration-300 mb-3 line-clamp-2">
+        <h3 className="text-2xl font-bold text-white leading-tight drop-shadow-lg group-hover:text-blue-300 transition-colors duration-300 mb-3 line-clamp-2">
           {evento.titulo}
         </h3>
 
         {/* Fecha y hora */}
         <div className="flex items-center gap-2 text-neutral-300 mb-2">
-          <HiCalendar className="w-4 h-4 text-red-500" />
+          <HiCalendar className="w-4 h-4 text-blue-500" />
           <span className="text-sm capitalize">{fecha}</span>
         </div>
 
         <div className="flex items-center gap-2 text-neutral-300 mb-3">
-          <HiClock className="w-4 h-4 text-red-500" />
+          <HiClock className="w-4 h-4 text-blue-500" />
           <span className="text-sm">{horaInicio} - {horaFin}</span>
         </div>
 
         {/* Lugar */}
         <div className="flex items-center gap-2 text-neutral-300 mb-4">
-          <HiMap className="w-4 h-4 text-red-500" />
+          <HiMap className="w-4 h-4 text-blue-500" />
           <span className="text-sm truncate">{lugar}</span>
         </div>
 
         {/* Línea decorativa */}
-        <div className="h-[2px] w-16 bg-gradient-to-r from-red-500 to-transparent group-hover:w-24 transition-all duration-300 self-start" />
+        <div className="h-[2px] w-16 bg-gradient-to-r from-blue-500 to-transparent group-hover:w-24 transition-all duration-300 self-start" />
       </div>
 
       {/* Borde de resalte en Hover */}
-      <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-red-500/30 transition-colors duration-300 pointer-events-none" />
+      <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-blue-500/30 transition-colors duration-300 pointer-events-none" />
     </motion.div>
   );
 }

@@ -105,7 +105,7 @@ const GridPerfil: React.FC<GridPerfilProps> = ({ items }) => {
     <div className="w-full border border-neutral-700/80 rounded-lg max-w-[95vw] mx-auto px-4 py-8">
       {/* Header - Izquierda */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="text-sky-500"><FaPerson/></div>
+        <div className="text-orange-500"><FaPerson/></div>
         <h2 className="text-2xl font-bold text-white">Perfiles</h2>
 
       </div>
@@ -129,27 +129,32 @@ const GridPerfil: React.FC<GridPerfilProps> = ({ items }) => {
         >
           {items.map((item) => (
             <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ 
+        scale: 1.02,
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
+        y: -5
+      }}
+      whileTap={{ scale: 0.98 }}
               key={item.id}
               className="
                 flex-shrink-0
                 relative
-                w-[150px] h-[250px]
+                w-[45vw] md:w-[220px] h-[280px] md:h-[300px]
                 rounded-2xl
                 overflow-hidden
                 group
                 cursor-pointer
                 border border-neutral-700
-                hover:border-sky-500/50
+                hover:border-orange-500/50
                 transition-all duration-300
                 flex flex-col
                 bg-neutral-800/50
                 shadow-lg shadow-black/30
               "
-              whileHover={{ 
-                scale: 1.02,
-                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
-              }}
-              whileTap={{ scale: 0.98 }}
+     
+   
               onClick={() => handleItemClick(item)}
             >
               {/* Imagen de fondo */}
@@ -202,10 +207,10 @@ const GridPerfil: React.FC<GridPerfilProps> = ({ items }) => {
                   bg-black/50
                   rounded-full
                   text-xs font-medium
-                  text-sky-300
+                  text-orange-300
                   backdrop-blur-sm
-                  border border-sky-500/30
-                  group-hover:bg-sky-900/30
+                  border border-orange-500/30
+                  group-hover:bg-orange-900/30
                   transition-colors
                 ">
                   {item.tipo}
@@ -217,7 +222,7 @@ const GridPerfil: React.FC<GridPerfilProps> = ({ items }) => {
                   leading-tight
                   text-left
                   drop-shadow-lg
-                  group-hover:text-sky-300
+                  group-hover:text-orange-300
                   transition-colors duration-300
                 ">
                   {item.nombre}
@@ -239,7 +244,7 @@ const GridPerfil: React.FC<GridPerfilProps> = ({ items }) => {
                 <div className="
                   mt-4
                   h-[2px] w-16
-                  bg-gradient-to-r from-sky-500 to-sky-500/20
+                  bg-gradient-to-r from-orange-500 to-orange-500/20
                   group-hover:w-24
                   transition-all duration-300
                   self-start
@@ -251,7 +256,7 @@ const GridPerfil: React.FC<GridPerfilProps> = ({ items }) => {
                 absolute inset-0
                 rounded-2xl
                 border-2 border-transparent
-                group-hover:border-sky-500/30
+                group-hover:border-orange-500/30
                 transition-colors duration-300
                 pointer-events-none
               " />
@@ -259,7 +264,7 @@ const GridPerfil: React.FC<GridPerfilProps> = ({ items }) => {
               {/* Efecto de luz en hover */}
               <div className="
                 absolute inset-0
-                bg-gradient-to-tr from-transparent via-sky-500/5 to-transparent
+                bg-gradient-to-tr from-transparent via-orange-500/5 to-transparent
                 opacity-0 group-hover:opacity-100
                 transition-opacity duration-500
                 pointer-events-none
