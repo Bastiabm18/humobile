@@ -466,7 +466,7 @@ export default function LugareCercanosMap() {
       {/* Botón principal flotante */}
       <button
         onClick={() => setSliderAbierto(!sliderAbierto)}
-        className="flex z-50 items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg shadow-xl transition-all hover:scale-105 active:scale-95 border border-blue-400"
+        className="flex z-50 items-center gap-3 bg-blue-600/70 hover:bg-blue-700/70 text-white px-4 py-3 rounded-lg shadow-xl transition-all hover:scale-105 active:scale-95 border border-blue-400"
       >
         {sliderAbierto ? (
           <>
@@ -486,7 +486,7 @@ export default function LugareCercanosMap() {
       <button
         onClick={actualizarUbicacion}
         disabled={cargandoUbicacion}
-        className="flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border border-green-400"
+        className="flex items-center gap-3 bg-green-600/70 hover:bg-green-700/70 text-white px-4 py-3 rounded-lg shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border border-green-400"
       >
         {cargandoUbicacion ? (
           <>

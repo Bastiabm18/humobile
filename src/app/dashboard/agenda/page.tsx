@@ -30,7 +30,7 @@ export default async function AgendaPage() {
   }
 //console.log('Agenda - UserData →', userData);
   const profiles = await getProfiles(userData.uid);
- console.log('Agenda - Profiles →', profiles);
+ //console.log('Agenda - Profiles →', profiles);
     
   return (
     <DashboardLayout

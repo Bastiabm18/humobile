@@ -810,23 +810,11 @@ async function crearParticipacionEvento(
 async function procesarEventoBanda(eventoId: string, id_creador: string, id_participante:string, tipo_perfil_participante:string) {
   console.log(' Procesando evento de banda');
   
-  // La banda como participante
-  await crearParticipacionEvento(eventoId, id_creador, 'pendiente');
+
 
     // Si es banda, también invitar a sus integrantes
-  if (tipo_perfil_participante === 'banda') {
-    const { data: integrantes } = await getSupabaseAdmin()
-      .from('integrante')
-      .select('id_artista')
-      .eq('id_banda', id_creador)
-      .eq('estado', 'activo');
-    
-    if (integrantes) {
-      for (const integrante of integrantes) {
-        await crearParticipacionEvento(eventoId, integrante.id_artista, 'pendiente');
-        await crearSolicitudEvento(eventoId, id_creador, integrante.id_artista, 'invitacion');
-      }
-    }}
+ 
+   
   
   
   // Si tiene local asignado
@@ -1018,33 +1006,31 @@ export async function crearEvento(eventData: EventoGuardar, participantes: Parti
 
     console.log('Evento Id creado:', evento.id);
 
-    // El creador siempre es participante confirmado
-    await crearParticipacionEvento(evento.id, eventData.id_creador, 'confirmado');
+ // PASO 1: Primero el creador (confirmado)
+await crearParticipacionEvento(evento.id, eventData.id_creador, 'confirmado');
 
-    // Procesar según tipo de creador PARA CADA PARTICIPANTE enviar solicitud y participacion_evento 
-    for (const participante of participantes) {
-      if(participante.id_perfil === eventData.id_creador){
-        continue; // ya creado arriba
-      }else{
-      switch (eventData.creador_tipo_perfil) {
-        case 'banda':
-          await procesarEventoBanda(evento.id, eventData.id_creador,
-             participante.id_perfil,participante.tipo );
-          break;
-          
-        case 'lugar':
-          await procesarEventoLocal(evento.id, eventData.id_creador,
-             participante.id_perfil,participante.tipo );
-          break;
-          
-        case 'artista':
-          await procesarEventoArtista(evento.id, eventData.id_creador,
-             participante.id_perfil,participante.tipo);
-          break;
-      }
-      }
+// PASO 2: Invitar a todos los participantes
+for (const participante of participantes) {
+  console.log(`🎯 Procesando: ${participante.id_perfil} (${participante.tipo})`);
+  
+  // Saltar si es el creador (ya lo procesamos)
+  if (participante.id_perfil === eventData.id_creador) continue;
+  
+  await crearParticipacionEvento(evento.id, participante.id_perfil, 'pendiente');
+  await crearSolicitudEvento(evento.id, eventData.id_creador, participante.id_perfil, 'invitacion');
+  
+  // Si el participante es una banda, invitar a sus integrantes
+  if (participante.tipo === 'banda') {
+    console.log(`👥 Invitando integrantes de la banda participante: ${participante.id_perfil}`);
+    await invitarIntegrantesBanda(evento.id, eventData.id_creador, participante.id_perfil);
+  }
+}
 
-    }
+// PASO 3: Si el CREADOR es banda, invitar también a sus integrantes
+if (eventData.creador_tipo_perfil === 'banda') {
+  console.log(`🎸 Creador es banda, invitando integrantes...`);
+  await invitarIntegrantesBanda(evento.id, eventData.id_creador, eventData.id_creador);
+}
     
     return { 
       success: true, 
@@ -1058,6 +1044,94 @@ export async function crearEvento(eventData: EventoGuardar, participantes: Parti
       success: false, 
       error: error.message || 'Error interno del servidor' 
     };
+  }
+}
+
+
+async function invitarParticipanteEvento(
+  eventoId: string,
+  creadorId: string,
+  creadorTipo: string,
+  participanteId: string,
+  participanteTipo: string
+) {
+  console.log(`📨 Invitando participante: ${participanteId} (${participanteTipo})`);
+  
+  // 1. Si es el creador mismo, solo crear participación (sin solicitud)
+  if (participanteId === creadorId) {
+    console.log(`👤 Creador ${creadorId} - solo participación confirmada`);
+    await crearParticipacionEvento(eventoId, participanteId, 'confirmado');
+    return;
+  }
+  
+  // 2. Para cualquier otro participante: participación + solicitud
+  await crearParticipacionEvento(eventoId, participanteId, 'pendiente');
+  await crearSolicitudEvento(eventoId, creadorId, participanteId, 'invitacion');
+  
+  // 3. Si el participante es una banda, invitar también a sus integrantes
+  if (participanteTipo === 'banda') {
+    console.log(`👥 Invitando integrantes de la banda: ${participanteId}`);
+    await invitarIntegrantesBanda(eventoId, creadorId, participanteId);
+  }
+  
+  // 4. Si el CREADOR es una banda, invitar también a sus propios integrantes
+  // (solo la primera vez que se procesa el creador)
+  if (creadorTipo === 'banda' && participanteId === creadorId) {
+    console.log(`👥 Invitando integrantes de la banda creadora: ${creadorId}`);
+    await invitarIntegrantesBanda(eventoId, creadorId, creadorId);
+  }
+}
+
+async function invitarIntegrantesBanda(
+  eventoId: string, 
+  creadorId: string, 
+  bandaId: string
+) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    console.log(`🔍 Buscando integrantes de la banda ${bandaId}`);
+    
+    // Consulta SIMPLE: solo IDs de integrantes
+    const { data: integrantes, error: errorIntegrantes } = await supabaseAdmin
+      .from('integrante')
+      .select('id_artista')
+      .eq('id_banda', bandaId)
+      .eq('estado', 'activo');
+
+    if (errorIntegrantes) {
+      console.error('Error al obtener integrantes:', errorIntegrantes);
+      return;
+    }
+
+    if (!integrantes || integrantes.length === 0) {
+      console.log(`ℹ️ La banda ${bandaId} no tiene integrantes registrados`);
+      return;
+    }
+
+    console.log(`✅ Encontrados ${integrantes.length} integrantes para la banda ${bandaId}`);
+
+    // Invitar a cada integrante (ASUMIMOS que son artistas)
+    for (const integrante of integrantes) {
+      const artistaId = integrante.id_artista;
+      
+      // Evitar duplicados con el creador
+      if (artistaId === creadorId) {
+        console.log(`ℹ️ El creador ${creadorId} también es integrante, omitiendo`);
+        continue;
+      }
+      
+      console.log(`📨 Invitando artista integrante: ${artistaId}`);
+      
+      // Crear participación y solicitud para el artista
+      await crearParticipacionEvento(eventoId, artistaId, 'pendiente');
+      await crearSolicitudEvento(eventoId, creadorId, artistaId, 'invitacion');
+    }
+    
+    console.log(`🎉 Todos los integrantes de la banda ${bandaId} han sido invitados`);
+    
+  } catch (error) {
+    console.error('Error en invitarIntegrantesBanda:', error);
   }
 }
 
