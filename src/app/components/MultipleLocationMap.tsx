@@ -149,7 +149,7 @@ export default function LugareCercanosMap() {
         address: "Caupolicán 1235, Concepción",
         imagen_url:''
       },
-      // ... resto de tus datos ficticios
+      
     ];
   }, [lugaresReales]);
 

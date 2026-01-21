@@ -116,9 +116,25 @@ export default function PermisoUbicacion() {
         setUbicacionObtenida(ubicacion);
         setMostrarModal(false);
         
-        // Guardar en localStorage
-        localStorage.setItem('permisoUbicacion', 'otorgado');
-        localStorage.setItem('ubicacionUsuario', JSON.stringify(ubicacion));
+             // 🔥 AQUÍ EL CAMBIO CRÍTICO:
+      // Guardar en localStorage
+      localStorage.setItem('permisoUbicacion', 'otorgado');
+      localStorage.setItem('ubicacionUsuario', JSON.stringify(ubicacion));
+      
+      // 🔥 IMPORTANTE: Disparar evento personalizado
+      const event = new CustomEvent('storage-local', {
+        detail: { ubicacion }
+      });
+      window.dispatchEvent(event);
+      
+      // También disparar el evento storage nativo (como fallback)
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'ubicacionUsuario',
+        newValue: JSON.stringify(ubicacion),
+        oldValue: localStorage.getItem('ubicacionUsuario'),
+        storageArea: localStorage
+      }));
+      
         
         // Imprimir en consola
         imprimirUbicacion(ubicacion);
