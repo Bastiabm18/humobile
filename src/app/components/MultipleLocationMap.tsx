@@ -21,20 +21,20 @@ L.Icon.Default.mergeOptions({
 });
 
 // Marcador personalizado para el usuario
-const userMarkerIcon = new Icon({
+const userMarkerIcon =  new Icon({
   iconUrl: 'data:image/svg+xml;base64,' + btoa(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44">
-    
-      <ellipse cx="22" cy="16" rx="14" ry="12" fill="#3b82f6" stroke="#1d4ed8" stroke-width="2"/>
-      <path d="M8,16 Q22,44 36,16" fill="#3b82f6" stroke="#1d4ed8" stroke-width="2"/>
-      <text x="22" y="22" font-family="Arial" font-size="10" font-weight="bold" fill="white" text-anchor="middle">TU</text>
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="56" viewBox="0 0 48 56">
+     
+      <ellipse cx="24" cy="16" rx="12" ry="14" fill="#0ea5e9" stroke="#0369a1" stroke-width="2"/>
+      <path d="M12,16 Q24,56 36,16" fill="#0ea5e9" stroke="#0369a1" stroke-width="2"/>
+      <text x="24" y="24" font-family="Arial" font-size="12" font-weight="bold" fill="white" text-anchor="middle">TU</text>
     </svg>
   `),
-  iconSize: [44, 44],
-  iconAnchor: [22, 44],
-  popupAnchor: [0, -44],
+  iconSize: [48, 56],
+  iconAnchor: [24, 56],
+  popupAnchor: [0, -56],
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
+})
 // Marcador para los lugares (azul)
 const lugarMarkerIcon = new Icon({
   iconUrl: 'data:image/svg+xml;base64,' + btoa(`
