@@ -12,9 +12,9 @@ import { FaX } from 'react-icons/fa6';
 
 const links = [
   { name: 'Inicio', href: '/' },
+  { name: 'Explorar', href: '/busqueda' },
   { name: 'Quiénes Somos', href: '#QuienesSomos' },
   { name: 'Contacto', href: '/contacto' },
-  { name: 'Explorar', href: '/busqueda' },
   { name: 'Inicia sesión', href: '/login' },
 ];
 

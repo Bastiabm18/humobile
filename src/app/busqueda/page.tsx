@@ -4,34 +4,23 @@
 import { useEffect, useState } from 'react';
 import Buscador from './components/Buscador';
 import NeonSign from '../components/NeonSign';
-import { EventoCalendario } from '@/types/profile';
-import { obtenerEventosBusqueda } from './actions/actions';
+import { EventoCalendario, FiltrosEventos, FiltrosPerfiles, Profile } from '@/types/profile';
+import { obtenerEventosBusqueda, obtenerPerfilesBusqueda } from './actions/actions';
 import CarruselBase from '../components/CarruselBase';
 import CarruselEvento from '../components/CarruselEvento';
 import CarruselEventosBase from '../components/CarruselEventosBase';
+import GridEventosBase from './components/GridEventosBase';
+import GridPerfil from './components/GridPerfil';
 
 // INTERFACES (deberían estar en tu archivo de tipos)
-interface FiltrosEventos {
-  fechaDesde?: string;
-  fechaHasta?: string;
-  tipoEvento?: string;
-  artista?: string;
-}
-
-interface FiltrosPerfiles {
-  artista: boolean;
-  banda: boolean;
-  local: boolean;
-  lugar: boolean;
-  productor: boolean;
-  representante: boolean;
-}
 
 export default function BusquedaPage() {
   // STATE 1: Controla si estamos buscando eventos o perfiles
   const [tipo, setTipo] = useState<'eventos' | 'perfiles'>('eventos');
   // states para eventosn 
     const [todosEventos, setTodosEventos] = useState<EventoCalendario[]>([]);
+    const [todosPerfiles, setTodosPerfiles] = useState<Profile[]>([]);
+    const [perfilesFiltrados, setPerfilesFiltrados] = useState<Profile[]>([]);
     const [eventosFiltrados, setEventosFiltrados]= useState<EventoCalendario[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -55,9 +44,28 @@ export default function BusquedaPage() {
 
           cargarEventos();
         }, []);
+    useEffect(() => {
+            const cargarPerfiles = async () => {
+              try {
+                setLoading(true);
+                const perfiles = await obtenerPerfilesBusqueda();
+                setTodosPerfiles(perfiles);
+                setPerfilesFiltrados(perfiles);
+                setError(null);
+              } catch (err: any) {
+                console.error('Error cargando eventos:', err);
+                setError(err.message || 'Error al cargar eventos');
+                setTodosPerfiles([]);
+              } finally {
+                setLoading(false);
+              }
+            };
+
+          cargarPerfiles();
+        }, []);
 
       
-  
+  console.log(todosPerfiles)
   // FUNCIÓN PRINCIPAL: Recibe la búsqueda del componente Buscador
   const handleBuscar = (query: string, filtros: FiltrosEventos | FiltrosPerfiles) => {
     console.log('=== INFORMACIÓN RECIBIDA DEL BUSCADOR ===');
@@ -126,34 +134,31 @@ export default function BusquedaPage() {
       // 1. Convertir filtros a variables tipadas
       const filtrosPerfiles = filtros as FiltrosPerfiles;
       
-      // 2. Filtrar tu array de perfilesData
-      // const perfilesFiltrados = perfilesData.filter(perfil => {
-      //   let cumple = true;
-      //   
-      //   // A. Filtrar por texto (query)
-      //   if (query) {
-      //     cumple = cumple && perfil.nombre.toLowerCase().includes(query.toLowerCase());
-      //   }
-      //   
-      //   // B. Filtrar por tipos de perfil seleccionados
-      //   if (perfil.tipo_perfil === 'artista' && !filtrosPerfiles.artista) cumple = false;
-      //   if (perfil.tipo_perfil === 'banda' && !filtrosPerfiles.banda) cumple = false;
-      //   if (perfil.tipo_perfil === 'local' && !filtrosPerfiles.local) cumple = false;
-      //   if (perfil.tipo_perfil === 'lugar' && !filtrosPerfiles.lugar) cumple = false;
-      //   if (perfil.tipo_perfil === 'productor' && !filtrosPerfiles.productor) cumple = false;
-      //   if (perfil.tipo_perfil === 'representante' && !filtrosPerfiles.representante) cumple = false;
-      //   
-      //   return cumple;
-      // });
-      // 
+     //  2. Filtrar tu array de perfilesData
+       const perfilesFiltrados = todosPerfiles.filter(perfil => {
+         let cumple = true;
+         
+         // A. Filtrar por texto (query)
+         if (query) {
+           cumple = cumple && perfil.nombre.toLowerCase().includes(query.toLowerCase());
+         }
+         
+         // B. Filtrar por tipos de perfil seleccionados
+         if (perfil.tipo === 'artista' && !filtrosPerfiles.artista) cumple = false;
+         if (perfil.tipo === 'banda' && !filtrosPerfiles.banda) cumple = false;
+         if (perfil.tipo === 'lugar' && !filtrosPerfiles.lugar) cumple = false;
+         
+         return cumple;
+       });
+       
       // 3. Actualizar state con resultados filtrados
-      // setPerfilesFiltrados(perfilesFiltrados);
+       setPerfilesFiltrados(perfilesFiltrados);
     }
   };
 
   return (
-    <div className="min-h-screen p-4 mt-25">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen flex  items-center justify-center p-4 mt-25">
+      <div className="w-[95vw] mx-auto">
         {/* ========== HEADER DE LA PÁGINA ========== */}
         <div className="mb-10  text-center">
         <NeonSign/>
@@ -171,12 +176,12 @@ export default function BusquedaPage() {
         />
         
         {/* ========== ÁREA DE RESULTADOS ========== */}
-        <div className="mt-8">
+        <div className="flex items-center justify-center mt-8">
            {tipo === 'eventos' && (
                 
                   <>
 
-                       <CarruselEventosBase
+                       <GridEventosBase
                          eventos={eventosFiltrados}
                        />
                  </>
@@ -186,16 +191,22 @@ export default function BusquedaPage() {
 
            {tipo === 'perfiles' && (
                  <>
+                 <GridPerfil
+                 items={perfilesFiltrados}
+                 />
                  </>
              )}
           {/* Mensaje de ejemplo */}
+        </div>
+
+
+
           <div className="text-center py-12 text-neutral-500">
             <p>Los resultados aparecerán aquí después de buscar</p>
             <p className="text-sm mt-2">
               Tipo seleccionado: <span className="text-white">{tipo}</span>
             </p>
           </div>
-        </div>
       </div>
     </div>
   );

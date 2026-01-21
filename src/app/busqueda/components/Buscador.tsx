@@ -1,24 +1,10 @@
 'use client';
 
+import { FiltrosEventos, FiltrosPerfiles } from '@/types/profile';
 import { useState, useEffect } from 'react';
 import { FaCalendarAlt, FaUser, FaSearch, FaFilter, FaTimes } from 'react-icons/fa';
 
-// INTERFACES para los filtros
-interface FiltrosEventos {
-  fechaDesde?: string;
-  fechaHasta?: string;
-  tipoEvento?: string;
-  artista?: string;
-}
 
-interface FiltrosPerfiles {
-  artista: boolean;
-  banda: boolean;
-  local: boolean;
-  lugar: boolean;
-  productor: boolean;
-  representante: boolean;
-}
 
 // PROPS que recibe el componente
 interface BuscadorProps {
@@ -42,10 +28,7 @@ export default function Buscador({ onBuscar, tipo, onTipoChange }: BuscadorProps
   const filtrosPerfilesIniciales: FiltrosPerfiles = {
     artista: true,
     banda: true,
-    local: true,
     lugar: true,
-    productor: false,
-    representante: false
   };
   
   const [filtrosEventos, setFiltrosEventos] = useState<FiltrosEventos>(filtrosEventosIniciales);

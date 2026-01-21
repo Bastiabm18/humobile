@@ -79,6 +79,20 @@ export interface EventoActualizar  {
   }>;
 };
 
+export interface FiltrosEventos {
+  fechaDesde?: string;
+  fechaHasta?: string;
+  tipoEvento?: string;
+  artista?: string;
+}
+
+export interface FiltrosPerfiles {
+  artista: boolean;
+  banda: boolean;
+  lugar: boolean;
+}
+
+
 
 // Data para el formulario de Artista
 export interface ArtistData {
