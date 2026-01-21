@@ -47,13 +47,13 @@ export default function Footer() {
             <h3 className="font-semibold text-gray-400 mb-3">Contacto</h3>
             <ul className="space-y-2 text-sm text-center md:text-left">
               <li className="flex items-center gap-2">
-                <span>Phone</span> +56 9 1234 5678
+                <span>celular</span> +56 9 1234 5678
               </li>
               <li className="flex items-center gap-2">
                 <span>Email</span> contacto@humobile.cl
               </li>
               <li className="flex items-center gap-2">
-                <span>Clock</span> Lun - Vie: 9:00 - 18:00
+                <span>Horarios</span> Lun - Vie: 9:00 - 18:00
               </li>
             </ul>
           </div>

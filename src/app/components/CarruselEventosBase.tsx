@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { HiChevronLeft, HiChevronRight, HiCalendar } from 'react-icons/hi';
 import CarruselEvento from './CarruselEvento';
 import { EventoCalendario } from '@/types/profile'; // Asegúrate de que la ruta sea correcta
+import { useRouter } from 'next/navigation';
 
 interface CarruselEventosProps {
   eventos: EventoCalendario[];
@@ -22,6 +23,7 @@ export default function CarruselEventosBase({
   const [showLeftButton, setShowLeftButton] = useState(false);
   const [showRightButton, setShowRightButton] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const router = useRouter();
 
   const checkScrollPosition = () => {
     if (carruselRef.current) {
@@ -89,7 +91,27 @@ export default function CarruselEventosBase({
       onEventClick(evento);
     } else {
       console.log('Evento clickeado:', evento);
+        const encodedId = encodeEventId(evento.id);
+      
+      // Redirigir con el ID codificado
+      router.push(`/evento?id=${encodedId}`);
     }
+  };
+
+    // Función para codificar el ID del evento
+  const encodeEventId = (eventId: string): string => {
+    // Crear objeto con el ID
+    const data = { id: eventId };
+    
+    // Convertir a JSON y luego a base64
+    const jsonString = JSON.stringify(data);
+    const base64 = btoa(jsonString);
+    
+    // Convertir a base64url (seguro para URLs)
+    return base64
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
   };
 
   return (
