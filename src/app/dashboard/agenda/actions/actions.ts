@@ -239,8 +239,8 @@ export async function getEventosByPerfilParticipacion(
         id: evento.id,
         titulo: evento.titulo,
         descripcion: evento.descripcion || '',
-        inicio: new Date(evento.inicio),
-        fin: evento.fin ? new Date(evento.fin) : new Date(evento.inicio), // fallback si no hay fin
+        inicio: evento.inicio,
+        fin:  evento.fin , // fallback si no hay fin
         id_categoria: evento.id_categoria || '',
         nombre_categoria: evento.nombre_categoria || '',
         flyer_url: evento.flyer_url,

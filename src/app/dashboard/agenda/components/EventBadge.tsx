@@ -27,7 +27,7 @@ export default function EventBadge({
   onMultipleEventsClick,
   onBlockClick,
 }: EventBadgeProps) {
- // console.log(events);
+  console.log(events);
 
   if (events.length === 0) return null;
 
