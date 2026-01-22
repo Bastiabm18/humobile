@@ -38,7 +38,7 @@ export default function AgendaContent({
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const router = useRouter();
 
-  console.log(initialProfiles);
+  //console.log(initialProfiles);
   const loadProfiles = async () => {
     const data = await getProfiles(userId);
     setProfiles(data);

@@ -59,7 +59,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
     fetchEvents();
   }, [profileId, estadoEvento]);
 
-  console.log('calendarview events: ',events)
+ // console.log('calendarview events: ',events)
   const fetchEvents = async () => {
     try {
       setLoading(true);

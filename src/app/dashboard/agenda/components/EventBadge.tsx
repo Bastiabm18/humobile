@@ -57,7 +57,11 @@ const formatTime = (dateString: string | Date) => {
             {hasNormal && !hasBlocked && (
               <div className="mb-0.5 flex w-full h-full">
                 <div
-                  className="text-xs md:text-sm truncate px-1.5 py-1 rounded-md bg-sky-700/50 text-white font-medium hover:bg-sky-800 w-full h-10 md:h-20 cursor-pointer transition-colors flex items-center group border-l-4 border-sky-500"
+              className={`text-xs md:text-sm truncate px-1.5 py-1 rounded-md ${
+                normalEvents[0].estado_participacion === 'pendiente' 
+                  ? 'bg-orange-600/50 hover:bg-orange-700 border-l-4 border-orange-500' 
+                  : 'bg-sky-700/50 hover:bg-sky-800 border-l-4 border-sky-500'
+              } text-white font-medium w-full h-10 md:h-20 cursor-pointer transition-colors flex items-center group`}
                   title={`${normalEvents[0].titulo} (${formatTime(normalEvents[0].inicio)} - ${formatTime(normalEvents[0].fin)})`}
                   onClick={(e) => {
                     e.stopPropagation();

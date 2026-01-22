@@ -322,6 +322,7 @@ const formatTime = (dateString: string | Date) => {
                 <button
                   onClick={() => {
                     setNewEventDate(date);
+                    console.log(date);
                     setShowCrearEventoModal(true);
                   }}
                   className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"

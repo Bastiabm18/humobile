@@ -437,6 +437,8 @@ export interface EventoCalendario {
   confirmados?: number;
   rechazados?: number;
   porcentaje_aprobacion?: number;
+  estado_participacion?: string;
+
 
 
 

@@ -213,7 +213,7 @@ export async function getEventosByPerfilParticipacion(
     }
 
     const { data: eventosDB, error } = await supabaseAdmin
-      .rpc('get_eventos_perfil_estados', params);
+      .rpc('get_eventos_perfil_estados_v2', params);
 
     if (error) {
       console.error(' Error al llamar a get_eventos_perfil_estados:', error);
@@ -269,6 +269,15 @@ export async function getEventosByPerfilParticipacion(
 
         // Participantes ya vienen en el formato correcto
         participantes,
+         total_participantes:evento.total_participantes,
+         pendientes:evento.pendientes,
+         confirmados:evento.confirmados,
+         rechazados:evento.rechazados,
+         porcentaje_aprobacion:evento.porcentaje_aprobacion,
+        estado_participacion: evento.estado_participacion || '',
+
+
+
       };
     });
 
@@ -405,13 +414,129 @@ export async function getEventoById(idEvento: string): Promise<EventoCalendario 
 
   return data as EventoCalendario;
 }
-export async function getEventoByIdV2(idEvento: string): Promise<EventoCalendario | null> {
+
+export async function aceptarRechazarParticipacionEvento(
+  idEvento: string, 
+  idInvitado: string, 
+  eleccion: boolean
+): Promise<{ 
+  success: boolean; 
+  error?: string; 
+  conflicto?: any;
+  message?: string;
+}> {
+  const supabase = getSupabaseAdmin();
+  
+  try {
+    const nuevoEstado = eleccion ? 'confirmado' : 'rechazado';
+    const nuevoEstadoSolicitud = eleccion ? 'aceptada' : 'rechazada';
+    
+    // Si es CONFIRMACIÓN, verificar conflicto de horario primero
+    if (eleccion) {
+      // 1. Verificar conflicto de horario usando la función PostgreSQL
+      const { data: conflictoData, error: conflictoError } = await supabase
+        .rpc('tiene_conflicto_horario', {
+          p_id_evento: idEvento,
+          p_id_invitado: idInvitado
+        });
+
+      if (conflictoError) {
+        console.error('Error verificando conflicto de horario:', conflictoError);
+        return { 
+          success: false, 
+          error: 'Error al verificar disponibilidad de horario' 
+        };
+      }
+
+      // 2. Si hay conflicto, no permitir confirmar
+      if (conflictoData === true) {
+        // Opcional: Obtener detalles del conflicto para mejor mensaje
+        const { data: detallesConflicto } = await supabase
+          .rpc('verificar_conflicto_horario_detalle', {
+            p_id_evento: idEvento,
+            p_id_invitado: idInvitado
+          });
+        
+        const conflicto = detallesConflicto?.[0];
+        
+        return { 
+          success: false, 
+          error: conflicto?.mensaje || 'Ya tienes un evento confirmado en ese horario',
+          conflicto: conflicto ? {
+            evento_id: conflicto.evento_conflicto_id,
+            titulo: conflicto.evento_conflicto_titulo,
+            inicio: conflicto.evento_conflicto_inicio,
+            fin: conflicto.evento_conflicto_fin
+          } : undefined
+        };
+      }
+    }
+    
+    // 3. Actualizar el estado de participación
+    const { data, error } = await supabase
+      .from('participacion_evento')
+      .update({
+        estado: nuevoEstado,
+        updated_at: new Date().toISOString(),
+        motivo_rechazo: !eleccion ? 'Usuario rechazó la invitación' : null
+      })
+      .eq('evento_id', idEvento)
+      .eq('perfil_id', idInvitado)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error actualizando participación:', error);
+      return { 
+        success: false, 
+        error: error.message || `Error al ${eleccion ? 'confirmar' : 'rechazar'} la participación` 
+      };
+    }
+    
+    
+    // actualizar estado de solicitud si existe pendiente 
+    const { data :solicitud, error:errorSolicitud } = await supabase
+      .from('solicitud')
+      .update({
+        estado: nuevoEstadoSolicitud,
+        actualizado_en: new Date().toISOString(),
+        motivo_rechazo: !eleccion ? 'Usuario rechazó la invitación' : null
+      })
+      .eq('id_evento_solicitud', idEvento)
+      .eq('id_invitado', idInvitado)
+      .select()
+      .single();
+
+    if (errorSolicitud) {
+      console.error('Error actualizando participación:', errorSolicitud);
+      return { 
+        success: false, 
+        error: errorSolicitud.message || `Error al ${eleccion ? 'confirmar' : 'rechazar'} la participación` 
+      };
+    }
+
+
+    return { 
+      success: true, 
+      message: `Participación ${eleccion ? 'confirmada' : 'rechazada'} exitosamente`,
+      conflicto: undefined
+    };
+    
+  } catch (err: any) {
+    console.error('[aceptarRechazarParticipacionEvento] Error crítico:', err);
+    return { 
+      success: false, 
+      error: err.message || 'Error inesperado al procesar la participación' 
+    };
+  }
+}
+export async function getEventoByIdV2(idEvento: string, perfilID: string): Promise<EventoCalendario | null> {
   const supabase = getSupabaseAdmin(); // o el cliente que uses
 
   const { data, error } = await supabase
-    .rpc('get_evento_calendario_por_perfil', {
+    .rpc('get_evento_calendario_por_id', {
       p_id_evento: idEvento,
-      // p_id_perfil: currentUserProfileId,  ← opcional si quieres usarlo después
+       p_id_perfil: perfilID,
     })
     .single();
 
@@ -1430,6 +1555,172 @@ export async function updateEvento(data: EventoActualizar) {
     revalidatePath('/dashboard/agenda');
 
     return { success: true, message: 'Evento actualizado correctamente' };
+  } catch (err: any) {
+    console.error('[updateEvento] Error crítico:', err);
+    return { success: false, error: err.message || 'Error inesperado al actualizar' };
+  }
+}
+
+export async function updateEventov2(data: EventoActualizar) {
+  const supabase = getSupabaseAdmin();
+
+  try {
+    // 1. Obtener datos actuales del evento
+    const { data: eventoActual, error: fetchError } = await supabase
+      .from('evento')
+      .select('id, id_creador, creador_tipo_perfil, fecha_hora_ini, fecha_hora_fin')
+      .eq('id', data.id)
+      .single();
+
+    if (fetchError || !eventoActual) {
+      return { success: false, error: 'Evento no encontrado o sin permisos' };
+    }
+
+    const idCreador = eventoActual.id_creador;
+    const tipoCreador = eventoActual.creador_tipo_perfil;
+
+    // 2. Obtener participantes actuales
+    const { data: participacionesActuales, error: partsError } = await supabase
+      .from('participacion_evento')
+      .select('perfil_id, estado')
+      .eq('evento_id', data.id);
+
+    if (partsError) {
+      console.error('Error al obtener participantes actuales:', partsError);
+      return { success: false, error: 'Error al leer participantes actuales' };
+    }
+
+    // 3. Convertir fechas
+    const fechaInicio = typeof data.fecha_hora_ini === 'string' 
+      ? new Date(data.fecha_hora_ini) 
+      : data.fecha_hora_ini;
+    
+    const fechaFin = data.fecha_hora_fin 
+      ? (typeof data.fecha_hora_fin === 'string' 
+          ? new Date(data.fecha_hora_fin) 
+          : data.fecha_hora_fin)
+      : null;
+
+    // Validación de fechas
+    if (fechaFin && fechaInicio >= fechaFin) {
+      return { success: false, error: 'La fecha/hora de inicio debe ser anterior a la de fin' };
+    }
+
+    // 4. Verificar conflictos de fechas (solo si cambiaron)
+    const fechaIniActual = new Date(eventoActual.fecha_hora_ini);
+    const fechaFinActual = eventoActual.fecha_hora_fin 
+      ? new Date(eventoActual.fecha_hora_fin) 
+      : null;
+
+    const fechasCambiaron = 
+      fechaInicio.getTime() !== fechaIniActual.getTime() ||
+      (fechaFin?.getTime() ?? null) !== (fechaFinActual?.getTime() ?? null);
+
+   if (fechasCambiaron) {
+  const { data: conflictos, error: conflictoError } = await supabase
+    .from('evento')
+    .select('id, titulo')
+    .eq('id_creador', idCreador)
+    .neq('id', data.id)
+    .lt('fecha_hora_ini', fechaFin?.toISOString() || fechaInicio.toISOString())
+    .gt('fecha_hora_fin', fechaInicio.toISOString());
+
+  if (conflictoError) {
+    console.error('Error verificando conflictos:', conflictoError);
+    return { success: false, error: 'Error al verificar disponibilidad de fechas' };
+  }
+
+  if (conflictos?.length > 0) {
+    return { 
+      success: false, 
+      error: `Conflicto de fechas con el evento "${conflictos[0].titulo}"` 
+    };
+  }
+}
+
+    // 5. Actualizar evento principal
+    const { error: updateError } = await supabase
+      .from('evento')
+      .update({
+        titulo: data.titulo.trim(),
+        descripcion: data.descripcion?.trim() ?? null,
+        fecha_hora_ini: fechaInicio.toISOString(),
+        fecha_hora_fin: fechaFin?.toISOString() ?? null,
+        id_categoria: data.id_categoria ?? null,
+        flyer_url: data.flyer_url?.trim() ?? null,
+        video_url: data.video_url?.trim() ?? null,
+        tickets_evento: data.tickets_evento?.trim() ?? null,
+        es_publico: data.es_publico,
+        id_lugar: data.id_lugar ?? null,
+        nombre_lugar: data.nombre_lugar?.trim() ?? null,
+        direccion_lugar: data.direccion_lugar?.trim() ?? null,
+        lat_lugar: data.lat_lugar ?? null,
+        lon_lugar: data.lon_lugar ?? null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', data.id);
+
+    if (updateError) {
+      console.error('Error actualizando evento:', updateError);
+      return { success: false, error: updateError.message };
+    }
+
+    // 6. MANEJO DE PARTICIPANTES - IGUAL QUE crearEvento
+
+    // IDs de participantes actuales (excluyendo creador)
+    const participantesActualesIds = new Set(
+      participacionesActuales
+        ?.filter(p => p.perfil_id !== idCreador)
+        .map(p => p.perfil_id) || []
+    );
+
+    // IDs de participantes nuevos (excluyendo creador)
+    const participantesNuevosIds = new Set(
+      data.participantes
+        ?.filter(p => p.id_perfil !== idCreador)
+        .map(p => p.id_perfil) || []
+    );
+
+    // A. Eliminar participantes que ya no están
+    const eliminarIds = [...participantesActualesIds].filter(id => !participantesNuevosIds.has(id));
+    
+    for (const idPerfil of eliminarIds) {
+      await supabase
+        .from('participacion_evento')
+        .delete()
+        .eq('evento_id', data.id)
+        .eq('perfil_id', idPerfil);
+    }
+
+    // B. Agregar nuevos participantes (IGUAL QUE crearEvento)
+    const agregarIds = [...participantesNuevosIds].filter(id => !participantesActualesIds.has(id));
+    
+    for (const idPerfil of agregarIds) {
+      const participante = data.participantes?.find(p => p.id_perfil === idPerfil);
+      if (!participante) continue;
+      
+      // IGUAL QUE crearEvento
+      await crearParticipacionEvento(data.id, idPerfil, 'pendiente');
+      await crearSolicitudEvento(data.id, idCreador, idPerfil, 'invitacion');
+      
+      // Si es banda, invitar integrantes
+      if (participante.tipo === 'banda') {
+        await invitarIntegrantesBanda(data.id, idCreador, idPerfil);
+      }
+    }
+
+    // C. Si el creador es banda, invitar integrantes
+    if (tipoCreador === 'banda') {
+      await invitarIntegrantesBanda(data.id, idCreador, idCreador);
+    }
+
+    revalidatePath('/dashboard/agenda');
+
+    return { 
+      success: true, 
+      message: 'Evento actualizado correctamente'
+    };
+
   } catch (err: any) {
     console.error('[updateEvento] Error crítico:', err);
     return { success: false, error: err.message || 'Error inesperado al actualizar' };

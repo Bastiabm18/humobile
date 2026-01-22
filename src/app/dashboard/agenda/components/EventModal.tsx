@@ -10,13 +10,16 @@ import {
   FaTrashAlt, FaEdit
 } from 'react-icons/fa';
 import { HiX } from 'react-icons/hi';
-import { MdDescription } from 'react-icons/md';
+import { MdDescription, MdOutlineThumbDownOffAlt, MdOutlineThumbUp } from 'react-icons/md';
 import EditarEventoModal from './EditarEventoModal';
-import { getEventoById } from '../actions/actions';
+import { aceptarRechazarParticipacionEvento, getEventoById, getEventoByIdV2 } from '../actions/actions';
 import NeonSign from '@/app/components/NeonSign';
-import { FaSpinner } from 'react-icons/fa6';
+import { FaSpinner, FaX } from 'react-icons/fa6';
 import EliminarEventoModal from './EliminarEventoModal';
 import { EventoCalendario } from '@/types/profile';
+import { PiArrowCircleUpLeftThin } from 'react-icons/pi';
+import { boolean } from 'zod';
+import ConfirmarRechazarEventoModal from './ConfirmarRechazarEventoModal';
 
 interface EventModalProps {
   event: { id: string } | null; // Solo necesitamos el id para cargar el completo
@@ -35,6 +38,12 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
   const [initialLoading, setInitialLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [esCreador, setEsCreador] = useState(false);
+  const [esPendiente, setEsPendiente]= useState(false);
+  const [showConfirmarRechazarEvento, setShowConfirmarRechazarEvento] = useState(false);
+  const [eleccion, setEleccion] = useState(Boolean);
+
+
+
 
   useEffect(() => {
     if (isOpen && event?.id) {
@@ -54,11 +63,13 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
 
     setLoading(true);
     try {
-      const data = await getEventoById(event.id);
+      const data = await getEventoByIdV2(event.id,profile.id);
       if (!data) throw new Error('No se encontró el evento');
       
       setEventData(data);
+      console.log(data)
       setEsCreador(data.id_creador === profile.id);
+      setEsPendiente(data.estado_participacion === 'pendiente'); // si estado participacion es pendiente se guarda como true 
     } catch (err: any) {
       console.error('Error cargando evento completo:', err);
       setError(err.message || 'Error al cargar detalles del evento');
@@ -68,6 +79,27 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
     }
   };
 
+
+  const handleConfirmarRechazarParticipacion = async (eventoId: string, participanteId: string) => {
+  try {
+    const resultado = await aceptarRechazarParticipacionEvento(
+      eventoId, 
+      participanteId, 
+      eleccion ? true : false
+    );
+    
+    if (resultado.success) {
+      // Recargar datos del evento
+      fetchEventData();
+      if (onEventUpdated) onEventUpdated();
+    } else {
+      throw new Error(resultado.error);
+    }
+  } catch (error: any) {
+    console.error('Error al procesar participación:', error);
+    throw error;
+  }
+};
 const formatDate = (date: Date | string) => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   
@@ -90,8 +122,8 @@ const formatTime = (date: Date | string) => {
   const minutes = dateObj.getUTCMinutes().toString().padStart(2, '0');
   return `${hours}:${minutes}`;
 };
-  const getStatusColor = (esBloqueo: boolean) => esBloqueo ? 'bg-red-500' : 'bg-green-500';
-  const getStatusText = (esBloqueo: boolean) => esBloqueo ? 'Bloqueado' : 'Activo';
+  const getStatusColor = (esBloqueo: boolean) => esBloqueo ? 'bg-red-500' : 'bg-sky-500';
+  const getStatusText = (esBloqueo: boolean) => esBloqueo ? 'Bloqueo' : 'Evento';
 
   if (!isOpen) return null;
 
@@ -523,6 +555,43 @@ const formatTime = (date: Date | string) => {
                 </>
               )}
 
+              {esPendiente?
+              
+                   (
+                   <>
+                   <button
+                   onClick ={()=>{  
+                    setShowConfirmarRechazarEvento(true)
+                    setEleccion(true)  
+
+                   }}
+                className="px-6 py-3 bg-green-700/80 hover:bg-green-600/80 text-white rounded-xl transition-colors flex items-center gap-2">
+                  <MdOutlineThumbUp/>  Confirmar
+                   </button>
+                   <button
+                   onClick ={()=>{  
+                    setShowConfirmarRechazarEvento(true)
+                    setEleccion(false)  
+
+                   }}
+                className="px-6 py-3 bg-red-700/80 hover:bg-red-600/80 text-white rounded-xl transition-colors flex items-center gap-2">
+                     <MdOutlineThumbDownOffAlt/>   Rechazar
+                     </button>
+                   </>
+
+
+                     ):( 
+
+                     <>
+                     <button
+                className="px-6 py-3 bg-red-700 hover:bg-red-600 text-white rounded-xl transition-colors flex items-center gap-2">
+                        Abandonar
+                     </button>
+                     </> 
+
+                     ) 
+               }
+
               <button
                 onClick={onClose}
                 className="px-6 py-3 bg-neutral-700 hover:bg-neutral-600 text-white rounded-xl transition-colors flex items-center gap-2"
@@ -566,6 +635,19 @@ const formatTime = (date: Date | string) => {
             if (onEventUpdated) onEventUpdated();
           }}
         />
+      )}
+
+      {showConfirmarRechazarEvento && (
+            <ConfirmarRechazarEventoModal
+            eventoId={eventData.id}
+            idParticipante={profile.id}
+            eleccion={eleccion}
+               isOpen={showConfirmarRechazarEvento}
+           onClose={() => setShowConfirmarRechazarEvento(false)}
+           onAceptar={handleConfirmarRechazarParticipacion}
+
+          />
+
       )}
     </>
   );

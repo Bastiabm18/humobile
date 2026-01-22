@@ -132,6 +132,29 @@ async function confirmarParticipacionEvento({
   id_evento_solicitud: string,
   id_invitado: string
 }) {
+
+
+   const { data: conflictoData, error: conflictoError } = await supabase
+      .rpc('tiene_conflicto_horario', {
+        p_id_evento: id_evento_solicitud,
+        p_id_invitado: id_invitado
+      });
+
+    if (conflictoError) {
+      console.error('Error verificando conflicto de horario:', conflictoError);
+      return { 
+        success: false, 
+        error: 'Error al verificar disponibilidad de horario' 
+      };
+    }
+
+    // 2. Si hay conflicto, no permitir confirmar
+    if (conflictoData === true) {
+      return { 
+        success: false, 
+        error: 'No puedes confirmar este evento porque ya tienes un evento confirmado en ese horario'
+      };
+    }
   // Buscar el registro en participacion_evento usando evento_id y perfil_id
   const { data, error } = await supabase
     .from('participacion_evento')

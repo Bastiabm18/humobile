@@ -263,8 +263,8 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate 
       return;
     }
     
-    const startDateTime = new Date(form.fecha_hora_ini);
-    const endDateTime = form.fecha_hora_fin ? new Date(form.fecha_hora_fin) : null;
+   const startDateTime = new Date(form.fecha_hora_ini + 'Z');  // ← Agregar 'Z' para UTC
+const endDateTime = form.fecha_hora_fin ? new Date(form.fecha_hora_fin + 'Z') : null;
     
     if (endDateTime && startDateTime >= endDateTime) {
       alert('La fecha/hora de inicio debe ser anterior a la de fin');
