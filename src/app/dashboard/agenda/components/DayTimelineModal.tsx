@@ -71,29 +71,61 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
     return <FaCheckCircle className="text-sm" />;
   };
 
-  const calculateEventPosition = (event: EventoCalendario) => {
-    const eventStart = new Date(event.inicio);
-    const eventEnd = event.fin ? new Date(event.fin) : new Date(event.inicio);
-    
-    const dayStart = new Date(date);
-    dayStart.setHours(0, 0, 0, 0);
-    const dayEnd = new Date(date);
-    dayEnd.setHours(24, 0, 0, 0);
+const calculateEventPosition = (event: EventoCalendario) => {
+  // Usar UTC para todas las fechas
+  const eventStart = new Date(event.inicio);
+  const eventEnd = event.fin ? new Date(event.fin) : new Date(event.inicio);
+  
+  // Crear fecha base en UTC (importante!)
+  const dayStart = new Date(Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+    0, 0, 0, 0
+  ));
+  
+  const dayEnd = new Date(Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+    24, 0, 0, 0
+  ));
 
-    const start = Math.max(eventStart.getTime(), dayStart.getTime());
-    const end = Math.min(eventEnd.getTime(), dayEnd.getTime());
-    
-    const totalDayDuration = 24 * 60 * 60 * 1000;
-    const startOffset = start - dayStart.getTime();
-    const duration = end - start;
-    
-    const top = (startOffset / totalDayDuration) * 120;
-    const height = (duration / totalDayDuration) * 120;
-    
-    return { top: `${top}%`, height: `${height}%` };
-  };
+  // Usar getTime() para comparar (ya está en milisegundos UTC)
+  const eventStartTime = eventStart.getTime();
+  const eventEndTime = eventEnd.getTime();
+  const dayStartTime = dayStart.getTime();
+  const dayEndTime = dayEnd.getTime();
 
-  const formatTime = (date: Date) => format(date, 'HH:mm', { locale: es });
+  const start = Math.max(eventStartTime, dayStartTime);
+  const end = Math.min(eventEndTime, dayEndTime);
+  
+  const totalDayDuration = 24 * 60 * 60 * 1000;
+  const startOffset = start - dayStartTime;
+  const duration = end - start;
+  
+  const top = (startOffset / totalDayDuration) * 120;
+  const height = (duration / totalDayDuration) * 120;
+  
+  return { top: `${top}%`, height: `${height}%` };
+};
+
+const formatTime = (dateString: string | Date) => {
+  let date: Date;
+  
+  if (typeof dateString === 'string') {
+    // Parsear explícitamente como UTC
+    date = new Date(dateString);
+  } else {
+    date = dateString;
+  }
+  
+  // Usar getUTC... para obtener hora UTC directamente
+  const hours = date.getUTCHours().toString().padStart(2, '0');
+  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+  
+  return `${hours}:${minutes}`;
+};
   const formatFullDate = (date: Date) => format(date, "EEEE d 'de' MMMM 'de' yyyy", { locale: es });
 
   const MobileView = () => (

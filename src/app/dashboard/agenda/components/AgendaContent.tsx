@@ -45,7 +45,7 @@ export default function AgendaContent({
     
   };
 
-  console.log(selectedProfile);
+  //console.log(selectedProfile);
 
   if (profiles.length === 0) {
     return (

@@ -27,7 +27,7 @@ export default function EventBadge({
   onMultipleEventsClick,
   onBlockClick,
 }: EventBadgeProps) {
-  console.log(events);
+ // console.log(events);
 
   if (events.length === 0) return null;
 
@@ -36,12 +36,12 @@ export default function EventBadge({
   const blockedEvents = events.filter(event => event.es_bloqueo);
 
   // Helper para formatear hora (sin cambios)
-  const formatTime = (date: Date) => {
-    return new Date(date).toLocaleTimeString('es-ES', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
+const formatTime = (dateString: string | Date) => {
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  const hours = date.getUTCHours().toString().padStart(2, '0');
+  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
 
   // Vista MES
   if (view === 'month') {

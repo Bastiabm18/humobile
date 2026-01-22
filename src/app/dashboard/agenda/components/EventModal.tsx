@@ -68,22 +68,28 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
     }
   };
 
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+const formatDate = (date: Date | string) => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  // Usar UTC para el día también
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC'  // <-- Esto asegura que use la fecha UTC
   };
+  
+  return dateObj.toLocaleDateString('es-ES', options);
+};
 
-  const formatTime = (date: Date | string) => {
-    return new Date(date).toLocaleTimeString('es-ES', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-
+const formatTime = (date: Date | string) => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  // Usar UTC para mostrar la hora correcta
+  const hours = dateObj.getUTCHours().toString().padStart(2, '0');
+  const minutes = dateObj.getUTCMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
   const getStatusColor = (esBloqueo: boolean) => esBloqueo ? 'bg-red-500' : 'bg-green-500';
   const getStatusText = (esBloqueo: boolean) => esBloqueo ? 'Bloqueado' : 'Activo';
 

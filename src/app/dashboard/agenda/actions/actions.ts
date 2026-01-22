@@ -448,18 +448,9 @@ export async function getEventsByDiaYPerfilId(
       return [];
     }
 
-    // Ya viene en formato EventoCalendario, solo convertimos fechas si es necesario
-    const eventos: EventoCalendario[] = eventosDB.map((ev: any) => ({
-      ...ev,
-      inicio: new Date(ev.inicio),
-      fin: ev.fin ? new Date(ev.fin) : null,
-      created_at: new Date(ev.created_at),
-      updated_at: new Date(ev.updated_at),
-      // Participantes ya vienen como jsonb/array
-      participantes: ev.participantes || []
-    }));
+    
 
-    return eventos;
+    return eventosDB;
   } catch (error: any) {
     console.error('Error en getEventsByDiaYPerfilId:', error);
     throw error;
