@@ -500,7 +500,7 @@ export default function EventosTable({ profile, onCreateEvent, onBlockDate }: Ev
       <EventModal
         event={selectedEvent}
         isOpen={isModalOpen}
-        onClose={() => {
+        onRequestClose={() => {
           setIsModalOpen(false);
           setSelectedEvent(null);
         }}
