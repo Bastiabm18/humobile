@@ -215,7 +215,7 @@ export default function SolicitudesTabla({
                     <td className="p-6">
                       <p className="font-bold text-lg">{s.nombre_solicitud}</p>
                       <p className="text-gray-400 text-sm">
-                        {s.descripcion_solicitud?.slice(0, 80) || 'Sin descripción'}...
+                        {s.evento_titulo?.slice(0, 80) || 'Sin descripción'}...
                       </p>
                       <div className="flex gap-2 mt-2">
                         <span className="text-xs px-2 py-1 bg-blue-700/30 rounded text-blue-300">

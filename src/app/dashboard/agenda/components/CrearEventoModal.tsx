@@ -409,7 +409,7 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate 
             </div>
 
             {/* Columna 2: Fechas, Lugar y Participantes */}
-            <div className="space-y-5 mt-5 md:mt-0 md:overflow-y-auto md:pl-2">
+            <div className="space-y-5 mt-5 md:mt-0 md:overflow-y-auto custom-scrollbar md:pl-2">
               {/* Fechas */}
               <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
                 <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">

@@ -93,6 +93,13 @@ export async function aceptarSolicitud({
           id_invitado
         });
 
+        case 'unirse_banda':
+          return await confirmarSerIntegranteBanda({
+            id_creador,
+            id_invitado
+          });
+
+
         case 'ser_representado':
           return await confirmarSerRepresentado({
             id_creador,
@@ -174,6 +181,44 @@ async function confirmarSerRepresentado({
     .eq('id_representante',id_creador)
     .eq('id_representado',id_invitado)
     .eq('estado_representacion', 'pendiente')
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error confirmando al representante:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Error al confirmar al representante' 
+    };
+  }
+
+  return { 
+    success: true, 
+    data,
+    message: 'Representante confirmado exitosamente'
+  };
+}
+async function confirmarSerIntegranteBanda({ 
+ 
+ 
+  id_invitado,
+  id_creador
+}: {
+
+  id_invitado: string,
+  id_creador:string
+}) {
+  const supabase = getSupabaseAdmin();
+  // Buscar el registro en participacion_evento usando evento_id y perfil_id
+  const { data, error } = await supabase
+    .from('integrante')
+    .update({
+      estado: 'activo',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id_banda',id_creador)
+    .eq('id_artista',id_invitado)
+    .eq('estado', 'pendiente')
     .select()
     .single();
 
