@@ -369,7 +369,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
 
   return (
     <>
-      <div className="h-[750px] md:h-[750px] lg:h-[900px] mt-10 bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70 relative">
+      <div className="h-[750px] md:h-[1050px] lg:h-[1050px] mt-10 bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70 relative">
         
         {/* FloatingDateSelector completo */}
         <button
