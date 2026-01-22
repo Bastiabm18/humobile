@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { HiChevronLeft, HiChevronRight } from 'react-icons/hi';
 import { useRouter } from 'next/navigation';
+import HSign from './HSign';
 
 interface CarruselItem {
   id: string;
@@ -167,7 +168,7 @@ const CarruselBase: React.FC<CarruselProps> = ({ items, title, icon }) => {
               className="
                 flex-shrink-0
                 relative
-                w-[280px] h-[560px]
+                w-[280px] h-[360px]
                 rounded-2xl
                 overflow-hidden
                 group
@@ -208,7 +209,7 @@ const CarruselBase: React.FC<CarruselProps> = ({ items, title, icon }) => {
                   text-neutral-600
                   text-8xl
                 ">
-                  {item.fallbackIcon}
+                 <HSign/>
                 </div>
               )}
 
