@@ -309,7 +309,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
       
         <div className="text-lg font-semibold flex items-center justify-center flex-col gap-3 mb-6 text-white order-1 md:order-2">
           {toolbar.label}
-          <div className="flex items-center gap-2 order-3">
+          <div className="grid grid-cols-2 md:flex items-center gap-1 order-3">
             <button
               onClick={() => setEstadoEvento('')}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === '' ? 'bg-green-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
@@ -369,7 +369,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
 
   return (
     <>
-      <div className="h-[600px] md:h-[750px] lg:h-[900px] mt-10 bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70 relative">
+      <div className="h-[700px] md:h-[750px] lg:h-[900px] mt-10 bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70 relative">
         
         {/* FloatingDateSelector completo */}
         <button

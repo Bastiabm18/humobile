@@ -136,6 +136,71 @@ body {
   font-size: 0.9rem;
 }
 
+/* PARA ESCRITORIO (mayor a 768px) */
+@media (min-width: 768px) {
+  .rbc-month-view {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 820px !important; /* Altura fija para escritorio */
+  }
+  
+  .rbc-month-row {
+    flex: 1 !important;
+    min-height: 135px !important;
+    max-height: 135px !important;
+  }
+  
+  .rbc-month-row.rbc-row-empty {
+    visibility: hidden !important;
+    flex: 1 !important;
+  }
+  
+  .rbc-date-cell {
+    height: 24px; /* Más pequeño para dar más espacio a eventos */
+  }
+  
+  .rbc-row-content {
+    height: calc(100% - 24px) !important;
+    margin-top: 24px;
+  }
+}
+
+/* PARA MÓVIL (menor a 768px) - mantener como estaba */
+@media (max-width: 767px) {
+  .rbc-month-view {
+    display: block !important; /* Volver al comportamiento original */
+    height: auto !important; /* Altura automática */
+    min-height: auto !important;
+  }
+  
+  .rbc-month-row {
+    min-height: 75px !important;
+    max-height: 75px !important;
+    height: auto !important;
+    flex: none !important;
+  }
+  
+  .rbc-month-row.rbc-row-empty {
+    visibility: visible !important; /* Mostrar normalmente en móvil */
+    flex: none !important;
+  }
+  
+  .rbc-date-cell {
+    height: auto; /* Altura automática */
+    position: static; /* Posición normal */
+  }
+  
+  .rbc-row-content {
+    height: auto !important;
+    margin-top: 0;
+  }
+  
+  /* En móvil, eventos más pequeños */
+  .event-badge-container {
+    max-height: 50px !important;
+  }
+}
+
 .rbc-event {
   border-radius: 8px !important;
   border: none !important;
