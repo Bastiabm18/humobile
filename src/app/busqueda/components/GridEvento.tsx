@@ -56,7 +56,7 @@ export default function GridEvento({ evento, onClick }: GridEventoProps) {
       className="
         
         relative
-        w-[45vw] md:w-[220px] h-[280px] md:h-[300px]
+        w-[45vw] md:w-[220px] h-[200px] md:h-[240px]
         rounded-2xl
         overflow-hidden
         group
