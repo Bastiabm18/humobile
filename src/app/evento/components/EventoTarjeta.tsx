@@ -137,7 +137,7 @@ export default function EventoTarjeta({ evento }: EventoTarjetaProps) {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="max-w-6xl mx-auto"
+        className="max-w-[95vw] md:max-w-[90vw] xl:max-w-[80vw] mx-auto"
       >
         {/* Sección del flyer vertical */}
         {evento.flyer_url && (
@@ -530,8 +530,11 @@ export default function EventoTarjeta({ evento }: EventoTarjetaProps) {
             </div>
           </motion.div>
         )}
-        <EventosCarrusel/>
       </motion.div>
+        <div className='w-[90vw] h-full flex items-center justify-center  overflow-x-hidden'>
+        <EventosCarrusel/>
+
+        </div>
       
       <ModalMapaLugar
         isOpen={showMapModal}
