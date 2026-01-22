@@ -555,12 +555,12 @@ const formatTime = (date: Date | string) => {
           <div className="sticky bottom-0 p-5 border-t border-neutral-800 bg-neutral-950/90 backdrop-blur-sm flex justify-between items-center">
 
 
-            <div className="flex gap-4">
+            <div className="flex flex-row justify-between min-w-[85vw] max-w-[85vw] gap-2">
               {esCreador? (
                 <>
                   <button
                     onClick={() => setShowEditModal(true)}
-                    className="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-sky-900/30"
+                    className="px-3 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-sky-900/30"
                   >
                     <FaEdit />
                     Editar Evento
@@ -568,7 +568,7 @@ const formatTime = (date: Date | string) => {
 
                   <button
                     onClick={() => setShowDeleteModal(true)}
-                    className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-red-900/30"
+                    className="px-3 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-red-900/30"
                   >
                     <FaTrashAlt />
                     Eliminar Evento
@@ -586,7 +586,7 @@ const formatTime = (date: Date | string) => {
                     setEleccion(true)  
 
                    }}
-                className="px-6 py-3 bg-green-700/80 hover:bg-green-600/80 text-white rounded-xl transition-colors flex items-center gap-2">
+                className="px-3 py-3 bg-green-700/80 hover:bg-green-600/80 text-white rounded-xl transition-colors flex items-center gap-2">
                   <MdOutlineThumbUp/>  Confirmar
                    </button>
                    <button
@@ -595,7 +595,7 @@ const formatTime = (date: Date | string) => {
                     setEleccion(false)  
 
                    }}
-                className="px-6 py-3 bg-red-700/80 hover:bg-red-600/80 text-white rounded-xl transition-colors flex items-center gap-2">
+                className="px-3 py-3 bg-red-700/80 hover:bg-red-600/80 text-white rounded-xl transition-colors flex items-center gap-2">
                      <MdOutlineThumbDownOffAlt/>   Rechazar
                      </button>
                    </>
@@ -609,7 +609,7 @@ const formatTime = (date: Date | string) => {
                                 setShowEliminarEvento(true)
                               
                                  }}
-                            className="px-6 py-3 bg-red-700 hover:bg-red-600 text-white rounded-xl transition-colors flex items-center gap-2">
+                            className="px-3 py-3 bg-red-700 hover:bg-red-600 text-white rounded-xl transition-colors flex items-center gap-2">
                                     Eliminar Invitacion
                                  </button>
                     </>

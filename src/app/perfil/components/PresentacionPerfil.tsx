@@ -96,8 +96,8 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
       transition={{ duration: 0.5 }}
       className="
         relative
-        w-[95vw] md:w-[95vw]
-        h-[30vh]
+        w-[95vw]
+        h-[35vh]
         rounded-2xl
         overflow-hidden
         group
@@ -167,34 +167,32 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
             </h1>
             
             {/* Información adicional */}
-            <div className="flex items-center gap-4">
+            <div className="grid grid-cols-1 md:flex items-center gap-2 md:gap-4">
             {perfil.direccion!='' && (  
-              <div className="flex items-center gap-2 px-4 py-2 bg-black/50 rounded-full backdrop-blur-sm border border-neutral-600/50">
+              <div className="flex w-[60vw] md:w-auto items-center gap-2 px-4 py-2 bg-black/50 rounded-full backdrop-blur-sm border border-neutral-600/50">
               <FaMapMarkerAlt className="w-4 h-4 text-neutral-400" />
               <span className="text-sm text-neutral-300">{perfil.direccion}</span>
             </div>)}
 
               {/* Línea decorativa */}
-              <div
-              
-              className="h-6 w-[1px]  bg-gradient-to-b from-transparent via-neutral-500 to-transparent" />
+              <div className="h-6 w-[1px]  bg-gradient-to-b from-transparent via-neutral-500 to-transparent" />
 
 
             {perfil.lat!=null && perfil.lon!=null && (
-                <div
-            onClick={()=>
-              {
-              setVerModalMapa(true);
-               }
-
-              }
-            className="flex items-center cursor-pointer text-purple-300 gap-2 px-4 py-2 bg-purple-700/50 rounded-full backdrop-blur-sm border border-purple-600/50">
-              <FaEarthAmericas className="w-4 h-4 text-purple-400" />
-                Aqui estamos!
-              {/* Línea decorativa */}
-            </div>
+             <div
+               onClick={()=>
+                 {
+                 setVerModalMapa(true);
+                  }
+                
+                 }
+               className="flex flex-row w-[40vw] md:w-auto items-center cursor-pointer text-purple-300 gap-2 px-4 py-2 bg-purple-700/50 rounded-full backdrop-blur-sm border border-purple-600/50">
+                 <FaEarthAmericas className="w-4 h-4 text-purple-400" />
+                   Aqui estamos!
+                 {/* Línea decorativa */}
+               </div>
           
-        )} 
+              )} 
         <div className="h-6 w-[1px] bg-gradient-to-b from-transparent via-neutral-500 to-transparent" />
 
 
