@@ -7,7 +7,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { format, startOfWeek, getDay, isSameDay, isSameMonth, isWithinInterval } from 'date-fns';
 import { HiChevronDown, HiCalendar, HiPlus, HiLockClosed, HiCog } from 'react-icons/hi';
 import { es } from 'date-fns/locale';
-import { FiCalendar, FiCheckCircle, FiClock } from 'react-icons/fi';
+import { FiCalendar, FiCheckCircle, FiClock, FiXCircle } from 'react-icons/fi';
 
 import BlockDateModal from './BlockDateModal';
 import CrearEventoModal from './CrearEventoModal';
@@ -312,7 +312,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
           <div className="flex items-center gap-2 order-3">
             <button
               onClick={() => setEstadoEvento('')}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === '' ? 'bg-blue-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === '' ? 'bg-green-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
             >
               <FiCalendar className="h-4 w-4" />
               Todos
@@ -328,10 +328,17 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
                 
             <button
               onClick={() => setEstadoEvento('confirmado')}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === 'confirmado' ? 'bg-green-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === 'confirmado' ? 'bg-blue-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
             >
               <FiCheckCircle className="h-4 w-4" />
               Confirmados
+            </button>
+            <button
+              onClick={() => setEstadoEvento('rechazado')}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === 'rechazado' ? 'bg-red-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
+            >
+              <FiXCircle className="h-4 w-4" />
+              Rechazados
             </button>
           </div>
         </div>
@@ -545,7 +552,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
         <EventModal
           event={selectedEvent}
           isOpen={eventModalOpen}
-          onClose={() => {
+          onRequestClose={() => {
             setEventModalOpen(false);
             setSelectedEvent(null);
           }}

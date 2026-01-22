@@ -43,6 +43,20 @@ const formatTime = (dateString: string | Date) => {
   return `${hours}:${minutes}`;
 };
 
+ const getEventoClassName1 = (estado?: string) => {
+ 
+  switch (estado) {
+    case 'pendiente':
+      return 'bg-orange-600/50 hover:bg-orange-700 border-l-4 border-orange-500';
+    case 'rechazado':
+      return 'bg-red-600/50 hover:bg-red-700 border-l-4 border-red-500';
+    case 'confirmado':
+      return 'bg-sky-700/50 hover:bg-sky-800 border-l-4 border-sky-500';
+      default:
+      return 'bg-gray-800/50 hover:bg-gray-700 border-l-4 border-gray-500';
+  }
+};
+
   // Vista MES
   if (view === 'month') {
     const hasBlocked = blockedEvents.length > 0;
@@ -57,11 +71,9 @@ const formatTime = (dateString: string | Date) => {
             {hasNormal && !hasBlocked && (
               <div className="mb-0.5 flex w-full h-full">
                 <div
-              className={`text-xs md:text-sm truncate px-1.5 py-1 rounded-md ${
-                normalEvents[0].estado_participacion === 'pendiente' 
-                  ? 'bg-orange-600/50 hover:bg-orange-700 border-l-4 border-orange-500' 
-                  : 'bg-sky-700/50 hover:bg-sky-800 border-l-4 border-sky-500'
-              } text-white font-medium w-full h-10 md:h-20 cursor-pointer transition-colors flex items-center group`}
+                   className={`text-xs md:text-sm truncate px-1.5 py-1 rounded-md ${
+                  getEventoClassName1(normalEvents[0].estado_participacion)
+                } text-white font-medium w-full h-10 md:h-20 cursor-pointer transition-colors flex items-center group`}
                   title={`${normalEvents[0].titulo} (${formatTime(normalEvents[0].inicio)} - ${formatTime(normalEvents[0].fin)})`}
                   onClick={(e) => {
                     e.stopPropagation();

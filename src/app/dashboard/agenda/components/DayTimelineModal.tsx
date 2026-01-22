@@ -348,7 +348,7 @@ const formatTime = (dateString: string | Date) => {
         <EventModal
           event={selectedEvent}
           isOpen={showEventModal}
-          onClose={() => {
+          onRequestClose={() => {
             setShowEventModal(false);
             setSelectedEvent(null);
           }}

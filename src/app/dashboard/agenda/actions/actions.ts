@@ -54,6 +54,33 @@ export async function blockDateRange({
   return { success: true, data };
 }
 
+export async function eliminarParticipacionEvento(
+  eventoId: string,
+  participanteId: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = getSupabaseAdmin();
+  
+  try {
+    // Eliminar directamente (supabase se encarga de que no falle si no existe)
+    const { error } = await supabase
+      .from('participacion_evento')
+      .delete()
+      .eq('evento_id', eventoId)
+      .eq('perfil_id', participanteId);
+
+    if (error) {
+      console.error('Error eliminando participación:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+    
+  } catch (err: any) {
+    console.error('Error eliminando participación:', err);
+    return { success: false, error: err.message };
+  }
+}
+
 export async function createDateBlock({
   creator_profile_id,
   creator_type,

@@ -22,7 +22,7 @@ export default function ConfirmarRechazarEventoModal({
 }: ConfirmarRechazarEventoModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-console.log(idParticipante)
+
   const handleConfirmar = async () => {
     try {
       setLoading(true);
