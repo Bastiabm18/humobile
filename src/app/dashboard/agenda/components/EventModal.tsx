@@ -610,7 +610,7 @@ const formatTime = (date: Date | string) => {
                               
                                  }}
                             className="px-3 py-3 bg-red-700 hover:bg-red-600 text-white rounded-xl transition-colors flex items-center gap-2">
-                                    Eliminar Invitacion
+                                    Abandonar evento 
                                  </button>
                     </>
                   )}

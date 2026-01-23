@@ -23,6 +23,7 @@ interface DayTimelineModalProps {
 export default function DayTimelineModal({ profile, date, isOpen, onClose, onEventUpdated }: DayTimelineModalProps) {
   const [selectedEvent, setSelectedEvent] = useState<EventoCalendario | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [showDesbloquearModal, setshowDesbloquearModal] = useState(false);
   const [events, setEvents] = useState<EventoCalendario[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -138,8 +139,13 @@ const formatTime = (dateString: string | Date) => {
               key={event.id || index}
               className="flex items-start gap-3 p-3 rounded-lg bg-neutral-800/50 hover:bg-neutral-800/70 cursor-pointer transition-colors border border-neutral-700"
               onClick={() => {
+                if(isBlocked){
+                  
+                  setshowDesbloquearModal(true);
+                }else{
+                  setShowEventModal(true);
+                }
                 setSelectedEvent(event);
-                setShowEventModal(true);
               }}
             >
               <div className={`p-2 rounded ${getEventColor(event)}`}>
@@ -229,9 +235,14 @@ const formatTime = (dateString: string | Date) => {
                             height: position.height,
                           }}
                           onClick={() => {
-                            setSelectedEvent(event);
-                            setShowEventModal(true);
-                          }}
+                                if(isBlocked){
+                  
+                                  setshowDesbloquearModal(true);
+                                }else{
+                                   setShowEventModal(true);
+                                 }
+                                 setSelectedEvent(event);
+                                }}
                         >
                           <div className={`absolute left-0 top-0 bottom-0 w-1 ${getEventColor(event)}`} />
                           <div className="absolute inset-0 pl-3 pr-2 py-2">
@@ -275,9 +286,14 @@ const formatTime = (dateString: string | Date) => {
                           key={event.id || index}
                           className="flex items-start gap-3 p-3 rounded-lg bg-neutral-900/50 hover:bg-neutral-800/70 cursor-pointer transition-colors"
                           onClick={() => {
-                            setSelectedEvent(event);
-                            setShowEventModal(true);
-                          }}
+                        if(isBlocked){
+                  
+                          setshowDesbloquearModal(true);
+                          }else{
+                             setShowEventModal(true);
+                           }
+                           setSelectedEvent(event);
+                                     }}
                         >
                           <div className={`p-2 rounded ${getEventColor(event)}`}>
                             {getEventIcon(event)}

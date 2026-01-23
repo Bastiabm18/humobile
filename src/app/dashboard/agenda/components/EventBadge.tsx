@@ -307,7 +307,7 @@ const formatTime = (dateString: string | Date) => {
         {totalEvents > 3 && (
           <div className="mb-0.5 cursor-pointer flex justify-center">
             <div 
-              className="text-[10px] md:text-xl px-2 py-0.5 w-full items-center justify-center flex rounded-md h-20x md:h-40.5 bg-yellow-600/50 hover:bg-yellow-700 text-yellow-50 font-bold border-l-4 border-yellow-500"
+              className="text-[10px] md:text-xl px-2 py-0.5 w-full items-center justify-center flex rounded-md h-21 md:h-40.5 bg-yellow-600/50 hover:bg-yellow-700 text-yellow-50 font-bold border-l-4 border-yellow-500"
               title={`${totalEvents} eventos en este día`}
               onClick={(e) => {
                 e.stopPropagation();
