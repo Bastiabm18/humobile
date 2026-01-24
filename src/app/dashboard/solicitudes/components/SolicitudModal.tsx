@@ -102,7 +102,7 @@ export default function SolicitudModal({
             </div>
 
             {solicitud.evento_titulo && (
-              <div className="bg-neutral-900/90 border border-neutral-700 rounded-xl p-6">
+              <div className="bg-neutral-900/90 cursor-pointer border border-neutral-700 rounded-xl p-6">
                 <p className="text-gray-400 text-sm mb-2">Evento asociado</p>
                 <p className="text-2xl font-bold text-white">{solicitud.evento_titulo}</p>
                 {solicitud.evento_fecha_inicio && (

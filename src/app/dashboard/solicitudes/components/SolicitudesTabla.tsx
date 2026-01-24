@@ -214,9 +214,7 @@ export default function SolicitudesTabla({
 
                     <td className="p-6">
                       <p className="font-bold text-lg">{s.nombre_solicitud}</p>
-                      <p className="text-gray-400 text-sm">
-                        {s.evento_titulo?.slice(0, 80) || 'Sin descripción'}...
-                      </p>
+
                       <div className="flex gap-2 mt-2">
                         <span className="text-xs px-2 py-1 bg-blue-700/30 rounded text-blue-300">
                           Creador: {s.creador_nombre} ({s.creador_tipo})
@@ -226,10 +224,25 @@ export default function SolicitudesTabla({
                         </span>
                       </div>
                       {s.evento_titulo && (
-                        <p className="text-xs text-emerald-400 mt-2">
+                 <div className=" w-auto p-2 bg-neutral-500 uppercase mt-2">
+                        <p className="text-xs text-emerald-400 mt-2 uppercase">
                           Evento: {s.evento_titulo}
                         </p>
+
+                                    
+
+                      {s.evento_fecha_inicio && (
+                        <p className="text-xs text-neutral-100 mt-2"> 
+                          Desde: {format(s.evento_fecha_inicio, "dd/MM/yyyy HH:mm", { locale: es })} 
+                          </p>)}
+                       {s.evento_fecha_fin && (
+                         <p className="text-xs text-neutral-100 mt-2">
+                          Hasta : {format(s.evento_fecha_fin, "dd/MM/yyyy HH:mm", { locale: es })}
+                        </p>
+                       )}   
+                       </div>
                       )}
+        
                     </td>
 
                     <td className="p-6">

@@ -300,7 +300,7 @@ const formatTime = (date: Date | string) => {
                       <MdDescription className="text-blue-400" />
                       Descripción
                     </h3>
-                    <div className="bg-neutral-900/50 p-6 rounded-xl border border-neutral-800 whitespace-pre-wrap">
+                    <div className="bg-neutral-900/50 text-gray-200 p-6 rounded-xl border border-neutral-800 whitespace-pre-wrap">
                       {descripcion}
                     </div>
                   </div>
@@ -555,7 +555,7 @@ const formatTime = (date: Date | string) => {
           <div className="sticky bottom-0 p-5 border-t border-neutral-800 bg-neutral-950/90 backdrop-blur-sm flex justify-between items-center">
 
 
-            <div className="flex flex-row justify-between min-w-[85vw] max-w-[85vw] gap-2">
+            <div className="flex flex-row justify-between md:justify-center w-auto gap-2">
               {esCreador? (
                 <>
                   <button
@@ -643,7 +643,7 @@ const formatTime = (date: Date | string) => {
             fetchEventData();
           }}
           profile={profile}
-          evento={eventData}           // ← Cambio clave: pasamos el EventoCalendario completo
+          evento={eventData}           
           onSuccess={() => {
             setShowEditModal(false);
             fetchEventData();

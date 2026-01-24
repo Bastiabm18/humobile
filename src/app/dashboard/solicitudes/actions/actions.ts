@@ -455,9 +455,9 @@ export async function getSolicitudesByPerfil(
                 estado: item.estado || 'pendiente',
                 motivo_rechazo: item.motivo_rechazo || undefined,
                 id_evento_solicitud: item.id_evento_solicitud || undefined,
-                evento_titulo: item.evento_titulo || undefined,
-                evento_fecha_inicio: item.evento_fecha_inicio ? new Date(item.evento_fecha_inicio) : undefined,
-                evento_fecha_fin: item.evento_fecha_fin ? new Date(item.evento_fecha_fin) : undefined
+                evento_titulo: item.evento_titulo || '',
+                evento_fecha_inicio: item.evento_fecha_inicio || undefined,
+                evento_fecha_fin: item.evento_fecha_fin || undefined
             };
         });
 
