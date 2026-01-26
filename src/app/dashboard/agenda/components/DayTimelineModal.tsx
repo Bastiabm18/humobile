@@ -288,12 +288,27 @@ const formatTime = (dateString: string | Date) => {
                           <div className="absolute inset-0 pl-3 pr-2 py-2">
                             <div className="flex items-start gap-2 h-full">
                               <div className="mt-1">
+                                {!esEventoDeIntegrante? (
+                                  <>
                                 {getEventIcon(event)}
+                                  </>
+                                  ):(
+                                  <>
+                                  <HiCalendar/>
+                                  </>
+                                  )}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start">
                                   <h4 className={`font-semibold truncate ${isBlocked && !esEventoDeIntegrante? 'text-red-200' : 'text-white'}`}>
+                                   {!esEventoDeIntegrante? 
+                                    (<>
                                     {event.titulo}
+                                    </>):(
+                                      <>
+                                      <p>Evento Integrante</p>
+                                      </>
+                                    )}
                                   </h4>
                                   <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
                                     {formatTime(new Date(event.inicio))} - {event.fin ? formatTime(new Date(event.fin)) : 'Sin fin'}
@@ -321,6 +336,8 @@ const formatTime = (dateString: string | Date) => {
                   <div className="space-y-3 overflow-y-scroll custom-scrollbar h-[calc(100%-100px)]">
                     {sortedEvents.map((event, index) => {
                       const isBlocked = event.es_bloqueo;
+                      const esEventoDeIntegrante = event.es_evento_integrante;
+
                       return (
                         <div
                           key={event.id || index}
@@ -336,11 +353,27 @@ const formatTime = (dateString: string | Date) => {
                                      }}
                         >
                           <div className={`p-2 rounded ${getEventColor(event)}`}>
-                            {getEventIcon(event)}
+                                         {!esEventoDeIntegrante? (
+                                <>
+                              {getEventIcon(event)}
+                                </>
+                                ):(
+                                <>
+                               <HiCalendar/>
+                                </>
+                              )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className={`font-medium ${isBlocked ? 'text-red-200' : 'text-white'}`}>
+                            <h4 className={`font-medium ${isBlocked && !esEventoDeIntegrante ? 'text-red-200' : 'text-white'}`}>
+                              {!esEventoDeIntegrante? (
+                                <>
                               {event.titulo}
+                                </>
+                                ):(
+                                <>
+                                <p>Evento Integrante</p>
+                                </>
+                              )}
                             </h4>
                             <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
                               <FaClock className="text-xs" />
