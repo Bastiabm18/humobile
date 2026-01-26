@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { FaCheckCircle, FaLock, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUser, FaEnvelope, FaLink, FaImage, FaChevronRight } from 'react-icons/fa';
-import { HiChevronRight, HiX } from 'react-icons/hi';
+import { HiCalendar, HiChevronRight, HiX } from 'react-icons/hi';
 import EventModal from './EventModal';
 import CrearEventoModal from './CrearEventoModal';
 import BlockDateModal from './BlockDateModal';
@@ -63,8 +63,15 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
   );
 
   const getEventColor = (event: EventoCalendario) => {
-    if (event.es_bloqueo) return 'bg-red-600/40';
-    return 'bg-sky-600/40'; // Puedes agregar más condiciones si quieres
+    if (event.es_evento_integrante) {
+
+      return 'bg-gray-600/40'
+
+    } else {
+      if (event.es_bloqueo) return 'bg-red-600/40 border-red-500';
+      return 'bg-sky-600/40 '; 
+      
+    }
   };
 
   const getEventIcon = (event: EventoCalendario) => {
@@ -134,7 +141,12 @@ const formatTime = (dateString: string | Date) => {
       <div className="space-y-3">
         {sortedEvents.map((event, index) => {
           const isBlocked = event.es_bloqueo;
+            const esEventoDeIntegrante = event.es_evento_integrante;
+       
           return (
+          <>
+          {!esEventoDeIntegrante? (
+            <>
             <div
               key={event.id || index}
               className="flex items-start gap-3 p-3 rounded-lg bg-neutral-800/50 hover:bg-neutral-800/70 cursor-pointer transition-colors border border-neutral-700"
@@ -164,6 +176,33 @@ const formatTime = (dateString: string | Date) => {
               </div>
               <HiChevronRight className="text-gray-400 text-xl ml-2" />
             </div>
+            </>
+            ):(
+            <>
+               <div
+              key={event.id || index}
+              className="flex items-start gap-3 p-3 rounded-lg bg-neutral-800/50 hover:bg-neutral-800/70 cursor-pointer transition-colors border border-neutral-700"
+             
+            >
+              <div className={`p-2 rounded bg-gray-500/70`}>
+               <HiCalendar/>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className={`font-medium text-white'`}>
+                   Evento integrante
+                </h4>
+                <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
+                  <FaClock className="text-xs" />
+                  <span>
+                    {formatTime(new Date(event.inicio))} - {event.fin ? formatTime(new Date(event.fin)) : 'Sin fin'}
+                  </span>
+                </div>
+              </div>
+              <HiChevronRight className="text-gray-400 text-xl ml-2" />
+            </div>
+            </>
+          )}
+          </>
           );
         })}
       </div>
@@ -225,11 +264,12 @@ const formatTime = (dateString: string | Date) => {
                     {sortedEvents.map((event, index) => {
                       const position = calculateEventPosition(event);
                       const isBlocked = event.es_bloqueo;
+                      const esEventoDeIntegrante = event.es_evento_integrante;
 
                       return (
                         <div
                           key={event.id || index}
-                          className={`absolute z-50 left-4 right-4 rounded-lg border ${getEventColor(event)} ${isBlocked ? 'border-red-500' : 'border-gray-300/50'} shadow-lg overflow-hidden cursor-pointer hover:opacity-90 transition-all`}
+                          className={`absolute z-50 left-4 right-4 rounded-lg border ${getEventColor(event)} ${isBlocked && !esEventoDeIntegrante ? 'border-red-500' : 'border-gray-300/50'}${esEventoDeIntegrante?'z-0':'z-9999'} shadow-lg overflow-hidden cursor-pointer hover:opacity-90 transition-all`}
                           style={{
                             top: position.top,
                             height: position.height,
@@ -252,14 +292,14 @@ const formatTime = (dateString: string | Date) => {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start">
-                                  <h4 className={`font-semibold truncate ${isBlocked ? 'text-red-200' : 'text-white'}`}>
+                                  <h4 className={`font-semibold truncate ${isBlocked && !esEventoDeIntegrante? 'text-red-200' : 'text-white'}`}>
                                     {event.titulo}
                                   </h4>
                                   <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
                                     {formatTime(new Date(event.inicio))} - {event.fin ? formatTime(new Date(event.fin)) : 'Sin fin'}
                                   </span>
                                 </div>
-                                {isBlocked && event.motivo_bloqueo && (
+                                {isBlocked && !esEventoDeIntegrante && event.motivo_bloqueo && (
                                   <p className="text-xs text-red-300 mt-1 truncate">
                                     {event.motivo_bloqueo}
                                   </p>

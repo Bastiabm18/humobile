@@ -587,7 +587,7 @@ export async function getEventsByDiaYPerfilId(
     const fechaStr = format(fecha, 'yyyy-MM-dd');
 
     const { data: eventosDB, error } = await supabaseAdmin
-      .rpc('obtener_eventos_por_dia', {
+      .rpc('obtener_eventos_por_dia_v2', {
         p_fecha: fechaStr,
         p_perfil_id: perfilId
       });

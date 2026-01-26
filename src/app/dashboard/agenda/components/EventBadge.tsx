@@ -140,7 +140,7 @@ const formatTime = (dateString: string | Date) => {
                
                         <div className="flex flex-col w-full items-center justify-center gap-1.5 p-2">
 
-                          <HiCalendar size={28} className='text-gray-300 group-hover:text-red-200 transition-colors' />
+                          <HiCalendar size={24} className='text-gray-300 group-hover:text-red-200 transition-colors' />
                           <span className="hidden md:inline text-gray-200/90 font-medium text-xs">
                           INTEGRANTE
                           </span>
@@ -188,13 +188,13 @@ const formatTime = (dateString: string | Date) => {
                     </>
                   ):(<>
                       <div>
-                               <div className="flex flex-col items-center justify-center gap-1.5 p-2">
-                    <HiCalendar size={28} className='text-gray-300 group-hover:text-red-200 transition-colors' />
-                    <span className="hidden md:inline text-gray-200/90 font-medium text-xs">
-                    INTEGRANTE
-                    </span>
+                        <div className="flex flex-col items-center justify-center gap-1.5 p-2">
+                        <HiCalendar size={24} className='text-gray-300 group-hover:text-red-200 transition-colors' />
+                        <span className="hidden md:inline text-gray-200/90 font-medium text-xs">
+                        INTEGRANTE
+                        </span>
 
-                      </div>
+                        </div>
                       </div>
                   </>)}
                 </div>
@@ -275,7 +275,7 @@ const formatTime = (dateString: string | Date) => {
               
               <>
                         <div className="flex flex-col items-center justify-center gap-1.5 p-2">
-                    <HiCalendar size={14} className='text-gray-300 group-hover:text-red-200 transition-colors' />
+                    <HiCalendar size={12} className='text-gray-300 group-hover:text-red-200 transition-colors' />
                     <span className="hidden md:inline text-gray-200/90 font-medium text-xs">
                     INTEGRANTE
                     </span>
@@ -310,7 +310,7 @@ const formatTime = (dateString: string | Date) => {
                   ):(<>
                       <div>
                                <div className="flex flex-col items-center justify-center gap-1.5 p-2">
-                    <HiCalendar size={14} className='text-gray-300 group-hover:text-red-200 transition-colors' />
+                    <HiCalendar size={12} className='text-gray-300 group-hover:text-red-200 transition-colors' />
                     <span className="hidden md:inline text-gray-200/90 font-medium text-xs">
                     INTEGRANTE
                     </span>

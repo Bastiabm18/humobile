@@ -471,7 +471,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
             dateCellWrapper: CustomDateCellWrapper,
             timeSlotWrapper: CustomTimeSlotWrapper,
             header: ({ label }: any) => (
-              <div className="text-md md:text-xl md:text-center">
+              <div className="text-md  md:text-xl md:text-center">
                 {label}
               </div>
             ),
