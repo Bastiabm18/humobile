@@ -240,7 +240,7 @@ export async function getEventosByPerfilParticipacion(
     }
 
     const { data: eventosDB, error } = await supabaseAdmin
-      .rpc('get_eventos_perfil_estados_v2', params);
+      .rpc('get_eventos_perfil_estados_v3', params);
 
     if (error) {
       console.error(' Error al llamar a get_eventos_perfil_estados:', error);
@@ -302,6 +302,7 @@ export async function getEventosByPerfilParticipacion(
          rechazados:evento.rechazados,
          porcentaje_aprobacion:evento.porcentaje_aprobacion,
         estado_participacion: evento.estado_participacion || '',
+        es_evento_integrante:evento.es_evento_integrante ?? false,
 
 
 

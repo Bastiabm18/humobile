@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { FaCheckCircle } from 'react-icons/fa';
-import { HiLockClosed } from 'react-icons/hi';
+import { HiCalendar, HiLockClosed } from 'react-icons/hi';
 import { EventoCalendario } from '@/types/profile';
 
 interface EventBadgeProps {
@@ -34,6 +34,8 @@ export default function EventBadge({
   // Separar eventos normales de bloqueos → usando es_bloqueo directamente
   const normalEvents = events.filter(event => !event.es_bloqueo);
   const blockedEvents = events.filter(event => event.es_bloqueo);
+  const integranteEvents = events.filter(event => event.es_evento_integrante);
+
 
   // Helper para formatear hora (sin cambios)
 const formatTime = (dateString: string | Date) => {
@@ -43,17 +45,40 @@ const formatTime = (dateString: string | Date) => {
   return `${hours}:${minutes}`;
 };
 
- const getEventoClassName1 = (estado?: string) => {
+ const getEventoClassName1 = (estado?: string, es_de_integrante:boolean = false) => {
  
-  switch (estado) {
-    case 'pendiente':
-      return 'bg-orange-600/50 hover:bg-orange-700 border-l-4 border-orange-500';
-    case 'rechazado':
-      return 'bg-red-600/50 hover:bg-red-700 border-l-4 border-red-500';
-    case 'confirmado':
-      return 'bg-sky-700/50 hover:bg-sky-800 border-l-4 border-sky-500';
-      default:
-      return 'bg-gray-800/50 hover:bg-gray-700 border-l-4 border-gray-500';
+   if (es_de_integrante) {
+     
+     switch (estado) {
+
+         default:
+         return 'bg-gray-700/50 hover:bg-gray-600 border-l-4 border-gray-400';
+     }
+  } else {
+    
+    switch (estado) {
+      case 'pendiente':
+        return 'bg-orange-600/50 hover:bg-orange-700 border-l-4 border-orange-500';
+      case 'rechazado':
+        return 'bg-red-600/50 hover:bg-red-700 border-l-4 border-red-500';
+      case 'confirmado':
+        return 'bg-sky-700/50 hover:bg-sky-800 border-l-4 border-sky-500';
+        default:
+        return 'bg-gray-800/50 hover:bg-gray-700 border-l-4 border-gray-500';
+    }
+  }
+};
+
+ const getBloqueoClassName1 = (estado?: string, es_de_integrante:boolean = false) => {
+ 
+   if (es_de_integrante) {
+     
+
+         return 'bg-gray-700/50 hover:bg-gray-600 border-l-4 border-gray-400';
+     
+  } else {
+
+        return 'bg-red-800/50 hover:bg-red-800/60 border-l-4 border-red-500';
   }
 };
 
@@ -61,6 +86,7 @@ const formatTime = (dateString: string | Date) => {
   if (view === 'month') {
     const hasBlocked = blockedEvents.length > 0;
     const hasNormal = normalEvents.length > 0;
+    const hasIntegrante = integranteEvents.length > 0;
     const totalEvents = blockedEvents.length + normalEvents.length;
 
     return (
@@ -72,15 +98,20 @@ const formatTime = (dateString: string | Date) => {
               <div className="mb-0.5 flex w-full h-full">
                 <div
                    className={`text-xs md:text-sm truncate px-1.5 py-1 rounded-md ${
-                  getEventoClassName1(normalEvents[0].estado_participacion)
+                  getEventoClassName1(normalEvents[0].estado_participacion,normalEvents[0].es_evento_integrante) 
                 } text-white font-medium w-full h-10 md:h-20 cursor-pointer transition-colors flex items-center group`}
                   title={`${normalEvents[0].titulo} (${formatTime(normalEvents[0].inicio)} - ${formatTime(normalEvents[0].fin)})`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (onEventClick) onEventClick(normalEvents[0]);
+                    if(!normalEvents[0].es_evento_integrante){
+
+                      if (onEventClick) onEventClick(normalEvents[0]);
+                    }
                   }}
                 >
-                  <div className="flex items-center md:items-start gap-1.5 w-full min-w-0 px-1">
+                  {!normalEvents[0].es_evento_integrante? (
+                    <>
+                       <div className="flex items-center md:items-start gap-1.5 w-full min-w-0 px-1">
                     <div className='hidden md:flex flex-shrink-0 pt-0.5'>
                       {normalEvents[0].flyer_url ? (
                         <img
@@ -102,6 +133,22 @@ const formatTime = (dateString: string | Date) => {
                       </div>
                     </div>
                   </div>
+                    </>
+                  
+                  ):(
+                  <>
+               
+                        <div className="flex flex-col w-full items-center justify-center gap-1.5 p-2">
+
+                          <HiCalendar size={28} className='text-gray-300 group-hover:text-red-200 transition-colors' />
+                          <span className="hidden md:inline text-gray-200/90 font-medium text-xs">
+                          INTEGRANTE
+                          </span>
+
+                      </div>
+              
+                  </>)}
+               
                 </div>
               </div>
             )}
@@ -110,14 +157,22 @@ const formatTime = (dateString: string | Date) => {
             {hasBlocked && !hasNormal && (
               <div className="mb-0.5 flex">
                 <div
-                  className="text-xs md:text-sm rounded-md bg-red-900/50 hover:bg-red-950 text-white font-semibold shadow-sm hover:shadow cursor-pointer items-center justify-center w-full h-10 md:h-20 flex group border-l-4 border-red-600"
+                  className={`text-xs md:text-sm rounded-md ${
+                  getBloqueoClassName1(blockedEvents[0].estado_participacion,blockedEvents[0].es_evento_integrante) 
+                } text-white font-semibold shadow-sm hover:shadow cursor-pointer items-center justify-center w-full h-10 md:h-20 flex group border-l-4`}
                   title={`Día bloqueado: ${blockedEvents[0].motivo_bloqueo || 'Sin motivo'}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (onBlockClick) onBlockClick(blockedEvents[0]);
+                    if(!blockedEvents[0].es_evento_integrante){
+                      if (onBlockClick) onBlockClick(blockedEvents[0]);
+                    
+                    }
+                    
                   }}
                 >
-                  <div className="flex flex-col items-center justify-center gap-1.5 p-2">
+                  {!hasIntegrante? (
+                    <>
+                    <div className="flex flex-col items-center justify-center gap-1.5 p-2">
                     <HiLockClosed size={28} className='text-red-300 group-hover:text-red-200 transition-colors' />
                     <span className="hidden md:inline text-red-200/90 font-medium text-xs">
                       BLOQUEADO
@@ -130,9 +185,23 @@ const formatTime = (dateString: string | Date) => {
                       </div>
                     )}
                   </div>
+                    </>
+                  ):(<>
+                      <div>
+                               <div className="flex flex-col items-center justify-center gap-1.5 p-2">
+                    <HiCalendar size={28} className='text-gray-300 group-hover:text-red-200 transition-colors' />
+                    <span className="hidden md:inline text-gray-200/90 font-medium text-xs">
+                    INTEGRANTE
+                    </span>
+
+                      </div>
+                      </div>
+                  </>)}
                 </div>
               </div>
             )}
+
+            
 
             {/* Contador para 1 evento */}
             {totalEvents === 1 && (
@@ -160,19 +229,27 @@ const formatTime = (dateString: string | Date) => {
         )}
 
         {/* Para 2 eventos */}
-        {totalEvents === 2 && (
+        {totalEvents >= 2 && totalEvents <= 3 && (
           <div>
             {normalEvents.length >= 1 && normalEvents.slice(0, hasBlocked ? 1 : 2).map((event, index) => (
               <div
                 key={event.id || index}
-                className="text-xs md:text-sm mb-0.5 truncate px-1.5 py-1 rounded-md bg-sky-700/50 text-white font-medium hover:bg-sky-800 cursor-pointer transition-colors flex items-center justify-center h-6.5 md:h-12.5 group border-l-2 border-sky-500"
+                className={`text-xs md:text-sm mb-0.5 truncate px-1.5 py-1 rounded-md ${
+                  getEventoClassName1(normalEvents[index].estado_participacion,normalEvents[index].es_evento_integrante) 
+                } text-white font-medium  cursor-pointer transition-colors flex items-center justify-center h-6.5 md:h-12.5 group border-l-2 `}
                 title={`${event.titulo} (${formatTime(event.inicio)} - ${formatTime(event.fin)})`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (onEventClick) onEventClick(normalEvents[0]);
+                  if(!normalEvents[index].es_evento_integrante){
+
+                    if (onEventClick) onEventClick(normalEvents[index]);
+                  }
                 }}
               >
-                <div className="flex items-center md:items-start gap-1.5 w-full min-w-0 px-1">
+                {!normalEvents[index].es_evento_integrante? 
+                (
+                <>
+                          <div className="flex items-center md:items-start gap-1.5 w-full min-w-0 px-1">
                   <div className='hidden md:flex flex-shrink-0 pt-0.5'>
                     {event.flyer_url ? (
                       <img
@@ -193,20 +270,54 @@ const formatTime = (dateString: string | Date) => {
                     </div>
                   </div>
                 </div>
+                </>
+                ):(
+              
+              <>
+                        <div className="flex flex-col items-center justify-center gap-1.5 p-2">
+                    <HiCalendar size={14} className='text-gray-300 group-hover:text-red-200 transition-colors' />
+                    <span className="hidden md:inline text-gray-200/90 font-medium text-xs">
+                    INTEGRANTE
+                    </span>
+
+                      </div>
+              </>)
+              
+              }
               </div>
             ))}
 
             {blockedEvents.length >= 1 && blockedEvents.slice(0, hasNormal ? 1 : 2).map((event, index) => (
               <div
                 key={event.id || index}
-                className="text-xs md:text-sm mb-0.5 rounded-md bg-red-900 hover:bg-red-950 text-white font-medium shadow-sm cursor-pointer items-center justify-center w-full h-6.5 md:h-12.5 flex border-l-2 border-red-600"
+                className={`text-xs md:text-sm mb-0.5 rounded-md  ${
+                  getBloqueoClassName1(blockedEvents[index].estado_participacion,blockedEvents[index].es_evento_integrante) 
+                } text-white font-medium shadow-sm cursor-pointer items-center justify-center w-full h-6.5 md:h-12.5 flex border-l-2 `}
                 title={`Día bloqueado: ${event.motivo_bloqueo || 'Sin motivo'}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   if (onBlockClick) onBlockClick(event);
                 }}
               >
-                <HiLockClosed size={14} className='text-red-300' />
+                {!blockedEvents[index].es_evento_integrante? (
+                    <>
+                    <div className="flex flex-col items-center justify-center gap-1.5 p-2">
+                    <HiLockClosed size={18} className='text-red-300 group-hover:text-red-200 transition-colors' />
+             
+
+                  </div>
+                    </>
+                  ):(<>
+                      <div>
+                               <div className="flex flex-col items-center justify-center gap-1.5 p-2">
+                    <HiCalendar size={14} className='text-gray-300 group-hover:text-red-200 transition-colors' />
+                    <span className="hidden md:inline text-gray-200/90 font-medium text-xs">
+                    INTEGRANTE
+                    </span>
+
+                      </div>
+                      </div>
+                  </>)}
               </div>
             ))}
 
@@ -231,7 +342,7 @@ const formatTime = (dateString: string | Date) => {
           </div>
         )}
 
-        {/* Para 3 eventos */}
+        {/* Para 3 eventos 
         {totalEvents === 3 && (
           <div>
             {normalEvents.length >= 2 && normalEvents.slice(0, hasBlocked ? 1 : 2).map((event, index) => (
@@ -278,7 +389,7 @@ const formatTime = (dateString: string | Date) => {
                   if (onBlockClick) onBlockClick(event);
                 }}
               >
-                <HiLockClosed size={14} className='text-red-300' />
+                <HiLockClosed size={18} className='text-red-300' />
               </div>
             ))}
 
@@ -302,7 +413,7 @@ const formatTime = (dateString: string | Date) => {
             )}
           </div>
         )}
-
+*/}
         {/* Más de 3 eventos */}
         {totalEvents > 3 && (
           <div className="mb-0.5 cursor-pointer flex justify-center">

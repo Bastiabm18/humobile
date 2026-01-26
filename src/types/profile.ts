@@ -439,7 +439,9 @@ export interface EventoCalendario {
   porcentaje_aprobacion?: number;
   estado_participacion?: string;
 
+  // indica si es evento de los integrantes en caso de ser banda 
 
+  es_evento_integrante?:boolean;
 
 
 
