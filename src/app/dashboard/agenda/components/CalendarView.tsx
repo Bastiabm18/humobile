@@ -155,7 +155,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
                   setSelectedDate(value);
                   setShowActionModal(true);
                 }}
-                className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
+                className="bg-green-700/70 hover:bg-green-500 text-green-100 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
                 title="Gestionar día"
               >
                 <HiCog size={16} />
@@ -170,7 +170,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
                   setSelectedEventDate(value);
                   setCreateEventModalOpen(true);
                 }}
-                className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
+                className="bg-green-600/70  hover:bg-green-700/80 text-green-100/80 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
                 title="Agregar evento"
               >
                 <HiPlus size={18} />
@@ -183,7 +183,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
                   setBlockModalOpen(true);
                   setBlockInitialDate(value);
                 }}
-                className="bg-red-600 hover:bg-red-800/80 text-white p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
+                className="bg-red-600/70 hover:bg-red-800/80 text-red-100 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
                 title="Bloquear día"
               >
                 <HiLockClosed size={18} />
