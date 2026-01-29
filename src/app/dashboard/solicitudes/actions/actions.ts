@@ -58,8 +58,8 @@ export async function aceptarSolicitud({
   id_solicitud,
   codigo_solicitud,
   id_evento_solicitud,
-  id_invitado
-  ,id_creador
+  id_invitado,
+  id_creador
 }: AceptarRechazarSolicitud) {
   try {
     const supabase = getSupabaseAdmin();
@@ -420,7 +420,7 @@ export async function getSolicitudesByPerfil(
         }
 
         const { data, error } = await supabaseAdmin
-            .rpc('get_solicitudes_detalladas', {
+            .rpc('get_solicitudes_detalladas_v2', {
                 p_id_perfil: perfilId,
                 filtro_estado: estadoSolicitud
             });
@@ -457,25 +457,28 @@ export async function getSolicitudesByPerfil(
                 id_evento_solicitud: item.id_evento_solicitud || undefined,
                 evento_titulo: item.evento_titulo || '',
                 evento_fecha_inicio: item.evento_fecha_inicio || undefined,
-                evento_fecha_fin: item.evento_fecha_fin || undefined
+                evento_fecha_fin: item.evento_fecha_fin || undefined,
+                es_invitacion_banda: item.es_invitacion_banda || false,
+                nombre_banda_asociada: item.nombre_banda_asociada || ''
+
             };
         });
 
-        console.log('📊 Solicitudes obtenidas:', {
-            cantidad: solicitudes.length,
-            primerItem: solicitudes[0] ? {
-                id: solicitudes[0].id,
-                tipo_solicitud: solicitudes[0].tipo_solicitud,
-                creador: solicitudes[0].creador_nombre,
-                invitado: solicitudes[0].invitado_nombre,
-                estado: solicitudes[0].estado
-            } : 'No hay datos'
-        });
+       // console.log(' Solicitudes obtenidas:', {
+       //     cantidad: solicitudes.length,
+       //     primerItem: solicitudes[0] ? {
+       //         id: solicitudes[0].id,
+       //         tipo_solicitud: solicitudes[0].tipo_solicitud,
+       //         creador: solicitudes[0].creador_nombre,
+       //         invitado: solicitudes[0].invitado_nombre,
+       //         estado: solicitudes[0].estado
+       //     } : 'No hay datos'
+       // });
 
         return solicitudes;
         
     } catch (error: any) {
-        console.error('❌ Error en getSolicitudesByPerfil:', error);
+        console.error(' Error en getSolicitudesByPerfil:', error);
         throw error;
     }
 }

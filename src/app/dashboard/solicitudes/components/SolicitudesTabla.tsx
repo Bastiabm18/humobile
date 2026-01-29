@@ -39,6 +39,8 @@ export default function SolicitudesTabla({
     ? solicitudes 
     : solicitudes.filter((s) => s.estado === filtroEstado);
 
+    console.log('SolicitudesTabla - Filtradas →', solicitudesFiltradas);
+
   const getTipoConfig = (codigo: string) => {
     switch (codigo) {
       case "invitacion_banda":
@@ -219,9 +221,16 @@ export default function SolicitudesTabla({
                         <span className="text-xs px-2 py-1 bg-blue-700/30 rounded text-blue-300">
                           Creador: {s.creador_nombre} ({s.creador_tipo})
                         </span>
+                        { (s.es_invitacion_banda && s.nombre_banda_asociada!='')? (
                         <span className="text-xs px-2 py-1 bg-purple-700/30 rounded text-purple-300">
-                          Invitado: {s.invitado_nombre} ({s.invitado_tipo})
+                          Invitado: {s.nombre_banda_asociada} 
                         </span>
+                        ):(<>
+                        <span className="text-xs px-2 py-1 bg-purple-700/30 rounded text-purple-300">
+                          Invitado: {s.invitado_nombre} 
+                        </span>
+
+                        </>)}
                       </div>
                       {s.evento_titulo && (
                  <div className=" w-auto p-2 bg-neutral-500 uppercase mt-2">

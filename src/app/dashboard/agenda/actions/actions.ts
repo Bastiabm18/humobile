@@ -927,7 +927,9 @@ async function crearSolicitudEvento(
 async function crearParticipacionEvento(
   eventoId: string,
   perfilId: string,
-  estado: 'pendiente' | 'confirmado' | 'rechazado' = 'pendiente'
+  estado: 'pendiente' | 'confirmado' | 'rechazado' = 'pendiente',
+  es_banda: boolean = false,
+  id_banda: string = ''
 ) {
   const supabaseAdmin = getSupabaseAdmin();
   
@@ -936,7 +938,9 @@ async function crearParticipacionEvento(
     .insert([{
       evento_id: eventoId,
       perfil_id: perfilId,
-      estado: estado
+      estado: estado,
+      es_invitacion_banda: es_banda || false,
+      id_banda_participacion: id_banda || null
     }]);
     
   if (error) {
@@ -1155,7 +1159,7 @@ await crearParticipacionEvento(evento.id, eventData.id_creador, 'confirmado');
 
 // PASO 2: Invitar a todos los participantes
 for (const participante of participantes) {
-  console.log(`🎯 Procesando: ${participante.id_perfil} (${participante.tipo})`);
+  console.log(` Procesando: ${participante.id_perfil} (${participante.tipo})`);
   
   // Saltar si es el creador (ya lo procesamos)
   if (participante.id_perfil === eventData.id_creador) continue;
@@ -1165,14 +1169,14 @@ for (const participante of participantes) {
   
   // Si el participante es una banda, invitar a sus integrantes
   if (participante.tipo === 'banda') {
-    console.log(`👥 Invitando integrantes de la banda participante: ${participante.id_perfil}`);
+    console.log(`Invitando integrantes de la banda participante: ${participante.id_perfil}`);
     await invitarIntegrantesBanda(evento.id, eventData.id_creador, participante.id_perfil);
   }
 }
 
 // PASO 3: Si el CREADOR es banda, invitar también a sus integrantes
 if (eventData.creador_tipo_perfil === 'banda') {
-  console.log(`🎸 Creador es banda, invitando integrantes...`);
+  console.log(`Creador es banda, invitando integrantes...`);
   await invitarIntegrantesBanda(evento.id, eventData.id_creador, eventData.id_creador);
 }
     
@@ -1249,30 +1253,30 @@ async function invitarIntegrantesBanda(
     }
 
     if (!integrantes || integrantes.length === 0) {
-      console.log(`ℹ️ La banda ${bandaId} no tiene integrantes registrados`);
+      console.log(`La banda ${bandaId} no tiene integrantes registrados`);
       return;
     }
 
-    console.log(`✅ Encontrados ${integrantes.length} integrantes para la banda ${bandaId}`);
+    console.log(` Encontrados ${integrantes.length} integrantes para la banda ${bandaId}`);
 
-    // Invitar a cada integrante (ASUMIMOS que son artistas)
+    // Invitar a cada integrante 
     for (const integrante of integrantes) {
       const artistaId = integrante.id_artista;
       
       // Evitar duplicados con el creador
       if (artistaId === creadorId) {
-        console.log(`ℹ️ El creador ${creadorId} también es integrante, omitiendo`);
+        console.log(`ℹEl creador ${creadorId} también es integrante, omitiendo`);
         continue;
       }
       
-      console.log(`📨 Invitando artista integrante: ${artistaId}`);
+      console.log(`Invitando artista integrante: ${artistaId}`);
       
       // Crear participación y solicitud para el artista
-      await crearParticipacionEvento(eventoId, artistaId, 'pendiente');
+      await crearParticipacionEvento(eventoId, artistaId, 'pendiente',true,bandaId);
       await crearSolicitudEvento(eventoId, creadorId, artistaId, 'invitacion');
     }
     
-    console.log(`🎉 Todos los integrantes de la banda ${bandaId} han sido invitados`);
+    console.log(` Todos los integrantes de la banda ${bandaId} han sido invitados`);
     
   } catch (error) {
     console.error('Error en invitarIntegrantesBanda:', error);

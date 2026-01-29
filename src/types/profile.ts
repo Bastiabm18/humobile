@@ -550,4 +550,6 @@ export interface SolicitudRespuesta {
   evento_titulo?: string;
   evento_fecha_inicio?: Date;
   evento_fecha_fin?: Date;
+  es_invitacion_banda?: boolean;
+  nombre_banda_asociada?: string;
 }
