@@ -578,6 +578,20 @@ const formatTime = (date: Date | string) => {
                     <FaTrashAlt />
                     Eliminar Evento
                   </button>
+                  {esBanda &&(
+                    <>
+                                   <button
+                              onClick ={()=>{  
+                                setShowEstadoparticipacion(true)
+                              
+                                 }}
+                            className="px-3 py-3 bg-sky-700 hover:bg-sky-600 text-white rounded-xl transition-colors flex items-center gap-2">
+                                  Ver Estado Participacion   
+                                 </button>
+                    </>
+                  )
+                    
+                  }
                 </>
                      ):(
                   <>
@@ -631,17 +645,7 @@ const formatTime = (date: Date | string) => {
 
                      ) 
                }
-                         
 
-            
-
-              <button
-                onClick={onRequestClose}
-                className="px-6 py-3 bg-neutral-700 hover:bg-neutral-600 text-white rounded-xl transition-colors flex items-center gap-2"
-              >
-                <HiX />
-                Cerrar
-              </button>
             </div>
           </div>
         </div>

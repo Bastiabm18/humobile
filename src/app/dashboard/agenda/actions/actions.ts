@@ -1171,8 +1171,13 @@ export async function crearEvento(eventData: EventoGuardar, participantes: Parti
 
     console.log('Evento Id creado:', evento.id);
 
- // PASO 1: Primero el creador (confirmado)
-await crearParticipacionEvento(evento.id, eventData.id_creador, 'confirmado');
+ // PASO 1: Primero el creador (confirmado) solo si no es banda va confirmado sino pendiente
+ if (eventData.creador_tipo_perfil !== 'banda') {
+  await crearParticipacionEvento(evento.id, eventData.id_creador, 'confirmado');
+}else{
+
+  await crearParticipacionEvento(evento.id, eventData.id_creador, 'pendiente');
+}
 
 // PASO 2: Invitar a todos los participantes
 for (const participante of participantes) {
