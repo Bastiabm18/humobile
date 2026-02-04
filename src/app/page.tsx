@@ -10,6 +10,7 @@ import LugareCercanosMap from "./components/MultipleLocationMap";
 import PreguntaFrecuenteComponente from "./components/Pregunta_frecuente";
 import PreguntaFrecuente from "./components/Pregunta_frecuente";
 import Contacto from "./components/Contacto";
+import IrAlExplorador from "./components/IrAlExplorador";
 
 export default function Home() {
 
@@ -34,6 +35,10 @@ export default function Home() {
 </section>
 <section className="max-w-screen flex items-center justify-center">
     <EventosCarrusel/>
+</section>
+
+<section id="irAlexplorador" className="w-full h-full flex ">
+  <IrAlExplorador/>
 </section>
 <section id="QuienesSomos" className="w-full h-full flex ">
   <QuienesSomos />
