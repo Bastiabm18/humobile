@@ -14,12 +14,13 @@ import {
   HiExclamationCircle,
   HiEye,
 } from "react-icons/hi";
-import { SolicitudRespuesta } from "@/types/profile";
+import { Profile, SolicitudRespuesta } from "@/types/profile";
 import { useState } from "react";
 import { FaCheck } from "react-icons/fa6";
 import { IoBanSharp } from "react-icons/io5";
 
 interface SolicitudesTablaProps {
+  perfil:Profile;
   solicitudes: SolicitudRespuesta[];
   onVer: (solicitud: SolicitudRespuesta) => void;
   onAceptar: (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string,creador_id:string) => void;
@@ -27,13 +28,14 @@ interface SolicitudesTablaProps {
 }
 
 export default function SolicitudesTabla({
+  perfil,
   solicitudes,
   onVer,
   onAceptar,
   onRechazar,
 }: SolicitudesTablaProps) {
   const [filtroEstado, setFiltroEstado] = useState<string>("");
-
+  const [perfil_solicitud, setPerfil_solicitud] = useState(perfil);
   // Filtrar por estado
   const solicitudesFiltradas = filtroEstado === "" 
     ? solicitudes 
@@ -209,7 +211,7 @@ export default function SolicitudesTabla({
                         </div>
                         <div>
                           <span className="font-medium">{tipo.label}</span>
-                          <p className="text-gray-400 text-sm">{s.codigo_solicitud}</p>
+                   
                         </div>
                       </div>
                     </td>
@@ -303,11 +305,11 @@ export default function SolicitudesTabla({
                           <HiEye className="w-6 h-6 " />
                         </button>
 
-                        {s.estado === "pendiente" && !expirada && (
+                        {s.estado === "pendiente" && !expirada  && perfil_solicitud.tipo !='banda'   && (
                           <>
                             <button
                               onClick={() => onRechazar(s.id,s.codigo_solicitud,s.id_evento_solicitud,s.invitado_id,s.creador_id)}
-                              className="px-3 flex flex-row items-center justify-center gap-2 py-2.5 bg-red-500/70 text-red-200 hover:bg-red-700 border-red-900 border-3 rounded-full font-medium transition transform hover:scale-105"
+                              className="px-4 flex flex-row items-center justify-center gap-2 py-2 bg-red-500/70 text-red-200 hover:bg-red-700 border-red-900 border-3 rounded-full font-medium transition transform hover:scale-105"
                               title="Rechazar"
                            >
                               
@@ -315,13 +317,33 @@ export default function SolicitudesTabla({
                             </button>
                             <button
                               onClick={() => onAceptar(s.id,s.codigo_solicitud,s.id_evento_solicitud,s.invitado_id,s.creador_id)}
-                              className="px-3 flex rounded-full flex-row items-center justify-center gap-2 py-2.5 bg-green-600/80 border-green-900 border-3 text-green-200 font-medium transition transform hover:scale-105 shadow-lg"
+                              className="px-4 flex rounded-full flex-row items-center justify-center gap-2 py-2 bg-green-600/80 border-green-900 border-3 text-green-200 font-medium transition transform hover:scale-105 shadow-lg"
                               title="Aceptar"
                            >
                               <FaCheck/> 
                             </button>
                           </>
                         )}
+                      {s.estado === "pendiente" && !expirada && s.tipo_solicitud !='Invitación a evento'  &&  perfil_solicitud.tipo ==='banda'   && (
+                          <>
+                            <button
+                              onClick={() => onRechazar(s.id,s.codigo_solicitud,s.id_evento_solicitud,s.invitado_id,s.creador_id)}
+                              className="px-4 flex flex-row items-center justify-center gap-2 py-2 bg-red-500/70 text-red-200 hover:bg-red-700 border-red-900 border-3 rounded-full font-medium transition transform hover:scale-105"
+                              title="Rechazar"
+                           >
+                              
+                              <IoBanSharp />
+                            </button>
+                            <button
+                              onClick={() => onAceptar(s.id,s.codigo_solicitud,s.id_evento_solicitud,s.invitado_id,s.creador_id)}
+                              className="px-4 flex rounded-full flex-row items-center justify-center gap-2 py-2 bg-green-600/80 border-green-900 border-3 text-green-200 font-medium transition transform hover:scale-105 shadow-lg"
+                              title="Aceptar"
+                           >
+                              <FaCheck/> 
+                            </button>
+                          </>
+                        )}
+                        
                       </div>
                     </td>
                   </motion.tr>

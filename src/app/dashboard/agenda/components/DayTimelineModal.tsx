@@ -80,26 +80,28 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
   };
 
 const calculateEventPosition = (event: EventoCalendario) => {
-  // Usar UTC para todas las fechas
-  const eventStart = new Date(event.inicio);
-  const eventEnd = event.fin ? new Date(event.fin) : new Date(event.inicio);
+  // 1. Parsear las fechas SIN que JavaScript las convierta
+  const inicioString = typeof event.inicio === 'string' ? event.inicio : event.inicio.toISOString();
+  const finString = event.fin ? (typeof event.fin === 'string' ? event.fin : event.fin.toISOString()) : inicioString;
+  const eventStart = new Date(inicioString.replace('+00:00', 'Z'));
+  const eventEnd = event.fin ? new Date(finString.replace('+00:00', 'Z')) : new Date(inicioString.replace('+00:00', 'Z'));
   
-  // Crear fecha base en UTC (importante!)
+  // 2. Crear día base usando el MISMO método que usa el evento
   const dayStart = new Date(Date.UTC(
-    date.getUTCFullYear(),
-    date.getUTCMonth(),
-    date.getUTCDate(),
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
     0, 0, 0, 0
   ));
   
   const dayEnd = new Date(Date.UTC(
-    date.getUTCFullYear(),
-    date.getUTCMonth(),
-    date.getUTCDate(),
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
     24, 0, 0, 0
   ));
 
-  // Usar getTime() para comparar (ya está en milisegundos UTC)
+  // 3. Comparar timestamps (todos en UTC internamente)
   const eventStartTime = eventStart.getTime();
   const eventEndTime = eventEnd.getTime();
   const dayStartTime = dayStart.getTime();
@@ -119,21 +121,17 @@ const calculateEventPosition = (event: EventoCalendario) => {
 };
 
 const formatTime = (dateString: string | Date) => {
-  let date: Date;
+  // MOSTRAR LA HORA EXACTA DEL EVENTO (19:00, no 16:00)
+  const date = new Date(dateString);
   
-  if (typeof dateString === 'string') {
-    // Parsear explícitamente como UTC
-    date = new Date(dateString);
-  } else {
-    date = dateString;
-  }
-  
-  // Usar getUTC... para obtener hora UTC directamente
+  // Usar UTC para mostrar lo que realmente está guardado
   const hours = date.getUTCHours().toString().padStart(2, '0');
   const minutes = date.getUTCMinutes().toString().padStart(2, '0');
   
   return `${hours}:${minutes}`;
 };
+
+
   const formatFullDate = (date: Date) => format(date, "EEEE d 'de' MMMM 'de' yyyy", { locale: es });
 
   const MobileView = () => (
@@ -144,7 +142,7 @@ const formatTime = (dateString: string | Date) => {
             const esEventoDeIntegrante = event.es_evento_integrante;
        
           return (
-          <>
+          <div key={event.id || index}>
           {!esEventoDeIntegrante? (
             <>
             <div
@@ -202,7 +200,7 @@ const formatTime = (dateString: string | Date) => {
             </div>
             </>
           )}
-          </>
+          </div>
           );
         })}
       </div>

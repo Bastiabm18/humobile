@@ -22,6 +22,7 @@ import {
   FaHome 
 } from 'react-icons/fa';
 import { HiMail, HiPhone } from 'react-icons/hi';
+import SimpleToggle from './SimpleToggle';
 
 interface AgendaContentProps {
   initialProfiles: Profile[];
@@ -45,7 +46,7 @@ export default function AgendaContent({
     
   };
 
-  //console.log(selectedProfile);
+  console.log(selectedProfile);
 
   if (profiles.length === 0) {
     return (
@@ -198,7 +199,13 @@ export default function AgendaContent({
           >
             <FaArrowLeft className="text-sm" />
             <span>Volver a perfiles</span>
+          
           </motion.button>
+          <div className=' border-neutral-500 px-5 py-2 bg-neutral-600/50 rounded-2xl flex flex-col items-center justify-center'>
+            <span>Agenda Publica</span>
+            <SimpleToggle id={selectedProfile.id} initialState={ (selectedProfile as any).perfil_visible || false } />
+
+          </div>
       </div>
       
 <div className="

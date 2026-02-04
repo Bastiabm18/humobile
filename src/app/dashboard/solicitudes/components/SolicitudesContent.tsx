@@ -354,6 +354,7 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
               </div>
             ) : (
               <SolicitudesTabla
+                perfil={selectedProfile}
                 solicitudes={solicitudes}
                 onVer={handleVer}
                 onAceptar={handleAceptar}

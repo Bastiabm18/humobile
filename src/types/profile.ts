@@ -23,6 +23,17 @@ export interface ParticipanteEvento {
   nombre: string;
   tipo: string;
 }
+export interface PerfilParticipanteEvento {
+  perfil_id: string;
+  perfil_nombre: string;
+  estado_participacion: string;
+  motivo_rechazo?: string;
+  es_invitacion_banda:string;
+  perfil_tipo: string;
+  perfil_email?: string;
+  perfil_imagen_url?: string;
+  perfil_telefono?: string;
+}
 
 export interface categoriaEvento{
   id_categoria: string;
@@ -167,6 +178,7 @@ export interface Profile {
   lat?:number;
   lon?:number;
   pertenece_a_grupo?:ArtistaEnBanda[]
+  perfil_visible?:boolean;
 }
 
 export interface ArtistaEnBanda{
@@ -439,9 +451,11 @@ export interface EventoCalendario {
   porcentaje_aprobacion?: number;
   estado_participacion?: string;
 
-  // indica si es evento de los integrantes en caso de ser banda 
+  // indica si es evento de los integrantes en caso de ser banda ( indica si es evento propio 0 ve integrante especifico)
 
   es_evento_integrante?:boolean;
+  // indica si es un evento de banda (si estamos en perfil artista indica si es evento propio o de banda)
+  es_evento_banda?:boolean;
 
 
 

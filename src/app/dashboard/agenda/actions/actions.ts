@@ -1,7 +1,7 @@
 'use server'; 
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
-import { ArtistData, BandData, PlaceData,EventoActualizar, ProfileType, GeoData,ParticipanteEvento, Profile, BlockDateRangeParams, evento, CalendarEvent, eventoCompleto, categoriaEvento, EventoGuardar, EventoCalendario, IntegranteBandaEvento } from '@/types/profile'; 
+import { ArtistData, BandData, PlaceData,EventoActualizar, ProfileType, GeoData,ParticipanteEvento, Profile, BlockDateRangeParams, evento, CalendarEvent, eventoCompleto, categoriaEvento, EventoGuardar, EventoCalendario, IntegranteBandaEvento, PerfilParticipanteEvento } from '@/types/profile'; 
 import { revalidatePath } from 'next/cache';
 import { format } from 'date-fns';
 
@@ -240,7 +240,7 @@ export async function getEventosByPerfilParticipacion(
     }
 
     const { data: eventosDB, error } = await supabaseAdmin
-      .rpc('get_eventos_perfil_estados_v3', params);
+      .rpc('get_eventos_perfil_estados_v4', params);
 
     if (error) {
       console.error(' Error al llamar a get_eventos_perfil_estados:', error);
@@ -303,6 +303,7 @@ export async function getEventosByPerfilParticipacion(
          porcentaje_aprobacion:evento.porcentaje_aprobacion,
         estado_participacion: evento.estado_participacion || '',
         es_evento_integrante:evento.es_evento_integrante ?? false,
+        es_evento_banda:evento.es_evento_banda ?? false,
 
 
 
@@ -557,6 +558,22 @@ export async function aceptarRechazarParticipacionEvento(
       error: err.message || 'Error inesperado al procesar la participación' 
     };
   }
+}
+export async function getParticipacionEventoById(idEvento: string, perfilID: string): Promise<PerfilParticipanteEvento | null> {
+  const supabase = getSupabaseAdmin(); // o el cliente que uses
+
+  const { data, error } = await supabase
+    .rpc('get_participacion_evento_por_id', {
+      event_id: idEvento
+    });
+
+  if (error) {
+    console.error('Error al obtener evento:', error);
+    return null;
+  }
+
+  
+  return data as PerfilParticipanteEvento;
 }
 export async function getEventoByIdV2(idEvento: string, perfilID: string): Promise<EventoCalendario | null> {
   const supabase = getSupabaseAdmin(); // o el cliente que uses
@@ -948,7 +965,7 @@ async function crearParticipacionEvento(
     return false;
   }
   
-  console.log(`✅ Participación creada para ${perfilId}`);
+  console.log(` Participación creada para ${perfilId}`);
   return true;
 }
 
@@ -981,7 +998,7 @@ async function procesarEventoBanda(eventoId: string, id_creador: string, id_part
  * Procesa evento creado por un LOCAL
  */
 async function procesarEventoLocal(eventoId: string,id_creador:string, id_participante:string, tipo_perfil_participante:string) {
-  console.log('🏠 Procesando evento de local');
+  console.log(' Procesando evento de local');
   
 
 
@@ -1013,7 +1030,7 @@ async function procesarEventoLocal(eventoId: string,id_creador:string, id_partic
  * Procesa evento creado por un ARTISTA
  */
 async function procesarEventoArtista(eventoId: string,id_creador:string, id_participante:string, tipo_perfil_participante:string) {
-  console.log('🎤 Procesando evento de artista');
+  console.log(' Procesando evento de artista');
   
   // Si tiene local asignado
   if (tipo_perfil_participante === 'lugar') {
@@ -1203,7 +1220,7 @@ async function invitarParticipanteEvento(
   participanteId: string,
   participanteTipo: string
 ) {
-  console.log(`📨 Invitando participante: ${participanteId} (${participanteTipo})`);
+  console.log(` Invitando participante: ${participanteId} (${participanteTipo})`);
   
   // 1. Si es el creador mismo, solo crear participación (sin solicitud)
   if (participanteId === creadorId) {
@@ -1425,11 +1442,30 @@ export const getProfiles = async (userId: string): Promise<Profile[]> => {
       region_id: p.Region?.nombre_region,
       pais_id: p.Pais?.nombre_pais,
       ciudad_id: p.Comuna?.nombre_comuna,
+      perfil_visible: p.perfil_visible,
     };
   });
 
   return allProfiles;
 };
+
+export async function actualizarperfilVisible (id_perfil:string, perfil_visible:boolean){
+
+  const supabase = getSupabaseAdmin();
+
+  const {data, error } = await supabase
+    .from('perfil')
+    .update({ perfil_visible: perfil_visible })
+    .eq('id_perfil', id_perfil);
+  if (error) {
+    console.error('Error actualizando perfil_visible:', error);
+
+    return { success: false, error: error.message };
+  }
+  return { success: true, message: 'Perfil_visible actualizado correctamente' };  
+
+  
+}
 
 
 export async function updateEvento(data: EventoActualizar) {

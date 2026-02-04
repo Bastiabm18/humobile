@@ -21,6 +21,7 @@ import { PiArrowCircleUpLeftThin } from 'react-icons/pi';
 import { boolean } from 'zod';
 import ConfirmarRechazarEventoModal from './ConfirmarRechazarEventoModal';
 import EliminarParticipacionEventoModal from './EliminarParticipacionEventoModal';
+import ParticipacionArtistasBandaModal from './ParticipacionArtistasBandaModal';
 
 interface EventModalProps {
   event: { id: string } | null; // Solo necesitamos el id para cargar el completo
@@ -39,9 +40,11 @@ export default function EventModal({ event, isOpen, onRequestClose, profile, onE
   const [initialLoading, setInitialLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [esCreador, setEsCreador] = useState(false);
+  const [esBanda, setEsBanda] = useState(false);
   const [esPendiente, setEsPendiente]= useState(false);
   const [showConfirmarRechazarEvento, setShowConfirmarRechazarEvento] = useState(false);
   const [showEliminarEvento, setShowEliminarEvento] = useState(false);
+  const [showEstadoparticipacion, setShowEstadoparticipacion] = useState(false);
   const [eleccion, setEleccion] = useState(Boolean);
 
 
@@ -71,6 +74,7 @@ export default function EventModal({ event, isOpen, onRequestClose, profile, onE
       setEventData(data);
       console.log(data)
       setEsCreador(data.id_creador === profile.id);
+      setEsBanda(profile.tipo === 'banda');
       setEsPendiente(data.estado_participacion === 'pendiente'); // si estado participacion es pendiente se guarda como true 
     } catch (err: any) {
       console.error('Error cargando evento completo:', err);
@@ -80,6 +84,7 @@ export default function EventModal({ event, isOpen, onRequestClose, profile, onE
       setInitialLoading(false);
     }
   };
+  
 
 
   const handleEliminarParticipacion = async (eventoId: string, participanteId: string) => {
@@ -576,7 +581,7 @@ const formatTime = (date: Date | string) => {
                 </>
                      ):(
                   <>
-                    {esPendiente?
+                    {esPendiente && !esBanda?
               
                    (
                    <>
@@ -604,6 +609,14 @@ const formatTime = (date: Date | string) => {
                      ):( 
 
                      <>
+                      <button
+                              onClick ={()=>{  
+                                setShowEstadoparticipacion(true)
+                              
+                                 }}
+                            className="px-3 py-3 bg-sky-700 hover:bg-sky-600 text-white rounded-xl transition-colors flex items-center gap-2">
+                                  Ver Estado Participacion   
+                                 </button>
                       <button
                               onClick ={()=>{  
                                 setShowEliminarEvento(true)
@@ -691,6 +704,16 @@ const formatTime = (date: Date | string) => {
         }}
         onAceptar={handleEliminarParticipacion}
       />
+          )}
+
+          {showEstadoparticipacion && (
+            <ParticipacionArtistasBandaModal
+              isOpen={showEstadoparticipacion}
+              onClose={() => setShowEstadoparticipacion(false)}
+              eventoId={eventData.id}
+              perfilId={profile.id}
+              eventoTitulo={eventData.titulo}
+            />
           )}
     </>
   );
