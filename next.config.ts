@@ -12,6 +12,8 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   /* Tus opciones de configuración aquí */
+  // Añadimos esto para calmar a Next.js 16
+  transpilePackages: ["@serwist/next", "@serwist/sw", "@serwist/precaching"],
 };
 
 export default withSerwist(nextConfig);

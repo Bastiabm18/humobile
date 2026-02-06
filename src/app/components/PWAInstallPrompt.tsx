@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { IoCloudDownloadOutline, IoShareOutline, IoCloseOutline, IoAddSquareOutline } from 'react-icons/io5';
+import { IoCloudDownloadOutline, IoShareOutline, IoCloseOutline, IoAddOutline } from 'react-icons/io5';
 
 export default function PWAInstallPrompt() {
   const [prompt, setPrompt] = useState<any>(null);
@@ -85,7 +85,7 @@ export default function PWAInstallPrompt() {
                       1. Toca el botón compartir <IoShareOutline className="text-blue-400" size={20} />
                     </span>
                     <span className="flex items-center gap-2">
-                      2. Selecciona <span className="font-bold text-white uppercase text-xs">Añadir al inicio</span> <IoAddSquareOutline size={20}/>
+                      2. Selecciona <span className="font-bold text-white uppercase text-xs">Añadir al inicio</span> <IoAddOutline size={20}/>
                     </span>
                   </p>
                 </div>
