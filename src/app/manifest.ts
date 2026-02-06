@@ -2,12 +2,12 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Nombre de tu App',
-    short_name: 'MiApp',
-    description: 'Descripción de mi proyecto en Vercel',
+    name: 'HUMOBILE | CHILE',
+    short_name: 'HUMOBILE',
+    description: 'Humobile | Chile',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
+    background_color: '#000000',
     theme_color: '#000000',
     icons: [
       {
