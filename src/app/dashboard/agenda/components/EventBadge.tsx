@@ -27,7 +27,7 @@ export default function EventBadge({
   onMultipleEventsClick,
   onBlockClick,
 }: EventBadgeProps) {
- // console.log(events);
+  console.log(events);
 
   if (events.length === 0) return null;
 
@@ -454,18 +454,129 @@ const formatTime = (dateString: string | Date) => {
   }
 
   // Vistas SEMANA y DÍA
-  const relevantEvents = events.filter(event => {
+  const relevantEventsS = events.filter(event => {
     if (!slotTime) return false;
     return slotTime >= event.inicio && slotTime < (event.fin || event.inicio);
   });
 
+const relevantEvents = events.filter(event => {
+  if (!slotTime) return false;
+
+ // console.log('=== SIN TRANSFORMAR NADA ===');
+ // console.log('Evento inicio:', event.inicio);
+ // console.log('Evento fin:', event.fin);
+ // console.log('slotTime original:', slotTime);
+ // 
+  // 1. Eventos como están
+  const inicioEvento = event.inicio as unknown as  string;
+  const finEvento = (event.fin as unknown as  string) || inicioEvento;
+  
+  // 2. Si slotTime es Date, comparar DIRECTAMENTE sin convertir a string
+  if (slotTime instanceof Date) {
+    // Comparar timestamps directamente
+    const slotTimestamp = slotTime.getTime();
+    const inicioTimestamp = new Date(inicioEvento).getTime();
+    const finTimestamp = new Date(finEvento).getTime();
+    
+    //console.log('Comparando timestamps:');
+    //console.log('slotTimestamp:', slotTimestamp);
+    //console.log('inicioTimestamp:', inicioTimestamp);
+    //console.log('finTimestamp:', finTimestamp);
+    
+    const resultado = slotTimestamp >= inicioTimestamp && slotTimestamp < finTimestamp;
+    //console.log('Resultado timestamp:', resultado);
+    return resultado;
+  }
+  
+  // 3. Si slotTime ya es string, comparar strings
+  const slotString = slotTime as string;
+  console.log('Comparando strings:', slotString, '>=', inicioEvento, '&&', slotString, '<', finEvento);
+  
+  const resultado = slotString >= inicioEvento && slotString < finEvento;
+  console.log('Resultado string:', resultado);
+  return resultado;
+});
+
   if (relevantEvents.length === 0) return null;
+
+  const getEventoStylesVistaSemana = (estado?: string, es_de_integrante: boolean = false, es_de_banda: boolean = false) => {
+  if (es_de_integrante) {
+    return {
+      bg: 'bg-gray-700/50 hover:bg-gray-600',
+      border: 'border-gray-400',
+      icon: 'text-gray-200',
+      text: 'text-gray-200/90'
+    };
+  } else if (es_de_banda) {
+    switch (estado) {
+      case 'pendiente':
+        return {
+          bg: 'bg-orange-600/50 hover:bg-orange-700',
+          border: 'border-orange-500',
+          icon: 'text-orange-200',
+          text: 'text-orange-200/90'
+        };
+      case 'rechazado':
+        return {
+          bg: 'bg-red-600/50 hover:bg-red-700',
+          border: 'border-red-500',
+          icon: 'text-red-200',
+          text: 'text-red-200/90'
+        };
+      case 'confirmado':
+        return {
+          bg: 'bg-green-700/50 hover:bg-green-800',
+          border: 'border-green-500',
+          icon: 'text-green-200',
+          text: 'text-green-200/90'
+        };
+      default:
+        return {
+          bg: 'bg-gray-800/50 hover:bg-gray-700',
+          border: 'border-gray-500',
+          icon: 'text-gray-200',
+          text: 'text-gray-200/90'
+        };
+    }
+  } else {
+    switch (estado) {
+      case 'pendiente':
+        return {
+          bg: 'bg-orange-600/50 hover:bg-orange-700',
+          border: 'border-orange-500',
+          icon: 'text-orange-200',
+          text: 'text-orange-200/90'
+        };
+      case 'rechazado':
+        return {
+          bg: 'bg-red-600/50 hover:bg-red-700',
+          border: 'border-red-500',
+          icon: 'text-red-200',
+          text: 'text-red-200/90'
+        };
+      case 'confirmado':
+        return {
+          bg: 'bg-sky-700/50 hover:bg-sky-800',
+          border: 'border-sky-500',
+          icon: 'text-sky-200',
+          text: 'text-sky-200/90'
+        };
+      default:
+        return {
+          bg: 'bg-gray-800/50 hover:bg-gray-700',
+          border: 'border-gray-500',
+          icon: 'text-gray-200',
+          text: 'text-gray-200/90'
+        };
+    }
+  }
+};
 
   const relevantBlockedEvents = relevantEvents.filter(event => event.es_bloqueo);
   const relevantNormalEvents = relevantEvents.filter(event => !event.es_bloqueo);
   const hasBlocked = relevantBlockedEvents.length > 0;
   const totalRelevantEvents = relevantEvents.length;
-
+  console.log('eventos semana',relevantNormalEvents)
   return (
     <div className="absolute flex w-full h-full items-center justify-center inset-0 z-30">
       {totalRelevantEvents >= 2 && (
@@ -529,37 +640,47 @@ const formatTime = (dateString: string | Date) => {
           </div>
 
           {/* Desktop */}
-          <div className="hidden md:flex absolute inset-0 z-40 p-0.5 items-center justify-center pointer-events-none">
-            {relevantNormalEvents.map((event, index) => (
-              <div
-                key={event.id || index}
-                className={`absolute w-[99%] h-[90%] rounded-lg pointer-events-auto cursor-pointer transition-all border-l-4 ${
-                  hasBlocked
-                    ? 'bg-red-800/50 hover:bg-red-900 border-red-600'
-                    : 'bg-sky-700/50 hover:bg-sky-800 border-sky-500'
-                }`}
-                title={`${event.titulo}\n${formatTime(event.inicio)} - ${formatTime(event.fin)}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (onEventClick) onEventClick(event);
-                }}
-              >
-                <div className="p-0.5 h-full flex flex-col justify-center overflow-hidden">
-                  <div className="text-[10px] text-white font-medium truncate px-0.5 flex items-center gap-1">
-                    <FaCheckCircle size={8} className={hasBlocked ? 'text-red-200' : 'text-sky-200'} />
-                    <span>{formatEventTitle(event.titulo)}</span>
-                  </div>
-                  {totalRelevantEvents === 1 && (
-                    <div className={`text-[9px] truncate px-0.5 mt-0.5 ${
-                      hasBlocked ? 'text-red-200/90' : 'text-sky-200/90'
-                    }`}>
-                      {formatTime(event.inicio)} - {formatTime(event.fin)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+<div className="hidden md:flex absolute inset-0 z-40 p-0.5 items-center justify-center pointer-events-none">
+  {relevantNormalEvents.map((event, index) => {
+    const styles = getEventoStylesVistaSemana(
+      event.estado_participacion,
+      event.es_evento_integrante,
+      event.es_evento_banda
+    );
+    
+    return (
+      <div
+        key={event.id || index}
+        className={`absolute w-[99%] h-[90%] rounded-lg pointer-events-auto cursor-pointer transition-all ${styles.bg} border-l-4 ${styles.border}`}
+        title={`${event.titulo}\n${formatTime(event.inicio)} - ${formatTime(event.fin)}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (onEventClick) onEventClick(event);
+        }}
+      >
+        <div className="p-0.5 h-full flex flex-col justify-center overflow-hidden">
+          <div className="text-[10px] text-white font-medium truncate px-0.5 flex items-center gap-1">
+            {event.flyer_url ? (
+              <img 
+                src={event.flyer_url} 
+                alt="flyer"
+                className="w-6 h-6 rounded-full object-cover border border-white/20 mr-1"
+              />
+            ) : (
+              <FaCheckCircle size={8} className={styles.icon} />
+            )}
+            <span>{formatEventTitle(event.titulo)}</span>
           </div>
+          {totalRelevantEvents === 1 && (
+            <div className={`text-[9px] truncate px-0.5 mt-0.5 ${styles.text}`}>
+              {formatTime(event.inicio)} - {formatTime(event.fin)}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  })}
+</div>
         </>
       )}
 

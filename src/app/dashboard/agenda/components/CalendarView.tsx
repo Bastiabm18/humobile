@@ -4,10 +4,11 @@
 import { useEffect, useState } from 'react';
 import { Calendar as BigCalendar, dateFnsLocalizer, Views, View } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { format, startOfWeek, getDay, isSameDay, isSameMonth, isWithinInterval } from 'date-fns';
+import { format, startOfWeek, getDay, isSameDay, isSameMonth, isWithinInterval, subHours } from 'date-fns';
 import { HiChevronDown, HiCalendar, HiPlus, HiLockClosed, HiCog } from 'react-icons/hi';
 import { es } from 'date-fns/locale';
 import { FiCalendar, FiCheckCircle, FiClock, FiXCircle } from 'react-icons/fi';
+import { addHours } from 'date-fns';
 
 import BlockDateModal from './BlockDateModal';
 import CrearEventoModal from './CrearEventoModal';
@@ -109,6 +110,9 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
     });
   };
 
+  const defaultScrollTime = new Date();
+    defaultScrollTime.setHours(8, 0, 0);
+
   const CustomDateCellWrapper = ({ children, value }: any) => {
     const dayEvents = getEventsForDate(value);
     const isToday = isSameDay(value, new Date());
@@ -126,7 +130,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
     return (
       <div className="relative h-full w-full">
         {isToday && (
-          <div className="absolute inset-0 border-2 border-indigo-100 bg-indigo-600/50 rounded-lg pointer-events-none z-10" />
+          <div className="absolute inset-0 border-2 border-sky-100 bg-sky-600/50 rounded-lg pointer-events-none z-10" />
         )}
 
         <div className="relative z-10 h-full">
@@ -162,33 +166,38 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
               </button>
             </div>
 
-            <div className="hidden md:flex gap-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setSelectedEventDate(value);
-                  setCreateEventModalOpen(true);
-                }}
-                className="bg-green-600/70  hover:bg-green-700/80 text-green-100/80 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
-                title="Agregar evento"
-              >
-                <HiPlus size={18} />
-              </button>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setBlockModalOpen(true);
-                  setBlockInitialDate(value);
-                }}
-                className="bg-red-600/70 hover:bg-red-800/80 text-red-100 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
-                title="Bloquear día"
-              >
-                <HiLockClosed size={18} />
-              </button>
-            </div>
+              {view == Views.MONTH && (
+                <>
+                            <div className="hidden md:flex gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setSelectedEventDate(value);
+                                setCreateEventModalOpen(true);
+                              }}
+                              className="bg-green-600/70  hover:bg-green-700/80 text-green-100/80 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
+                              title="Agregar evento"
+                            >
+                              <HiPlus size={18} />
+                            </button>
+                            
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setBlockModalOpen(true);
+                                setBlockInitialDate(value);
+                              }}
+                              className="bg-red-600/70 hover:bg-red-800/80 text-red-100 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
+                              title="Bloquear día"
+                            >
+                              <HiLockClosed size={18} />
+                            </button>
+                          </div>
+                </>
+              )}
+              
           </div>
         )}
       </div>
@@ -196,12 +205,21 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
   };
 
   const CustomTimeSlotWrapper = ({ children, value }: any) => {
-    const slotDate = new Date(value);
+   const slotDate = subHours(value, 3); // 16:00 Chile
+  
+  // Ajustar slotMs para que coincida con UTC
+  // 16:00 Chile = 19:00 UTC = slotMs + (3 horas en ms)
+  const slotMs = slotDate.getTime()
+  
+  const eventsAtThisSlot = events.filter(event => {
+    // Los eventos YA están en UTC
+    const inicioMs = Date.parse(event.inicio as unknown as string);
+    const finMs = event.fin 
+      ? Date.parse(event.fin as unknown as string)
+      : inicioMs + 3600000;
     
-    const eventsAtThisSlot = events.filter(event => {
-      return slotDate >= event.inicio && slotDate < (event.fin || event.inicio);
-    });
-
+    return slotMs >= inicioMs && slotMs < finMs;
+  });
     const isBlockedAtThisSlot = eventsAtThisSlot.some(event => event.es_bloqueo);
     const hasEventsAtThisSlot = eventsAtThisSlot.length > 0;
     const isEmptySlot = !hasEventsAtThisSlot && !isBlockedAtThisSlot;
@@ -448,9 +466,10 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
 
         <BigCalendar
           localizer={localizer}
-          events={[]} // ← Como tú dijiste: NO se usan eventos aquí, EventBadge los renderiza
+          events={[]} // NO se usan eventos aquí, EventBadge los renderiza
           startAccessor="start"
           endAccessor="end"
+          scrollToTime={defaultScrollTime}
           view={view}
           onView={setView}
           date={date}

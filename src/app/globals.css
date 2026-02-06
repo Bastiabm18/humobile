@@ -217,7 +217,8 @@ body {
 }
 
 .rbc-today {
-  background-color: #1e1b4b !important;
+  background-color: #0369a1 !important;
+  opacity:  70%;
 }
 
 .rbc-date-cell {
@@ -333,7 +334,7 @@ body {
 }
 
 .rbc-header {
-  color: rgb(44, 159, 174) !important;
+  color: rgb(124, 126, 126) !important;
 }
 
 .rbc-off-range .rbc-date-cell {
@@ -347,7 +348,7 @@ body {
   }
   
   .rbc-header {
-    color: rgb(44, 159, 174) !important;
+    color: rgb(214, 214, 214) !important;
   }
   
   .rbc-off-range .rbc-date-cell {
