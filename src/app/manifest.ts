@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'HUMOBILE | CHILE',
-    short_name: 'HUMOBILE',
+    name: 'Humobile | CHILE',
+    short_name: 'Humobile',
     description: 'Humobile | Chile',
     start_url: '/',
     display: 'standalone',
