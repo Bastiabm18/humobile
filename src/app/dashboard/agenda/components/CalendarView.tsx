@@ -207,7 +207,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
     const isEmptySlot = !hasEventsAtThisSlot && !isBlockedAtThisSlot;
 
     return (
-      <div className="relative h-full w-full group bg-card">
+      <div className="relative h-full w-full group transparent">
         {children}
         
         {hasEventsAtThisSlot && (
@@ -239,7 +239,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
                 <HiCog size={12} />
               </button>
             </div>
-
+{/**
             <div className="hidden md:flex gap-1">
               <button
                 onClick={(e) => {
@@ -267,6 +267,8 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
                 <HiLockClosed size={14} />
               </button>
             </div>
+
+             */}
           </div>
         )}
 

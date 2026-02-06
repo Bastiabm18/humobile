@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "./components/Nav";
 import { AuthProvider } from "@/context/AuthContext";
 import LayoutManager from "./components/LayoutManager";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,6 +53,7 @@ export default function RootLayout({
         <LayoutManager>
         <div className="-mt-16 bg-neutral-950">
         {children}
+        <PWAInstallPrompt />
         </div>
         </LayoutManager>
     </AuthProvider>
