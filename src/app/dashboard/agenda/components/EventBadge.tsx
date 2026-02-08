@@ -15,6 +15,9 @@ interface EventBadgeProps {
   onEventClick?: (event: EventoCalendario) => void;
   onMultipleEventsClick?: (events: EventoCalendario[], date: Date) => void;
   onBlockClick?: (blockEvent: EventoCalendario) => void;
+    //  prop para identificar si es la columna de horas
+  esColumnaHora?: boolean;
+
 }
 
 export default function EventBadge({
@@ -26,9 +29,18 @@ export default function EventBadge({
   onEventClick,
   onMultipleEventsClick,
   onBlockClick,
+  esColumnaHora = false,
 }: EventBadgeProps) {
   console.log(events);
-
+ // ¡NO RENDERIZAR NADA EN LA COLUMNA DE HORAS!
+  if (esColumnaHora) {
+    return null;
+  }
+  
+  if (!date || (view !== 'month' && !slotTime)) {
+    return null;
+  }
+  
   if (events.length === 0) return null;
 
   // Separar eventos normales de bloqueos → usando es_bloqueo directamente
@@ -460,13 +472,13 @@ const formatTime = (dateString: string | Date) => {
   });
 
 const relevantEvents = events.filter(event => {
-  if (!slotTime) return false;
-
+if (!slotTime || !date) return false;
  // console.log('=== SIN TRANSFORMAR NADA ===');
  // console.log('Evento inicio:', event.inicio);
  // console.log('Evento fin:', event.fin);
  // console.log('slotTime original:', slotTime);
  // 
+ 
   // 1. Eventos como están
   const inicioEvento = event.inicio as unknown as  string;
   const finEvento = (event.fin as unknown as  string) || inicioEvento;
@@ -511,28 +523,28 @@ const relevantEvents = events.filter(event => {
     switch (estado) {
       case 'pendiente':
         return {
-          bg: 'bg-orange-600/50 hover:bg-orange-700',
+          bg: 'bg-orange-600/30 hover:bg-orange-700',
           border: 'border-orange-500',
           icon: 'text-orange-200',
           text: 'text-orange-200/90'
         };
       case 'rechazado':
         return {
-          bg: 'bg-red-600/50 hover:bg-red-700',
+          bg: 'bg-red-600/30 hover:bg-red-700',
           border: 'border-red-500',
           icon: 'text-red-200',
           text: 'text-red-200/90'
         };
       case 'confirmado':
         return {
-          bg: 'bg-green-700/50 hover:bg-green-800',
+          bg: 'bg-green-700/30 hover:bg-green-800',
           border: 'border-green-500',
           icon: 'text-green-200',
           text: 'text-green-200/90'
         };
       default:
         return {
-          bg: 'bg-gray-800/50 hover:bg-gray-700',
+          bg: 'bg-gray-800/30 hover:bg-gray-700',
           border: 'border-gray-500',
           icon: 'text-gray-200',
           text: 'text-gray-200/90'
@@ -542,28 +554,28 @@ const relevantEvents = events.filter(event => {
     switch (estado) {
       case 'pendiente':
         return {
-          bg: 'bg-orange-600/50 hover:bg-orange-700',
+          bg: 'bg-orange-600/30 hover:bg-orange-700',
           border: 'border-orange-500',
           icon: 'text-orange-200',
           text: 'text-orange-200/90'
         };
       case 'rechazado':
         return {
-          bg: 'bg-red-600/50 hover:bg-red-700',
+          bg: 'bg-red-600/30 hover:bg-red-700',
           border: 'border-red-500',
           icon: 'text-red-200',
           text: 'text-red-200/90'
         };
       case 'confirmado':
         return {
-          bg: 'bg-sky-700/50 hover:bg-sky-800',
+          bg: 'bg-sky-700/30 hover:bg-sky-800',
           border: 'border-sky-500',
           icon: 'text-sky-200',
           text: 'text-sky-200/90'
         };
       default:
         return {
-          bg: 'bg-gray-800/50 hover:bg-gray-700',
+          bg: 'bg-gray-800/30 hover:bg-gray-700',
           border: 'border-gray-500',
           icon: 'text-gray-200',
           text: 'text-gray-200/90'

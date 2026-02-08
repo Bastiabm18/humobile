@@ -217,10 +217,27 @@ body {
 }
 
 .rbc-today {
-  background-color: #0369a1 !important;
-  opacity:  70%;
+  background-color: rgba(251, 191, 36, 0.05) !important; /* Un toque casi invisible de ámbar */
+  border-left: 2px solid #b45309 !important; /* Borde izquierdo color ámbar quemado */
+  border-right: 2px solid #b45309 !important;
+  position: relative;
+}
+/* Ocultar la fila de 'todo el día' en vista semana y día */
+.rbc-time-view .rbc-allday-cell {
+  display: none !important;
 }
 
+/* También debes ocultar la etiqueta 'all-day' a la izquierda para que no quede el hueco */
+.rbc-time-view .rbc-time-header-content .rbc-row.rbc-allday-header {
+  display: none !important;
+}
+
+/* El número del día resaltado */
+.rbc-today .rbc-off-range-indicator, 
+.rbc-today .rbc-button-link {
+  color: #fbbf24 !important;
+  font-weight: bold;
+}
 .rbc-date-cell {
   position: relative;
   min-height: 100px;

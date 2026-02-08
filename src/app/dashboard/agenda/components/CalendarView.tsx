@@ -55,6 +55,9 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
   const [showDateSelectors, setShowDateSelectors] = useState(false);
 
   const [estadoEvento, setEstadoEvento] = useState<string>(''); // '' = TODOS
+  // states para el selector de horas por arrastre 
+  const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null);
+  const [selectionModalOpen, setSelectionModalOpen] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -79,6 +82,38 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
       setLoading(false);
     }
   };
+
+  const handleSelectSlot = (slotInfo: { start: Date; end: Date; slots: Date[] }) => {
+  console.log('Slot seleccionado:', slotInfo);
+  
+  // Si es clic simple (no arrastre)
+  if (isSameDay(slotInfo.start, slotInfo.end)) {
+    // Para vista mes, ya tienes lógica en CustomDateCellWrapper
+    if (view === Views.MONTH) {
+      return;
+    }
+    
+    // Para vista semana/día - selección de una hora específica
+    setSelectedSlot({
+      start: slotInfo.start,
+      end: addHours(slotInfo.start, 1) // Por defecto 1 hora
+    });
+  } else {
+    // Es arrastre - selección de múltiples horas/días
+    setSelectedSlot({
+      start: slotInfo.start,
+      end: slotInfo.end
+    });
+  }
+  
+  setSelectionModalOpen(true);
+};
+
+// Añade esta función para manejar selección de eventos
+const handleSelectEvent = (event: EventoCalendario) => {
+  console.log('Evento seleccionado:', event);
+  handleEventClick(event);
+};
 
   const handleEventClick = (event: EventoCalendario) => {
     setSelectedEvent(event);
@@ -113,7 +148,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
   const defaultScrollTime = new Date();
     defaultScrollTime.setHours(8, 0, 0);
 
-  const CustomDateCellWrapper = ({ children, value }: any) => {
+  const CustomDateCellWrapper = ({ children, value,resource }: any) => {
     const dayEvents = getEventsForDate(value);
     const isToday = isSameDay(value, new Date());
     const isCurrentMonth = isSameMonth(value, date);
@@ -204,15 +239,15 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
     );
   };
 
-  const CustomTimeSlotWrapper = ({ children, value }: any) => {
-   const slotDate = subHours(value, 3); // 16:00 Chile
-  
-  // Ajustar slotMs para que coincida con UTC
-  // 16:00 Chile = 19:00 UTC = slotMs + (3 horas en ms)
+  const CustomTimeSlotWrapper = ({ children, value,resource }: any) => {
+     // 'resource' indica la columna (undefined = columna de horas, 0 = Lunes, etc.)
+  const esColumnaHora = resource === undefined || resource === 'timeGutter';
+   const slotDate = subHours(value, 3); // ajuste de horas para el utc de la shit!!!
+
   const slotMs = slotDate.getTime()
   
   const eventsAtThisSlot = events.filter(event => {
-    // Los eventos YA están en UTC
+
     const inicioMs = Date.parse(event.inicio as unknown as string);
     const finMs = event.fin 
       ? Date.parse(event.fin as unknown as string)
@@ -228,7 +263,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
       <div className="relative h-full w-full group transparent">
         {children}
         
-        {hasEventsAtThisSlot && (
+        {hasEventsAtThisSlot && !esColumnaHora && (
           <EventBadge 
             profile={perfil}
             events={eventsAtThisSlot}
@@ -238,10 +273,11 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
             onEventClick={handleEventClick}
             onMultipleEventsClick={handleMultipleEventsClick}
             onBlockClick={handleBlockClick}
+             isTimeGutter={esColumnaHora}
           />
         )}
         
-        {isEmptySlot && view !== Views.MONTH && (
+        {isEmptySlot && view !== Views.MONTH && !esColumnaHora && (
           <div className="absolute inset-0 flex items-center justify-center z-20 rounded transition-opacity duration-200">
             <div className="md:hidden">
               <button
@@ -290,7 +326,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
           </div>
         )}
 
-        {isBlockedAtThisSlot && view !== Views.MONTH && (
+        {isBlockedAtThisSlot && view !== Views.MONTH && !esColumnaHora && (
           <div className="absolute inset-0 bg-red-900/40 pointer-events-none z-10 flex items-center justify-center">
             <HiLockClosed size={20} className="text-red-400 opacity-70" />
           </div>
@@ -476,7 +512,9 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
           onNavigate={setDate}
           views={['month', 'week', 'day']}
           culture="es"
-          selectable
+          selectable       
+  onSelectSlot={handleSelectSlot} // ← AÑADE ESTO
+  
           popup
           step={60}
           messages={{
