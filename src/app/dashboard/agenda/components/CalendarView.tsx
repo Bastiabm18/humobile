@@ -185,8 +185,8 @@ const handleSelectEvent = (event: EventoCalendario) => {
         )}
 
         {isEmptyDay && (
-          <div className="absolute inset-0 flex items-center justify-center gap-1 md:gap-2 z-20 bg-neutral-800/40 hover:bg-neutral-700/80 shine rounded-lg transition-opacity duration-200 pointer-events-auto">
-            <div className="md:hidden">
+          <div className="absolute inset-0  flex items-center justify-center gap-1 md:gap-2 z-20 bg-neutral-800/40 hover:bg-neutral-700/80 shine rounded-lg transition-opacity duration-200 pointer-events-auto">
+            <div className="md:hidden border border-neutral-500/40 w-[99vw] h-[99%] flex">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -194,10 +194,10 @@ const handleSelectEvent = (event: EventoCalendario) => {
                   setSelectedDate(value);
                   setShowActionModal(true);
                 }}
-                className="bg-green-700/70 hover:bg-green-500 text-green-100 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
+                className=" text-green-100 p-2 w-full h-full  shadow-xl hover:scale-110 transition-all duration-200"
                 title="Gestionar día"
               >
-                <HiCog size={16} />
+              
               </button>
             </div>
 
@@ -273,13 +273,13 @@ const handleSelectEvent = (event: EventoCalendario) => {
             onEventClick={handleEventClick}
             onMultipleEventsClick={handleMultipleEventsClick}
             onBlockClick={handleBlockClick}
-             isTimeGutter={esColumnaHora}
+             esColumnaHora={esColumnaHora}
           />
         )}
         
         {isEmptySlot && view !== Views.MONTH && !esColumnaHora && (
           <div className="absolute inset-0 flex items-center justify-center z-20 rounded transition-opacity duration-200">
-            <div className="md:hidden">
+            <div className="md:hidden  border border-neutral-500/40 w-[99vw] h-[99%] flex">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -287,10 +287,10 @@ const handleSelectEvent = (event: EventoCalendario) => {
                   setSelectedDate(slotDate);
                   setShowActionModal(true);
                 }}
-                className="bg-green-600 hover:bg-green-500 text-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-all"
+                className="bg-neutral-800/30 hover:bg-green-500 w-full h-full text-white p-1.5 shadow-lg hover:scale-110 transition-all"
                 title="Gestionar horario"
               >
-                <HiCog size={12} />
+              
               </button>
             </div>
 {/**
