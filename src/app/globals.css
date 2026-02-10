@@ -209,6 +209,10 @@ body {
   padding: 6px 10px !important;
   margin: 4px 8px;
 }
+.rbc-events-container{
+
+  border: none !important;
+}
 
 .rbc-day-bg {
   transition: all 0.2s ease;
@@ -273,13 +277,14 @@ body {
 }
 /* ANCHO MÍNIMO DE CADA COLUMNA EN VISTA SEMANA/DÍA */
 .rbc-timeslot-group {
-  border: 1px solid #454545 !important;
-
+  border:none !important;
+  
 }
 .rbc-day-slot,
 .rbc-time-column {
   min-width: 40px !important;   /* Valor base para móvil */
-   
+  border:none !important;
+  
 }
 
 /* En desktop: forzamos ancho mínimo más grande y cómodo */
@@ -287,7 +292,7 @@ body {
   .rbc-day-slot,
   .rbc-time-column {
     min-width: 40px !important;   /* AJUSTA ESTE VALOR A TU GUSTO */
-     border: 1px solid #454545 !important;
+    border:none !important;
   }
 }
 
@@ -295,14 +300,10 @@ body {
   .rbc-day-slot,
   .rbc-time-column {
     min-width: 100px !important;   /* En pantallas grandes queda PERFECTO */
-     border: 1px solid #454545 !important;
+     border:none !important;
   }
 }
 
-.rbc-events-container{
-
-  border: 1px solid #454545 !important;
-}
 .rbc-day-slot {
   position: relative;
   border: 1px solid #454545 !important;
