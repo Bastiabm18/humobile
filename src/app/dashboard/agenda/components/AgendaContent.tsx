@@ -58,7 +58,7 @@ export default function AgendaContent({
   }
 
   return (
-    <div className="w-[95vw] md:max-w-7xl flex flex-col mx-auto">
+    <div className="w-[95vw] md:w-[85vw] flex flex-col mx-auto">
       <div className="text-4xl font-bold py-15 text-center text-white">
       <NeonSign/>
       </div>

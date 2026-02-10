@@ -29,7 +29,7 @@ const localizer = dateFnsLocalizer({
 });
 
 export default function CalendarView({ profileId, perfil }: { profileId: string; perfil: Profile }) {
-  const [view, setView] = useState<View>(Views.MONTH);
+  const [view, setView] = useState<View>(Views.WEEK);
   const [date, setDate] = useState(new Date());
   const [showActionModal, setShowActionModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
