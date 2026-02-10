@@ -31,7 +31,7 @@ import { AiFillSetting } from 'react-icons/ai';
 import { RiCustomerService2Fill, RiDashboardFill } from "react-icons/ri";
 import { HiCube } from "react-icons/hi";
 import { GiCube, GiTakeMyMoney } from "react-icons/gi";
-import { TbCube, TbMessageQuestion } from "react-icons/tb";
+import { TbCube, TbMessageQuestion, TbWorldSearch } from "react-icons/tb";
 import { MENU_ITEMS } from '../constants/menu';
 import { UserRole } from '@/types/role';
 import { BiCalendarCheck, BiCubeAlt } from 'react-icons/bi';
@@ -112,6 +112,7 @@ const menuItems = MENU_ITEMS.filter(item => {
       'preguntas frecuentes': <FaQuestion className="text-neutral-400/30 text-4xl" />,
       'solicitudes': <TbMessageQuestion className="text-neutral-500/30 text-4xl" />,
       'cuenta': <MdOutlinePersonPin className="text-neutral-400/30 text-4xl" />,
+      'explorar': <TbWorldSearch className="text-neutral-400/30 text-4xl" />,
       'representante': <GrUserManager className="text-neutral-400/30 text-4xl" />,
       'productor': <GiTakeMyMoney className="text-neutral-400/30 text-4xl" />,
       'salir': <BsBackspace className="text-neutral-400/30 text-4xl" />,

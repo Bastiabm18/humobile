@@ -29,6 +29,7 @@ const localizer = dateFnsLocalizer({
 });
 
 export default function CalendarView({ profileId, perfil }: { profileId: string; perfil: Profile }) {
+  // PARTIMOS EN VISTA SEMANA??
   const [view, setView] = useState<View>(Views.WEEK);
   const [date, setDate] = useState(new Date());
   const [showActionModal, setShowActionModal] = useState(false);
