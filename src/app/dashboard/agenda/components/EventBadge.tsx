@@ -115,7 +115,7 @@ const formatTime = (dateString: string | Date) => {
     const totalEvents = blockedEvents.length + normalEvents.length;
 
     return (
-      <div className="absolute bottom-1 left-0 right-0 px-0.5 z-20">
+      <div className="absolute bottom-1 left-0 right-0 px-0.5 z-30">
         {totalEvents === 1 && (
           <div>
             {/* UN SOLO EVENTO NORMAL */}
@@ -128,6 +128,7 @@ const formatTime = (dateString: string | Date) => {
                   title={`${normalEvents[0].titulo} (${formatTime(normalEvents[0].inicio)} - ${formatTime(normalEvents[0].fin)})`}
                   onClick={(e) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     if(!normalEvents[0].es_evento_integrante){
 
                       if (onEventClick) onEventClick(normalEvents[0]);
@@ -188,6 +189,7 @@ const formatTime = (dateString: string | Date) => {
                   title={`Día bloqueado: ${blockedEvents[0].motivo_bloqueo || 'Sin motivo'}`}
                   onClick={(e) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     if(!blockedEvents[0].es_evento_integrante){
                       if (onBlockClick) onBlockClick(blockedEvents[0]);
                     
@@ -235,7 +237,8 @@ const formatTime = (dateString: string | Date) => {
                   className="text-[10px] md:text-sm px-2 py-0.5 w-full items-center justify-center flex rounded-md h-10 md:h-20 bg-yellow-600/50 hover:bg-yellow-700 text-yellow-50 font-bold border-l-4 border-yellow-500 group"
                   title={`${totalEvents} eventos en este día`}
                   onClick={(e) => {
-                    e.stopPropagation();
+                    e.stopPropagation();                    
+                    e.preventDefault();
                     if (onMultipleEventsClick) onMultipleEventsClick(events, date);
                   }}
                 >

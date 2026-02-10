@@ -389,3 +389,39 @@ body {
     color: #9ca3af !important;
   }
 }
+
+
+/* COLORES VISIBLES PARA LA SELECCIÓN */
+.rbc-selected {
+  background-color: rgba(59, 130, 246, 0.3) !important; /* Azul semitransparente */
+  border: 2px solid #3b82f6 !important; /* Borde azul */
+}
+
+/* Para la vista mes */
+.rbc-month-view .rbc-selected {
+  background-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Para la vista semana/día */
+.rbc-time-view .rbc-selected {
+  background-color: rgba(59, 130, 246, 0.5) !important;
+  border: 2px dashed #3b82f6 !important;
+}
+
+/* Efecto hover también más visible */
+.rbc-day-slot .rbc-time-slot:hover {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Color cuando estás arrastrando */
+.rbc-slot-selection {
+  background-color: rgba(34, 107, 197, 0.4) !important; /* Verde cuando arrastras */
+  border: 2px solid #228cc5 !important;
+  z-index: 9999 !important;
+}
+
+/* Texto dentro de la selección */
+.rbc-slot-selection {
+  color: white !important;
+  font-weight: bold !important;
+}

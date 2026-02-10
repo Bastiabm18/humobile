@@ -64,6 +64,21 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
   const [selectedFechaFin, setSelectedFechaFin] = useState<Date | null >(null);
 
   const [showHorasMultiplesModal, setShowHorasMultiplesModal] = useState(false);
+  const [isButtonClick, setIsButtonClick] = useState(false);
+
+
+  useEffect(() => {
+  // Resetear isButtonClick después de cierto tiempo por si acaso MNO CAMBIA EL ESTADO A FALSE
+  // IMPORTANTE PARA QUE FUNCIONE SELECTABLE EN VISTA SEMANA Y DIA
+  const timer = setTimeout(() => {
+    if (isButtonClick) {
+      setIsButtonClick(false);
+    }
+  }, 500);
+  
+  return () => clearTimeout(timer);
+}, [isButtonClick]);
+
 
   useEffect(() => {
     fetchEvents();
@@ -89,48 +104,40 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
     }
   };
 
- const handleSelectSlot = (slotInfo: { start: Date; end: Date; slots: Date[] }) => {
+const handleSelectSlot = (slotInfo: { start: Date; end: Date; slots: Date[] }) => {
+  // Si el clic viene de un botón, IGNORAR completamente
+  if (isButtonClick) {
+    console.log('Ignorando selectSlot porque es clic en botón');
+    setIsButtonClick(false); // Reseteamos inmediatamente
+    return;
+  }
 
-  // 1. Verificar si ya existe un evento o bloqueo en este rango
+  // Tu lógica original sigue aquí SIN CAMBIOS:
   const hasExistingEvent = events.some(event => {
     const eventStart = new Date(event.inicio).getTime();
     const eventEnd = event.fin ? new Date(event.fin).getTime() : eventStart + 3600000;
     const slotStart = slotInfo.start.getTime();
     const slotEnd = slotInfo.end.getTime();
 
-    // Lógica de solapamiento: (InicioA < FinB) y (FinA > InicioB)
     return slotStart < eventEnd && slotEnd > eventStart;
   });
 
-  // 2. Si hay un evento, no hacemos nada (dejamos que el clic lo maneje el EventBadge)
   if (hasExistingEvent) {
     return;
   }
-  // 1. Extraer y formatear
+  
   const fechaInicio = format(slotInfo.start, 'yyyy-MM-dd HH:mm:ss');
   const fechaFin = format(slotInfo.end, 'yyyy-MM-dd HH:mm:ss');
 
   console.log('Inicio:', fechaInicio);
   console.log('Fin:', fechaFin);
-  setSelectedFechaIni(fechaInicio as unknown as  Date);
-  setSelectedFechaFin(fechaFin as unknown as Date)
-  setShowHorasMultiplesModal(true);
-  // Tu lógica existente...
-  if (isSameDay(slotInfo.start, slotInfo.end)) {
-    if (view === Views.MONTH) return;
-    
-    setSelectedSlot({
-      start: slotInfo.start,
-      end: addHours(slotInfo.start, 1)
-    });
-  } else {
-    setSelectedSlot({
-      start: slotInfo.start,
-      end: slotInfo.end
-    });
-  }
+  setSelectedFechaIni(fechaInicio as unknown as Date);
+  setSelectedFechaFin(fechaFin as unknown as Date);
   
-  setSelectionModalOpen(true);
+  // Solo mostrar modal en vista SEMANA/DÍA
+  if (view !== Views.MONTH) {
+    setShowHorasMultiplesModal(true);
+  }
 };
 
 // Añade esta función para manejar selección de eventos
@@ -227,11 +234,12 @@ const handleSelectEvent = (event: EventoCalendario) => {
 
               {view == Views.MONTH && (
                 <>
-                            <div className="hidden md:flex gap-2">
+                            <div className="hidden md:flex gap-2 z-40">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
+                                 setIsButtonClick(true); 
                                 setSelectedEventDate(value);
                                 setCreateEventModalOpen(true);
                               }}
@@ -245,6 +253,7 @@ const handleSelectEvent = (event: EventoCalendario) => {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
+                                 setIsButtonClick(true); 
                                 setBlockModalOpen(true);
                                 setBlockInitialDate(value);
                               }}
@@ -302,7 +311,7 @@ const handleSelectEvent = (event: EventoCalendario) => {
         )}
         
         {isEmptySlot && view !== Views.MONTH && !esColumnaHora && (
-          <div className="absolute inset-0 flex items-center justify-center z-20 rounded transition-opacity duration-200">
+          <div className="absolute inset-0 flex items-center justify-center z-40 rounded transition-opacity duration-200">
             <div className="md:hidden  border border-neutral-500/40 w-[99vw] h-[99%] flex">
               <button
                 onClick={(e) => {
@@ -571,8 +580,8 @@ const handleSelectEvent = (event: EventoCalendario) => {
         <div className="fixed inset-0 bg-neutral-900/80 flex items-center justify-center z-50 p-4 md:hidden">
           <div className="bg-neutral-800 rounded-2xl p-6 w-full max-w-sm">
             <h3 className="text-white text-lg font-bold mb-4">
-              Gestiona {format(selectedDate, 'dd/MM/yyyy')}
-            </h3>
+              Gestionar    {format(selectedDate, 'dd/MM/yyyy')}
+             </h3>
             
             <div className="flex gap-3 mb-4">
               <button
@@ -614,8 +623,12 @@ const handleSelectEvent = (event: EventoCalendario) => {
         <div className="fixed inset-0 bg-neutral-900/80 flex items-center justify-center z-50 p-4 ">
           <div className="bg-neutral-800 rounded-2xl p-6 w-full max-w-sm">
             <h3 className="text-white text-lg font-bold mb-4">
-              Gestiona {selectedFechaIni ? format(selectedFechaIni, 'dd-MM-yyyy HH:mm:ss') : ''}
+              Gestiona {selectedFechaIni ? format(selectedFechaIni, 'dd-MM-yyyy') : ''}
             </h3>
+            <h4>
+            Periodo: {selectedFechaIni ? format(selectedFechaIni, 'HH:mm:ss') : ''} - {selectedFechaFin ? format(selectedFechaFin, 'HH:mm:ss') : ''}
+            </h4>
+    
             
             <div className="flex gap-3 mb-4">
               <button
