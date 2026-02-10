@@ -481,7 +481,7 @@ const handleSelectEvent = (event: EventoCalendario) => {
         </button>
 
         {showDateSelectors && (
-          <div className="absolute top-16 right-4 z-30 bg-neutral-800/95 backdrop-blur-sm p-4 rounded-xl border border-neutral-700 shadow-2xl w-64">
+          <div className="absolute top-16 right-4 z-50 bg-neutral-800/95 backdrop-blur-sm p-4 rounded-xl border border-neutral-700 shadow-2xl w-64">
             <div className="mb-3">
               <label className="block text-sm text-neutral-300 mb-1">Seleccionar Mes</label>
               <div className="grid grid-cols-3 gap-2">
