@@ -69,7 +69,8 @@ export default function AgendaContent({
             Selecciona un perfil para ver su agenda
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="flex w-full items-center justify-center ">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:w-7xl ">
                 {profiles.map((profile) => {
                   const data = profile as any;
                   const name = data.nombre|| 'Sin nombre';
@@ -155,6 +156,7 @@ export default function AgendaContent({
                     </div>
                   );
                 })}
+          </div>
           </div>
         </>
     ) : (
