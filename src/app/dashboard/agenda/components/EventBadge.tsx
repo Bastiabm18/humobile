@@ -466,17 +466,10 @@ const formatTime = (dateString: string | Date) => {
   }
 
   // Vistas SEMANA y DÍA
-  const relevantEventsS = events.filter(event => {
-    if (!slotTime) return false;
-    return slotTime >= event.inicio && slotTime < (event.fin || event.inicio);
-  });
 
 const relevantEvents = events.filter(event => {
 if (!slotTime || !date) return false;
- // console.log('=== SIN TRANSFORMAR NADA ===');
- // console.log('Evento inicio:', event.inicio);
- // console.log('Evento fin:', event.fin);
- // console.log('slotTime original:', slotTime);
+
  // 
  
   // 1. Eventos como están
@@ -489,12 +482,7 @@ if (!slotTime || !date) return false;
     const slotTimestamp = slotTime.getTime();
     const inicioTimestamp = new Date(inicioEvento).getTime();
     const finTimestamp = new Date(finEvento).getTime();
-    
-    //console.log('Comparando timestamps:');
-    //console.log('slotTimestamp:', slotTimestamp);
-    //console.log('inicioTimestamp:', inicioTimestamp);
-    //console.log('finTimestamp:', finTimestamp);
-    
+
     const resultado = slotTimestamp >= inicioTimestamp && slotTimestamp < finTimestamp;
     //console.log('Resultado timestamp:', resultado);
     return resultado;
@@ -604,8 +592,8 @@ if (!slotTime || !date) return false;
       )}
 
       {hasBlocked && (
-        <div className="absolute inset-0 z-40 pointer-events-none">
-          <div className="absolute inset-0 bg-red-900/50 hover:bg-red-950 rounded-md border-2 border-red-700 pointer-events-auto cursor-pointer"
+       
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg w-[99%] h-[99%] bg-red-900/50 hover:bg-red-950 border-2 border-red-700 pointer-events-auto cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               if (onBlockClick && relevantBlockedEvents[0]) {
@@ -619,18 +607,14 @@ if (!slotTime || !date) return false;
               </div>
             </div>
           </div>
-        </div>
+     
       )}
 
-      {relevantNormalEvents.length > 0 && totalRelevantEvents === 1 && (
+      { relevantNormalEvents.length > 0 && totalRelevantEvents === 1 && (
         <>
-          {/* Móvil */}
+          {/*CELULAR */}
           <div className="md:hidden flex items-center justify-center w-full h-full z-10">
-            <div className={`flex items-center justify-center rounded-lg w-[90%] h-[50%] gap-0.5 ${
-              hasBlocked
-                ? 'bg-red-800/50 hover:bg-red-900 border border-red-700'
-                : 'bg-sky-700/50 hover:bg-sky-800 border border-sky-600'
-            }`}>
+            <div className={`flex items-center justify-center rounded-lg w-[90%] h-[90%] gap-0.5 bg-sky-700/50 hover:bg-sky-800 border border-sky-600`}>
               {relevantNormalEvents.slice(0, 2).map((event, index) => (
                 <div
                   key={event.id || index}
@@ -641,58 +625,56 @@ if (!slotTime || !date) return false;
                     if (onEventClick) onEventClick(event);
                   }}
                 >
-                  {hasBlocked ? (
-                    <FaCheckCircle size={16} className="text-red-200" />
-                  ) : (
+                
                     <FaCheckCircle size={16} className="text-sky-200" />
-                  )}
+                 
                 </div>
               ))}
             </div>
           </div>
 
           {/* Desktop */}
-<div className="hidden md:flex absolute inset-0 z-40 p-0.5 items-center justify-center pointer-events-none">
-  {relevantNormalEvents.map((event, index) => {
-    const styles = getEventoStylesVistaSemana(
-      event.estado_participacion,
-      event.es_evento_integrante,
-      event.es_evento_banda
-    );
-    
-    return (
-      <div
-        key={event.id || index}
-        className={`absolute w-[99%] h-[90%] rounded-lg pointer-events-auto cursor-pointer transition-all ${styles.bg} border-l-4 ${styles.border}`}
-        title={`${event.titulo}\n${formatTime(event.inicio)} - ${formatTime(event.fin)}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (onEventClick) onEventClick(event);
-        }}
-      >
-        <div className="p-0.5 h-full flex flex-col justify-center overflow-hidden">
-          <div className="text-[10px] text-white font-medium truncate px-0.5 flex items-center gap-1">
-            {event.flyer_url ? (
-              <img 
-                src={event.flyer_url} 
-                alt="flyer"
-                className="w-6 h-6 rounded-full object-cover border border-white/20 mr-1"
-              />
-            ) : (
-              <FaCheckCircle size={8} className={styles.icon} />
-            )}
-            <span>{formatEventTitle(event.titulo)}</span>
-          </div>
-          {totalRelevantEvents === 1 && (
-            <div className={`text-[9px] truncate px-0.5 mt-0.5 ${styles.text}`}>
-              {formatTime(event.inicio)} - {formatTime(event.fin)}
+            <div className="hidden md:flex absolute inset-0 z-40 p-0.5 items-center justify-center pointer-events-none">
+              {relevantNormalEvents.map((event, index) => {
+                const styles = getEventoStylesVistaSemana(
+                  event.estado_participacion,
+                  event.es_evento_integrante,
+                  event.es_evento_banda
+                );
+                
+                return (
+                  <div
+                    key={event.id || index}
+                    className={`absolute w-[99%] h-[90%] rounded-lg pointer-events-auto cursor-pointer transition-all ${styles.bg} border-l-4 ${styles.border}`}
+                    title={`${event.titulo}\n${formatTime(event.inicio)} - ${formatTime(event.fin)}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onEventClick) onEventClick(event);
+                    }}
+                  >
+                    <div className="p-0.5 h-full flex flex-col justify-center overflow-hidden">
+                      <div className="text-[10px] text-white font-medium truncate px-0.5 flex items-center gap-1">
+                        {event.flyer_url ? (
+                          <img 
+                            src={event.flyer_url} 
+                            alt="flyer"
+                            className="w-6 h-6 rounded-full object-cover border border-white/20 mr-1"
+                          />
+                        ) : (
+                          <FaCheckCircle size={8} className={styles.icon} />
+                        )}
+                        <span>{formatEventTitle(event.titulo)}</span>
+                      </div>
+                      {totalRelevantEvents === 1 && (
+                        <div className={`text-[9px] truncate px-0.5 mt-0.5 ${styles.text}`}>
+                          {formatTime(event.inicio)} - {formatTime(event.fin)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
-        </div>
-      </div>
-    );
-  })}
-</div>
         </>
       )}
 

@@ -112,7 +112,8 @@ body {
 .rbc-time-view {
   border-radius: 1rem;
   overflow: hidden;
-  border: 1px solid #374151;
+  border: 3px solid #454545 !important ;
+
 }
 
 
@@ -162,6 +163,7 @@ body {
   .rbc-row-content {
     height: calc(100% - 24px) !important;
     margin-top: 24px;
+    
   }
 }
 
@@ -230,6 +232,7 @@ body {
 /* También debes ocultar la etiqueta 'all-day' a la izquierda para que no quede el hueco */
 .rbc-time-view .rbc-time-header-content .rbc-row.rbc-allday-header {
   display: none !important;
+  
 }
 
 /* El número del día resaltado */
@@ -260,18 +263,23 @@ body {
 
 .rbc-time-content {
   position: relative;
-
+  border: 1px solid #454545 !important;
 }
 
 .rbc-time-slot {
   position: relative;
   min-height: 60px;
-  
+   border: 1px solid #454545 !important;
 }
 /* ANCHO MÍNIMO DE CADA COLUMNA EN VISTA SEMANA/DÍA */
+.rbc-timeslot-group {
+  border: 1px solid #454545 !important;
+
+}
 .rbc-day-slot,
 .rbc-time-column {
   min-width: 40px !important;   /* Valor base para móvil */
+   
 }
 
 /* En desktop: forzamos ancho mínimo más grande y cómodo */
@@ -279,6 +287,7 @@ body {
   .rbc-day-slot,
   .rbc-time-column {
     min-width: 40px !important;   /* AJUSTA ESTE VALOR A TU GUSTO */
+     border: 1px solid #454545 !important;
   }
 }
 
@@ -286,11 +295,17 @@ body {
   .rbc-day-slot,
   .rbc-time-column {
     min-width: 100px !important;   /* En pantallas grandes queda PERFECTO */
+     border: 1px solid #454545 !important;
   }
 }
 
+.rbc-events-container{
+
+  border: 1px solid #454545 !important;
+}
 .rbc-day-slot {
   position: relative;
+  border: 1px solid #454545 !important;
 }
 
 .rbc-time-header-group {
@@ -352,6 +367,7 @@ body {
 
 .rbc-header {
   color: rgb(124, 126, 126) !important;
+  border: 1px solid #454545 !important;
 }
 
 .rbc-off-range .rbc-date-cell {

@@ -59,6 +59,12 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null);
   const [selectionModalOpen, setSelectionModalOpen] = useState(false);
 
+  // states para seleccion multiple en vista semana 
+  const [selectedFechaIni, setSelectedFechaIni] = useState<Date | null >(null);
+  const [selectedFechaFin, setSelectedFechaFin] = useState<Date | null >(null);
+
+  const [showHorasMultiplesModal, setShowHorasMultiplesModal] = useState(false);
+
   useEffect(() => {
     fetchEvents();
   }, [profileId, estadoEvento]);
@@ -83,23 +89,41 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
     }
   };
 
-  const handleSelectSlot = (slotInfo: { start: Date; end: Date; slots: Date[] }) => {
-  console.log('Slot seleccionado:', slotInfo);
-  
-  // Si es clic simple (no arrastre)
+ const handleSelectSlot = (slotInfo: { start: Date; end: Date; slots: Date[] }) => {
+
+  // 1. Verificar si ya existe un evento o bloqueo en este rango
+  const hasExistingEvent = events.some(event => {
+    const eventStart = new Date(event.inicio).getTime();
+    const eventEnd = event.fin ? new Date(event.fin).getTime() : eventStart + 3600000;
+    const slotStart = slotInfo.start.getTime();
+    const slotEnd = slotInfo.end.getTime();
+
+    // Lógica de solapamiento: (InicioA < FinB) y (FinA > InicioB)
+    return slotStart < eventEnd && slotEnd > eventStart;
+  });
+
+  // 2. Si hay un evento, no hacemos nada (dejamos que el clic lo maneje el EventBadge)
+  if (hasExistingEvent) {
+    return;
+  }
+  // 1. Extraer y formatear
+  const fechaInicio = format(slotInfo.start, 'yyyy-MM-dd HH:mm:ss');
+  const fechaFin = format(slotInfo.end, 'yyyy-MM-dd HH:mm:ss');
+
+  console.log('Inicio:', fechaInicio);
+  console.log('Fin:', fechaFin);
+  setSelectedFechaIni(fechaInicio as unknown as  Date);
+  setSelectedFechaFin(fechaFin as unknown as Date)
+  setShowHorasMultiplesModal(true);
+  // Tu lógica existente...
   if (isSameDay(slotInfo.start, slotInfo.end)) {
-    // Para vista mes, ya tienes lógica en CustomDateCellWrapper
-    if (view === Views.MONTH) {
-      return;
-    }
+    if (view === Views.MONTH) return;
     
-    // Para vista semana/día - selección de una hora específica
     setSelectedSlot({
       start: slotInfo.start,
-      end: addHours(slotInfo.start, 1) // Por defecto 1 hora
+      end: addHours(slotInfo.start, 1)
     });
   } else {
-    // Es arrastre - selección de múltiples horas/días
     setSelectedSlot({
       start: slotInfo.start,
       end: slotInfo.end
@@ -326,11 +350,14 @@ const handleSelectEvent = (event: EventoCalendario) => {
           </div>
         )}
 
+    {/** 
+            * 
         {isBlockedAtThisSlot && view !== Views.MONTH && !esColumnaHora && (
           <div className="absolute inset-0 bg-red-900/40 pointer-events-none z-10 flex items-center justify-center">
             <HiLockClosed size={20} className="text-red-400 opacity-70" />
           </div>
         )}
+          */}
       </div>
     );
   };
@@ -422,6 +449,7 @@ const handleSelectEvent = (event: EventoCalendario) => {
       </div>
     );
   };
+  
 
   return (
     <>
@@ -574,6 +602,49 @@ const handleSelectEvent = (event: EventoCalendario) => {
             
             <button
               onClick={() => setShowActionModal(false)}
+              className="w-full bg-neutral-500 hover:bg-neutral-600 text-white py-2 rounded-lg"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+      {/* Modal de acciones vista semana */}
+      { showHorasMultiplesModal && selectedFechaIni && selectedFechaFin && (
+        <div className="fixed inset-0 bg-neutral-900/80 flex items-center justify-center z-50 p-4 ">
+          <div className="bg-neutral-800 rounded-2xl p-6 w-full max-w-sm">
+            <h3 className="text-white text-lg font-bold mb-4">
+              Gestiona {selectedFechaIni ? format(selectedFechaIni, 'dd-MM-yyyy HH:mm:ss') : ''}
+            </h3>
+            
+            <div className="flex gap-3 mb-4">
+              <button
+                onClick={() => {
+                  setSelectedEventDate(selectedFechaIni);
+                  setCreateEventModalOpen(true);
+                  setShowHorasMultiplesModal(false);
+                }}
+                className="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+              >
+                <HiPlus size={20} />
+                Evento
+              </button>
+              
+              <button
+                onClick={() => {
+                  setBlockModalOpen(true);
+                  setBlockInitialDate(selectedDate);
+                  setShowHorasMultiplesModal(false);
+                }}
+                className="flex-1 bg-red-600 hover:bg-red-800 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+              >
+                <HiLockClosed size={20} />
+                Bloquear
+              </button>
+            </div>
+            
+            <button
+              onClick={() => setShowHorasMultiplesModal(false)}
               className="w-full bg-neutral-500 hover:bg-neutral-600 text-white py-2 rounded-lg"
             >
               Cancelar
