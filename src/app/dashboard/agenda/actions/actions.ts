@@ -1,7 +1,7 @@
 'use server'; 
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
-import { ArtistData, BandData, PlaceData,EventoActualizar, ProfileType, GeoData,ParticipanteEvento, Profile, BlockDateRangeParams, evento, CalendarEvent, eventoCompleto, categoriaEvento, EventoGuardar, EventoCalendario, IntegranteBandaEvento, PerfilParticipanteEvento } from '@/types/profile'; 
+import { ArtistData, BandData, PlaceData,EventoActualizar, ProfileType, GeoData,ParticipanteEvento, Profile, BlockDateRangeParams, evento, CalendarEvent, eventoCompleto, categoriaEvento, EventoGuardar, EventoCalendario, IntegranteBandaEvento, PerfilParticipanteEvento, IntegranteEventoData } from '@/types/profile'; 
 import { revalidatePath } from 'next/cache';
 import { format } from 'date-fns';
 
@@ -240,7 +240,7 @@ export async function getEventosByPerfilParticipacion(
     }
 
     const { data: eventosDB, error } = await supabaseAdmin
-      .rpc('get_eventos_perfil_estados_v4', params);
+      .rpc('get_eventos_perfil_estados_v5', params);
 
     if (error) {
       console.error(' Error al llamar a get_eventos_perfil_estados:', error);
@@ -2099,5 +2099,28 @@ async function asegurarParticipacionCreador(supabaseAdmin: any, eventData: any) 
         perfil_id: eventData.creator_profile_id,
         estado: 'pendiente'
       }]);
+  }
+}
+
+export async function getIntegrantesEventoData(
+  bandaId: string,
+  eventoId: string
+): Promise<IntegranteEventoData[]> {
+
+const supabaseAdmin = getSupabaseAdmin();
+  try {
+    const { data, error } = await supabaseAdmin
+      .rpc('integrantes_evento_data', {
+        p_banda_id: bandaId,
+        p_evento_id: eventoId
+      });
+
+    if (error) throw error;
+    
+    return data || [];
+    
+  } catch (error: any) {
+    console.error('Error en getIntegrantesEventoData:', error);
+    throw new Error(error.message || 'Error al cargar integrantes del evento');
   }
 }

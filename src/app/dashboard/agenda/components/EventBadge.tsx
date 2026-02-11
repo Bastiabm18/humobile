@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { FaCheckCircle } from 'react-icons/fa';
 import { HiCalendar, HiLockClosed } from 'react-icons/hi';
 import { EventoCalendario } from '@/types/profile';
+import { FaCalendar } from 'react-icons/fa6';
 
 interface EventBadgeProps {
   events: EventoCalendario[];
@@ -12,9 +13,9 @@ interface EventBadgeProps {
   date: Date;
   view: string;
   slotTime?: Date;
-  onEventClick?: (event: EventoCalendario) => void;
+  onEventClick?: (event: EventoCalendario, es_evento_integrante:Boolean | undefined) => void;
   onMultipleEventsClick?: (events: EventoCalendario[], date: Date) => void;
-  onBlockClick?: (blockEvent: EventoCalendario) => void;
+  onBlockClick?: (blockEvent: EventoCalendario , es_evento_integrante:Boolean | undefined) => void;
     //  prop para identificar si es la columna de horas
   esColumnaHora?: boolean;
 
@@ -31,7 +32,7 @@ export default function EventBadge({
   onBlockClick,
   esColumnaHora = false,
 }: EventBadgeProps) {
- // console.log(events);
+  //console.log(profile);
  // ¡NO RENDERIZAR NADA EN LA COLUMNA DE HORAS!
   if (esColumnaHora) {
     return null;
@@ -45,7 +46,17 @@ export default function EventBadge({
 
   // Separar eventos normales de bloqueos → usando es_bloqueo directamente
   const normalEvents = events.filter(event => !event.es_bloqueo);
-  const blockedEvents = events.filter(event => event.es_bloqueo);
+ // const blockedEvents = events.filter(event => event.es_bloqueo);
+ const blockedEvents = events.filter(event => {
+  if (!event.es_bloqueo) return false;
+  
+  // Si es banda: ve TODOS los bloqueos
+  if (profile.tipo === 'banda') return true;
+  
+  // Si NO es banda (artista): solo ve sus PROPIOS bloqueos
+  // ¿Cómo saber si es suyo? Comparar id_creador con profile.id
+  return event.id_creador === profile.id;
+});
   const integranteEvents = events.filter(event => event.es_evento_integrante);
 
 
@@ -129,10 +140,10 @@ const formatTime = (dateString: string | Date) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    if(!normalEvents[0].es_evento_integrante){
+                  
 
-                      if (onEventClick) onEventClick(normalEvents[0]);
-                    }
+                      if (onEventClick) onEventClick(normalEvents[0],normalEvents[0].es_evento_integrante);
+                    
                   }}
                 >
                   {!normalEvents[0].es_evento_integrante? (
@@ -191,7 +202,7 @@ const formatTime = (dateString: string | Date) => {
                     e.stopPropagation();
                     e.preventDefault();
                     if(!blockedEvents[0].es_evento_integrante){
-                      if (onBlockClick) onBlockClick(blockedEvents[0]);
+                      if (onBlockClick) onBlockClick(blockedEvents[0],blockedEvents[0].es_evento_integrante);
                     
                     }
                     
@@ -270,7 +281,7 @@ const formatTime = (dateString: string | Date) => {
                   e.stopPropagation();
                   if(!normalEvents[index].es_evento_integrante){
 
-                    if (onEventClick) onEventClick(normalEvents[index]);
+                    if (onEventClick) onEventClick(normalEvents[index],normalEvents[index].es_evento_integrante);
                   }
                 }}
               >
@@ -324,7 +335,7 @@ const formatTime = (dateString: string | Date) => {
                 title={`Día bloqueado: ${event.motivo_bloqueo || 'Sin motivo'}`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (onBlockClick) onBlockClick(event);
+                  if (onBlockClick) onBlockClick(event, event.es_evento_integrante);
                 }}
               >
                 {!blockedEvents[index].es_evento_integrante? (
@@ -575,7 +586,14 @@ if (!slotTime || !date) return false;
   }
 };
 
-  const relevantBlockedEvents = relevantEvents.filter(event => event.es_bloqueo);
+  //const relevantBlockedEvents = relevantEvents.filter(event => event.es_bloqueo);
+  const relevantBlockedEvents = relevantEvents.filter(event => {
+  if (!event.es_bloqueo) return false;
+  
+  if (profile.tipo === 'banda') return true;
+  
+  return event.id_creador === profile.id;
+});
   const relevantNormalEvents = relevantEvents.filter(event => !event.es_bloqueo);
   const hasBlocked = relevantBlockedEvents.length > 0;
   const totalRelevantEvents = relevantEvents.length;
@@ -600,7 +618,7 @@ if (!slotTime || !date) return false;
             onClick={(e) => {
               e.stopPropagation();
               if (onBlockClick && relevantBlockedEvents[0]) {
-                onBlockClick(relevantBlockedEvents[0]);
+                onBlockClick(relevantBlockedEvents[0],relevantBlockedEvents[0].es_evento_integrante);
               }
             }}
           >
@@ -625,7 +643,7 @@ if (!slotTime || !date) return false;
                   title={`${event.titulo}\n${formatTime(event.inicio)} - ${formatTime(event.fin)}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (onEventClick) onEventClick(event);
+                    if (onEventClick) onEventClick(event, event.es_evento_integrante);
                   }}
                 >
                 
@@ -652,9 +670,12 @@ if (!slotTime || !date) return false;
                     title={`${event.titulo}\n${formatTime(event.inicio)} - ${formatTime(event.fin)}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (onEventClick) onEventClick(event);
+                      if (onEventClick) onEventClick(event,event.es_evento_integrante);
                     }}
                   >
+                    {!event.es_evento_integrante? 
+                    (
+                    <>
                     <div className="p-0.5 h-full flex flex-col justify-center overflow-hidden">
                       <div className="text-[10px] text-white font-medium truncate px-0.5 flex items-center gap-1">
                         {event.flyer_url ? (
@@ -674,6 +695,26 @@ if (!slotTime || !date) return false;
                         </div>
                       )}
                     </div>
+                    </>
+                    ):(
+                    <>
+                    <div className="p-0.5 h-full flex flex-col justify-center overflow-hidden">
+                      <div className="text-[10px] text-white font-medium truncate px-0.5 flex items-center gap-1">
+                  
+                          <FaCalendar size={8} className={styles.icon} />
+                        
+                        <span>Evento integrante</span>
+                      </div>
+                      {totalRelevantEvents === 1 && (
+                        <div className={`text-[9px] truncate px-0.5 mt-0.5 ${styles.text}`}>
+                          {formatTime(event.inicio)} - {formatTime(event.fin)}
+                        </div>
+                      )}
+                    </div>
+                    </>
+                    )
+                    }
+                    
                   </div>
                 );
               })}

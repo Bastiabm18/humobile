@@ -35,6 +35,16 @@ export interface PerfilParticipanteEvento {
   perfil_telefono?: string;
 }
 
+export interface IntegranteEventoData{
+ id_perfil: string;
+  nombre: string;
+  email: string;
+  telefono_contacto: string;
+  imagen_url: string | null;
+  estado_participacion: string;
+  tipo_perfil: string;
+}
+
 export interface categoriaEvento{
   id_categoria: string;
   nombre_categoria: string;

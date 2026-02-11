@@ -20,6 +20,7 @@ import DesbloquearModal from './DesbloquearModal';
 
 import { getEventosByPerfilParticipacion } from '../actions/actions';
 import { EventoCalendario } from '@/types/profile';
+import IntegrantesEventoModal from './IntegrantesEventoModal';
 const localizer = dateFnsLocalizer({
   format,
   parse: (str: string) => new Date(str),
@@ -45,6 +46,9 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
 
   const [selectedEvent, setSelectedEvent] = useState<EventoCalendario | null>(null);
   const [eventModalOpen, setEventModalOpen] = useState(false);
+
+  const [selectedEventointegrante, SetselectedEventointegrante] = useState<string | null>(null)
+  const [eventoIntegranteModalOpen, SeteventoIntegranteModalOpen]= useState(false)
 
   const [timelineModalOpen, setTimelineModalOpen] = useState(false);
   const [dayEventsForTimeline, setDayEventsForTimeline] = useState<EventoCalendario[]>([]);
@@ -144,12 +148,22 @@ const handleSelectSlot = (slotInfo: { start: Date; end: Date; slots: Date[] }) =
 // Añade esta función para manejar selección de eventos
 const handleSelectEvent = (event: EventoCalendario) => {
   console.log('Evento seleccionado:', event);
-  handleEventClick(event);
+  handleEventClick(event, event.es_evento_integrante);
 };
 
-  const handleEventClick = (event: EventoCalendario) => {
-    setSelectedEvent(event);
-    setEventModalOpen(true);
+  const handleEventClick = (event: EventoCalendario, es_evento_integrante: Boolean | undefined) => {
+    console.log(es_evento_integrante)
+    if(es_evento_integrante){
+      console.log(event);
+      SetselectedEventointegrante(event.id)
+      console.log(profileId);
+      SeteventoIntegranteModalOpen(true);
+
+    }else{
+      setSelectedEvent(event);
+      setEventModalOpen(true);
+
+    }
   };
 
   const handleMultipleEventsClick = (eventsList: EventoCalendario[], date: Date) => {
@@ -158,9 +172,17 @@ const handleSelectEvent = (event: EventoCalendario) => {
     setTimelineModalOpen(true);
   };
 
-  const handleBlockClick = (blockEvent: EventoCalendario) => {
-    setSelectedBlock(blockEvent);
-    setDesbloquearModalOpen(true);
+  const handleBlockClick = (blockEvent: EventoCalendario, es_evento_integrante: Boolean | undefined) => {
+    if(es_evento_integrante){
+      SetselectedEventointegrante(blockEvent.id)
+      console.log(profileId);
+      SeteventoIntegranteModalOpen(true);
+    }else{
+      blockEvent
+      setSelectedBlock(blockEvent);
+      setDesbloquearModalOpen(true);
+    }
+   
   };
 
   const handleBlockDeleted = () => {
@@ -735,6 +757,22 @@ const handleSelectEvent = (event: EventoCalendario) => {
           }}
           onBlockDeleted={handleBlockDeleted}
         />
+      )}
+
+      {/**MUESTRA UN MODAL PARA INFORMAR A 1 BANDA CUANDO 1 INTEGRANTE TIENE 1 EVENTO EN UNA FECHA Y HORA DE MANERA INDIVIDUAL Y NO CON LA BANDA  */}
+      {eventoIntegranteModalOpen &&  selectedEventointegrante &&(
+
+        <IntegrantesEventoModal
+          isOpen={eventoIntegranteModalOpen}
+          onClose={()=>{
+            SeteventoIntegranteModalOpen(false);
+          }}
+          bandaId={profileId}
+          eventoId={selectedEventointegrante}
+        
+        
+        />
+
       )}
     </>
   );
