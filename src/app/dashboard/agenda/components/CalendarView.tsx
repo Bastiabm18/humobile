@@ -120,7 +120,7 @@ const handleSelectSlot = (slotInfo: { start: Date; end: Date; slots: Date[] }) =
     const slotStart = slotInfo.start.getTime();
     const slotEnd = slotInfo.end.getTime();
 
-    return slotStart < eventEnd && slotEnd > eventStart;
+    return subHours(slotStart,3) < subHours(eventEnd ,0)&& subHours(slotEnd,3) > subHours(eventStart,0);
   });
 
   if (hasExistingEvent) {
