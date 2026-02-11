@@ -10,6 +10,7 @@ import {
 import { HiX } from 'react-icons/hi';
 import { getIntegrantesEventoData } from '../actions/actions';
 import { IntegranteEventoData } from '@/types/profile';
+import NeonSign from '@/app/components/NeonSign';
 
 interface IntegrantesEventoModalProps {
   isOpen: boolean;
@@ -90,8 +91,8 @@ export default function IntegrantesEventoModal({
           {/* Header */}
           <div className="sticky top-0 flex items-center justify-between p-5 border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-sm">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-purple-900/60">
-                <FaUsers className="text-purple-300 text-2xl" />
+              <div className="p-3 rounded-xl bg-gray-900/60">
+                <FaUsers className="text-gray-300 text-2xl" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white">Integrantes en el evento</h2>
@@ -110,7 +111,7 @@ export default function IntegrantesEventoModal({
           <div className="p-5 overflow-y-auto max-h-[calc(80vh-80px)]">
             {loading ? (
               <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-neutral-700 border-t-purple-500" />
+               <NeonSign/>
               </div>
             ) : error ? (
               <div className="bg-red-950/40 border border-red-800/50 p-6 rounded-xl text-center">
@@ -139,8 +140,8 @@ export default function IntegrantesEventoModal({
                               className="w-14 h-14 rounded-xl object-cover border-2 border-neutral-700"
                             />
                           ) : (
-                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-900/60 to-neutral-800 flex items-center justify-center border-2 border-neutral-700">
-                              <FaUser className="text-purple-300 text-2xl" />
+                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-900/60 to-neutral-800 flex items-center justify-center border-2 border-neutral-700">
+                              <FaUser className="text-gray-300 text-2xl" />
                             </div>
                           )}
                         </div>

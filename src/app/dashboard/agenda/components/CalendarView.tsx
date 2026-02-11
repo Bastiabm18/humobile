@@ -189,15 +189,30 @@ const handleSelectEvent = (event: EventoCalendario) => {
     fetchEvents();
   };
 
-  const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
-    return events.filter(event => {
-      const eventStart = event.inicio;
-      const eventEnd = event.fin || event.inicio;
-      return isSameDay(eventStart, targetDate) ||
-             isSameDay(eventEnd, targetDate) ||
-             isWithinInterval(targetDate, { start: eventStart, end: eventEnd });
-    });
-  };
+const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
+  // 1. Convertimos la fecha de la celda del calendario a un string "2026-01-03"
+  const targetString = format(targetDate, 'yyyy-MM-dd');
+
+  return events.filter(event => {
+    // 2. Extraemos solo la parte de la fecha de los strings de la base de datos
+    // event.inicio suele ser "2026-01-03T00:00:00+00:00" -> tomamos los primeros 10 caracteres
+    const startString = event.inicio.toString().substring(0, 10);
+    const endString = (event.fin || event.inicio).toString().substring(0, 10);
+
+    // 3. Caso simple: ¿Es el mismo día de inicio o fin?
+    if (startString === targetString || endString === targetString) {
+      return true;
+    }
+
+    // 4. Caso rango: Si el evento dura varios días, verificamos si target está al medio
+    // Aquí sí usamos Date pero sin horas para que la comparación sea pura de fechas
+    const dTarget = new Date(targetString);
+    const dStart = new Date(startString);
+    const dEnd = new Date(endString);
+
+    return dTarget >= dStart && dTarget <= dEnd;
+  });
+};
 
   const defaultScrollTime = new Date();
     defaultScrollTime.setHours(8, 0, 0);

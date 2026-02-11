@@ -32,7 +32,7 @@ export default function EventBadge({
   onBlockClick,
   esColumnaHora = false,
 }: EventBadgeProps) {
-  //console.log(profile);
+ // console.log(profile);
  // ¡NO RENDERIZAR NADA EN LA COLUMNA DE HORAS!
   if (esColumnaHora) {
     return null;
@@ -140,7 +140,7 @@ const formatTime = (dateString: string | Date) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                  
+
 
                       if (onEventClick) onEventClick(normalEvents[0],normalEvents[0].es_evento_integrante);
                     
@@ -201,10 +201,10 @@ const formatTime = (dateString: string | Date) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    if(!blockedEvents[0].es_evento_integrante){
+             
                       if (onBlockClick) onBlockClick(blockedEvents[0],blockedEvents[0].es_evento_integrante);
                     
-                    }
+                    
                     
                   }}
                 >
@@ -279,10 +279,10 @@ const formatTime = (dateString: string | Date) => {
                 title={`${event.titulo} (${formatTime(event.inicio)} - ${formatTime(event.fin)})`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  if(!normalEvents[index].es_evento_integrante){
+            
 
                     if (onEventClick) onEventClick(normalEvents[index],normalEvents[index].es_evento_integrante);
-                  }
+                  
                 }}
               >
                 {!normalEvents[index].es_evento_integrante? 
@@ -313,7 +313,8 @@ const formatTime = (dateString: string | Date) => {
                 ):(
               
               <>
-                        <div className="flex flex-col items-center justify-center gap-1.5 p-2">
+                        <div
+                        className="flex flex-col items-center justify-center gap-1.5 p-2">
                     <HiCalendar size={12} className='text-gray-300 group-hover:text-red-200 transition-colors' />
                     <span className="hidden md:inline text-gray-200/90 font-medium text-xs">
                    AGENDA INTEGRANTE
