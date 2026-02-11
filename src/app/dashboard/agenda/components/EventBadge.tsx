@@ -31,7 +31,7 @@ export default function EventBadge({
   onBlockClick,
   esColumnaHora = false,
 }: EventBadgeProps) {
-  console.log(events);
+ // console.log(events);
  // ¡NO RENDERIZAR NADA EN LA COLUMNA DE HORAS!
   if (esColumnaHora) {
     return null;
@@ -579,7 +579,7 @@ if (!slotTime || !date) return false;
   const relevantNormalEvents = relevantEvents.filter(event => !event.es_bloqueo);
   const hasBlocked = relevantBlockedEvents.length > 0;
   const totalRelevantEvents = relevantEvents.length;
-  console.log('eventos semana',relevantNormalEvents)
+  //  console.log('eventos semana',relevantNormalEvents)
   return (
     <div className="absolute flex w-full h-full items-center justify-center inset-0 z-30">
       {totalRelevantEvents >= 2 && (

@@ -19,14 +19,16 @@ interface CrearEventoModalProps {
   onClose: () => void;
   profile: Profile;
   selectedDate: Date;
+  selectedEndDate?:Date;
 }
 
 
 
 
-export default function CrearEventoModal({ open, onClose, profile, selectedDate }: CrearEventoModalProps) {
+export default function CrearEventoModal({ open, onClose, profile, selectedDate, selectedEndDate }: CrearEventoModalProps) {
+  // browser para subir imagen
   const supabase = getSupabaseBrowser();
- // console.log('crear evento perfil:' ,profile);
+ // console.log('crear eventos en fecha:' ,selectedDate, 'hasta: ',selectedEndDate);
   // ========== ESTADOS DEL FORMULARIO ==========
   const [form, setForm] = useState<EventoGuardar>({
     titulo: '',
@@ -109,14 +111,14 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate 
       }
       
       // Inicializar fechas
-      const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      const tomorrow = addHours(selectedDate, 24);
-      const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
+      const dateStr = format(selectedDate, 'yyyy-MM-dd HH:mm:ss');
+      const tomorrow =  selectedEndDate? selectedEndDate :  addHours(selectedDate, 24);
+      const tomorrowStr = format(tomorrow, 'yyyy-MM-dd HH:mm:ss');
       
       setForm(prev => ({
         ...prev,
-        fecha_hora_ini: `${dateStr}T19:00`,
-        fecha_hora_fin: `${tomorrowStr}T20:00`
+        fecha_hora_ini: `${dateStr}`,
+        fecha_hora_fin: `${tomorrowStr}`
       }));
     }
   }, [open]);

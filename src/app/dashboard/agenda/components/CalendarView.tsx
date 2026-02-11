@@ -61,8 +61,8 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
   const [selectionModalOpen, setSelectionModalOpen] = useState(false);
 
   // states para seleccion multiple en vista semana 
-  const [selectedFechaIni, setSelectedFechaIni] = useState<Date | null >(null);
-  const [selectedFechaFin, setSelectedFechaFin] = useState<Date | null >(null);
+  const [selectedFechaIni, setSelectedFechaIni] = useState<Date | undefined >(undefined);
+  const [selectedFechaFin, setSelectedFechaFin] = useState<Date | undefined >(undefined);
 
   const [showHorasMultiplesModal, setShowHorasMultiplesModal] = useState(false);
   const [isButtonClick, setIsButtonClick] = useState(false);
@@ -673,9 +673,12 @@ const handleSelectEvent = (event: EventoCalendario) => {
           onClose={() => {
             setBlockModalOpen(false);
             fetchEvents();
+            setSelectedFechaFin(undefined)
+            setSelectedFechaIni(undefined)
           }}
           profile={perfil}
-          initialDate={blockInitialDate || new Date()}
+          initialDate={selectedFechaIni ? selectedFechaIni: blockInitialDate || new Date()}
+          finalDate={selectedFechaFin}
         />
       )}
 
@@ -686,9 +689,11 @@ const handleSelectEvent = (event: EventoCalendario) => {
             setCreateEventModalOpen(false);
             setSelectedEventDate(null);
             fetchEvents();
+            setSelectedFechaFin(undefined);
           }}
           profile={perfil}
           selectedDate={selectedEventDate}
+          selectedEndDate={selectedFechaFin}
         />
       )}
 
