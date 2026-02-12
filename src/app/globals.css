@@ -425,3 +425,15 @@ body {
   color: white !important;
   font-weight: bold !important;
 }
+
+
+/*clases para cambiar el cursor*/
+html, body {
+  /* Oculta el cursor nativo */
+  cursor: none;
+}
+
+/* Asegúra de que los elementos interactivos tampoco lo muestren */
+a, button, input, select, textarea {
+  cursor: none !important;
+}

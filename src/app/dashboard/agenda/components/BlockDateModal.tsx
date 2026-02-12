@@ -21,6 +21,8 @@ interface BlockDateModalProps {
 export default function BlockDateModal({ open, onClose, profile, initialDate, finalDate }: BlockDateModalProps) {
   const [title, setTitle] = useState('');
   const [reason, setReason] = useState('');
+
+  // seteo de fechas si fue con selectable o fue con el boton de vista mes 
   const [startDateTime, setStartDateTime] = useState(
     initialDate
       ? format(initialDate, "yyyy-MM-dd'T'HH:mm")

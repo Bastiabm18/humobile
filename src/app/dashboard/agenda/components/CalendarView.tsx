@@ -205,7 +205,7 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
     }
 
     // 4. Caso rango: Si el evento dura varios días, verificamos si target está al medio
-    // Aquí sí usamos Date pero sin horas para que la comparación sea pura de fechas
+    // Aquí sí usamos Date pero sin horas para que la comparación sea pura de fechas nos ahorramos el utc 
     const dTarget = new Date(targetString);
     const dStart = new Date(startString);
     const dEnd = new Date(endString);
