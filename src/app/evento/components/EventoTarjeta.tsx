@@ -49,7 +49,7 @@ export default function EventoTarjeta({ evento }: EventoTarjetaProps) {
 
   // URL para compartir (asegúrate de que sea la URL completa)
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
-  const shareTitle = `¡No te pierdas este evento: ${evento.titulo}!`;
+  const shareTitle = `¡No te pierdas este evento Humobile: ${evento.titulo}!`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);
