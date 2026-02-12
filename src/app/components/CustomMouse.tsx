@@ -14,15 +14,21 @@ export default function CustomPointer() {
 
   useEffect(() => {
     const moveMouse = (e: MouseEvent) => {
-      // No restamos la mitad del tamaño para que la "punta" 
-      // del triángulo coincida exactamente con el click
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
+      // Ajuste fino: si es la mano, la movemos un poco para que el dedo 
+      // coincida con el punto exacto del click
+      const offsetX = isHovered ? 10 : 0;
+      const offsetY = isHovered ? 2 : 0;
+      
+      mouseX.set(e.clientX - offsetX);
+      mouseY.set(e.clientY - offsetY);
     };
 
     const handleOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (target.closest("button, a, .cursor-pointer")) setIsHovered(true);
+      // Detecta enlaces, botones o cualquier cosa con la clase cursor-pointer
+      if (target.closest("button, a, .cursor-pointer, input[type='submit']")) {
+        setIsHovered(true);
+      }
     };
 
     const handleOut = () => setIsHovered(false);
@@ -36,7 +42,7 @@ export default function CustomPointer() {
       window.removeEventListener("mouseover", handleOver);
       window.removeEventListener("mouseout", handleOut);
     };
-  }, [mouseX, mouseY]);
+  }, [isHovered, mouseX, mouseY]);
 
   return (
     <motion.div
@@ -44,22 +50,34 @@ export default function CustomPointer() {
       style={{
         x: cursorX,
         y: cursorY,
-        // Rotamos un poco para que parezca un puntero real (apuntando arriba-izquierda)
-        rotate: -15, 
       }}
     >
+      {/* CONTENEDOR ANIMAL CON LOGICA DE CAMBIO */}
       <motion.div
         animate={{
-          scale: isHovered ? 1.5 : 1,
-          rotate: isHovered ? 15 : 0, // Se endereza al hacer hover
+          scale: isHovered ? 1.2 : 1,
+          rotate: isHovered ? 0 : -15, // El triángulo rota, la mano se queda recta
         }}
-        className={`w-6 h-9 bg-gradient-to-br from-yellow-100 via-yellow-400 to-yellow-600
-          shadow-[0_5px_15px_rgba(234,179,8,0.4)]`}
-        style={{
-          // Este es el "recorte" para formar el triángulo alargado (estilo flecha)
-          clipPath: "polygon(0% 0%, 100% 70%, 40% 70%, 0% 100%)",
-        }}
-      />
+        className="relative"
+      >
+        {isHovered ? (
+          /* --- LA MANO DORADA (Hover) --- */
+          <img 
+            src="/mano-dorada.png" 
+            alt="Pointer"
+            className="w-15 h-15 object-contain drop-shadow-[0_5px_10px_rgba(234,179,8,0.4)]"
+          />
+        ) : (
+          /* --- EL TRIÁNGULO DORADO (Normal) --- */
+          <div
+            className="w-6 h-9 bg-gradient-to-br from-yellow-100 via-yellow-400 to-yellow-600
+                       shadow-[0_5px_15px_rgba(234,179,8,0.4)]"
+            style={{
+              clipPath: "polygon(0% 0%, 100% 70%, 40% 70%, 0% 100%)",
+            }}
+          />
+        )}
+      </motion.div>
     </motion.div>
   );
 }
