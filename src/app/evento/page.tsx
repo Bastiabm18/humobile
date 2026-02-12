@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { getEventoById } from './actions/actions';
 import EventoContent from './components/EventoContent';
 
-// Reutilizamos tu lógica de decodificación en el servidor
+// Mantenemos tu lógica de decodificación
 const decodeEventId = (encoded: string): string | null => {
   try {
     let base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
@@ -14,9 +14,13 @@ const decodeEventId = (encoded: string): string | null => {
   }
 };
 
-// ESTO ES LO QUE LEEN FACEBOOK Y WHATSAPP
-export async function generateMetadata({ searchParams }: { searchParams: { id?: string } }): Promise<Metadata> {
-  const encodedId = searchParams?.id;
+// 1. Corregimos generateMetadata para que use await en searchParams
+export async function generateMetadata(props: { 
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }> 
+}): Promise<Metadata> {
+  const searchParams = await props.searchParams; // <--- EL FIX
+  const encodedId = searchParams.id as string;
+  
   if (!encodedId) return { title: 'Evento' };
 
   const eventoId = decodeEventId(encodedId);
@@ -30,19 +34,19 @@ export async function generateMetadata({ searchParams }: { searchParams: { id?: 
     openGraph: {
       title: evento.titulo,
       description: evento.descripcion,
-      // IMPORTANTE: La URL de la imagen debe ser absoluta (ej: de Supabase Storage)
       images: [{ url: evento.flyer_url || '/fallback-image.jpg' }],
       type: 'article',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: evento.titulo,
-      images: [evento.flyer_url || '/fallback-image.jpg'],
     },
   };
 }
 
-export default function Page() {
-  // Simplemente renderizamos el componente que tiene toda tu lógica
+// 2. Corregimos el componente Page para que sea async y use await
+export default async function Page(props: { 
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }> 
+}) {
+  const searchParams = await props.searchParams; // await 
+  
+  // Pasamos los searchParams ya resueltos o dejamos que EventoDetalle los use
+  // Si EventoDetalle usa useSearchParams() internamente, no hace falta pasarle nada.
   return <EventoContent />;
 }
