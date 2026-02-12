@@ -16,8 +16,18 @@ import {
   FaCheckCircle,
   FaRegCalendarCheck,
   FaShareAlt,
-  FaChevronDown
+  FaChevronDown,
+  FaCopy,
+  FaCheck
 } from 'react-icons/fa';
+import {
+  WhatsappShareButton,
+  FacebookShareButton,
+  TwitterShareButton,
+  WhatsappIcon,
+  FacebookIcon,
+  XIcon, // El nuevo logo de Twitter
+} from 'react-share';
 import { MdLocationOn } from 'react-icons/md';
 import { useEffect, useState } from 'react';
 import ModalMapaLugar from './ModalMapaLugar';
@@ -35,6 +45,17 @@ interface EventoTarjetaProps {
 export default function EventoTarjeta({ evento }: EventoTarjetaProps) {
   const [showFullFlyer, setShowFullFlyer] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
+  const [copiado, setCopiado] = useState(false);
+
+  // URL para compartir (asegúrate de que sea la URL completa)
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareTitle = `¡No te pierdas este evento: ${evento.titulo}!`;
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -485,8 +506,64 @@ export default function EventoTarjeta({ evento }: EventoTarjetaProps) {
                     <span>Obtener Entradas</span>
                   </div>
                 </button>
+                <div className="bg-neutral-800/50 mt-10 backdrop-blur-sm rounded-2xl border border-neutral-700 p-6 shadow-xl">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="p-2 bg-yellow-600/20 rounded-lg">
+                <FaShareAlt className="w-5 h-5 text-yellow-400" />
+              </div>
+              <h2 className="text-xl font-semibold text-white">Compartir</h2>
+            </div>
+
+            <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
+              {/* WhatsApp */}
+              <WhatsappShareButton url={shareUrl} title={shareTitle} separator=" :: ">
+                <div className="transition-transform hover:scale-110 active:scale-95">
+                  <WhatsappIcon size={45} round />
+                </div>
+              </WhatsappShareButton>
+
+              {/* Facebook */}
+              <FacebookShareButton url={shareUrl} hashtag="#EventoEnVivo">
+                <div className="transition-transform hover:scale-110 active:scale-95">
+                  <FacebookIcon size={45} round />
+                </div>
+              </FacebookShareButton>
+
+              {/* X (Twitter) */}
+              <TwitterShareButton url={shareUrl} title={shareTitle}>
+                <div className="transition-transform hover:scale-110 active:scale-95 bg-black rounded-full border border-neutral-700 p-[2px]">
+                  <XIcon size={41} round />
+                </div>
+              </TwitterShareButton>
+
+              {/* Botón Personalizado: Copiar Enlace */}
+              <button
+                onClick={handleCopyLink}
+                className="group relative flex items-center justify-center w-[45px] h-[45px] bg-neutral-700 hover:bg-neutral-600 rounded-full transition-all duration-300 border border-neutral-600 shadow-lg active:scale-95"
+                title="Copiar enlace"
+              >
+                {copiado ? (
+                  <FaCheck className="text-green-400 text-xl animate-in zoom-in" />
+                ) : (
+                  <FaCopy className="text-neutral-300 text-lg group-hover:text-white" />
+                )}
+                
+                {/* Tooltip flotante */}
+                {copiado && (
+                  <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-green-600 text-white text-[10px] px-2 py-1 rounded font-bold uppercase tracking-tighter">
+                    ¡Copiado!
+                  </span>
+                )}
+              </button>
+            </div>
+
+            <p className="mt-4 text-center sm:text-left text-xs text-neutral-500 font-medium italic">
+              Comparte este evento con tus amigos para que no se queden fuera.
+            </p>
+                </div>
               </motion.div>
             </div>
+            
           </motion.div>
         )}
 
