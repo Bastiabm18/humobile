@@ -46,7 +46,7 @@ export default function CustomPointer() {
 
   return (
     <motion.div
-      className="fixed top-0 left-0 pointer-events-none z-[9999]"
+      className="hidden md:flex fixed top-0 left-0 pointer-events-none z-[9999]"
       style={{
         x: cursorX,
         y: cursorY,
