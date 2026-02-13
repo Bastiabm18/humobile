@@ -613,19 +613,43 @@ if (!slotTime || !date) return false;
         </div>
       )}
 
-      {hasBlocked && (
+      {hasBlocked && !relevantBlockedEvents[0].es_evento_integrante && (
        
           <div className="absolute inset-0 flex items-center justify-center rounded-lg w-[99%] h-[99%] bg-red-900/50 hover:bg-red-950 border-2 border-red-700 pointer-events-auto cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               if (onBlockClick && relevantBlockedEvents[0]) {
                 onBlockClick(relevantBlockedEvents[0],relevantBlockedEvents[0].es_evento_integrante);
+                console.log(relevantBlockedEvents[0].es_evento_integrante);
               }
             }}
           >
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
                 <HiLockClosed size={view === 'day' ? 24 : 18} className="text-red-300 mx-auto" />
+              </div>
+            </div>
+          </div>
+     
+      )}
+
+      {hasBlocked && relevantBlockedEvents[0].es_evento_integrante && (
+       
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg w-[99%] h-[99%] bg-gray-900/50 hover:bg-gray-950 border-2 border-gray-700 pointer-events-auto cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onBlockClick && relevantBlockedEvents[0]) {
+                onBlockClick(relevantBlockedEvents[0],relevantBlockedEvents[0].es_evento_integrante);
+                console.log(relevantBlockedEvents[0].es_evento_integrante);
+              }
+            }}
+          >
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <FaCalendar size={view === 'day' ? 24 : 18} className="text-gray-300 mx-auto" />
+                <span>
+                  Agenda Integrante
+                </span>
               </div>
             </div>
           </div>
