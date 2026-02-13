@@ -19,14 +19,16 @@ interface CrearEventoModalProps {
   onClose: () => void;
   profile: Profile;
   selectedDate: Date;
+  selectedEndDate?:Date;
 }
 
 
 
 
-export default function CrearEventoModal({ open, onClose, profile, selectedDate }: CrearEventoModalProps) {
+export default function CrearEventoModal({ open, onClose, profile, selectedDate, selectedEndDate }: CrearEventoModalProps) {
+  // browser para subir imagen
   const supabase = getSupabaseBrowser();
- // console.log('crear evento perfil:' ,profile);
+ // console.log('crear eventos en fecha:' ,selectedDate, 'hasta: ',selectedEndDate);
   // ========== ESTADOS DEL FORMULARIO ==========
   const [form, setForm] = useState<EventoGuardar>({
     titulo: '',
@@ -109,14 +111,14 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate 
       }
       
       // Inicializar fechas
-      const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      const tomorrow = addHours(selectedDate, 24);
-      const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
+      const dateStr = format(selectedDate, 'yyyy-MM-dd HH:mm:ss');
+      const tomorrow =  selectedEndDate? selectedEndDate :  addHours(selectedDate, 24);
+      const tomorrowStr = format(tomorrow, 'yyyy-MM-dd HH:mm:ss');
       
       setForm(prev => ({
         ...prev,
-        fecha_hora_ini: `${dateStr}T19:00`,
-        fecha_hora_fin: `${tomorrowStr}T20:00`
+        fecha_hora_ini: `${dateStr}`,
+        fecha_hora_fin: `${tomorrowStr}`
       }));
     }
   }, [open]);
@@ -263,8 +265,8 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate 
       return;
     }
     
-    const startDateTime = new Date(form.fecha_hora_ini);
-    const endDateTime = form.fecha_hora_fin ? new Date(form.fecha_hora_fin) : null;
+   const startDateTime = new Date(form.fecha_hora_ini + 'Z');  // ← Agregar 'Z' para UTC
+const endDateTime = form.fecha_hora_fin ? new Date(form.fecha_hora_fin + 'Z') : null;
     
     if (endDateTime && startDateTime >= endDateTime) {
       alert('La fecha/hora de inicio debe ser anterior a la de fin');
@@ -409,7 +411,7 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate 
             </div>
 
             {/* Columna 2: Fechas, Lugar y Participantes */}
-            <div className="space-y-5 mt-5 md:mt-0 md:overflow-y-auto md:pl-2">
+            <div className="space-y-5 mt-5 md:mt-0 md:overflow-y-auto custom-scrollbar md:pl-2">
               {/* Fechas */}
               <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
                 <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
@@ -656,22 +658,12 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate 
                 </div>
               </div>
 
-              {/* Productor (opcional) */}
-              <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
-                <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
-                  <HiUser size={16} /> Productor (opcional)
-                </h3>
-                <select value={form.id_productor || ''} onChange={(e) => handleChange('id_productor', e.target.value || null)} className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition text-sm">
-                  <option value="">Seleccionar productor</option>
-                  {/* Aquí se cargarían los perfiles de tipo 'productor' */}
-                </select>
-              </div>
 
               {/* Información del creador */}
               <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-4">
                 <p className="text-xs text-gray-400 mb-1">Creador del evento:</p>
                 <p className="text-white font-medium text-sm capitalize">{profile.nombre || `Perfil ${profile.tipo}`}</p>
-                <p className="text-xs text-gray-400 mt-2">Tipo: {profile.tipo}</p>
+                <p className="text-xs text-gray-400 mt-2"> {profile.tipo} Humobile</p>
                 <p className="text-xs text-gray-400">Fecha seleccionada: {format(selectedDate, 'dd/MM/yyyy')}</p>
               </div>
             </div>

@@ -10,23 +10,28 @@ import {
   FaTrashAlt, FaEdit
 } from 'react-icons/fa';
 import { HiX } from 'react-icons/hi';
-import { MdDescription } from 'react-icons/md';
+import { MdDescription, MdOutlineThumbDownOffAlt, MdOutlineThumbUp } from 'react-icons/md';
 import EditarEventoModal from './EditarEventoModal';
-import { getEventoById } from '../actions/actions';
+import { aceptarRechazarParticipacionEvento, eliminarParticipacionEvento, getEventoById, getEventoByIdV2 } from '../actions/actions';
 import NeonSign from '@/app/components/NeonSign';
-import { FaSpinner } from 'react-icons/fa6';
+import { FaSpinner, FaX } from 'react-icons/fa6';
 import EliminarEventoModal from './EliminarEventoModal';
 import { EventoCalendario } from '@/types/profile';
+import { PiArrowCircleUpLeftThin } from 'react-icons/pi';
+import { boolean } from 'zod';
+import ConfirmarRechazarEventoModal from './ConfirmarRechazarEventoModal';
+import EliminarParticipacionEventoModal from './EliminarParticipacionEventoModal';
+import ParticipacionArtistasBandaModal from './ParticipacionArtistasBandaModal';
 
 interface EventModalProps {
   event: { id: string } | null; // Solo necesitamos el id para cargar el completo
   isOpen: boolean;
-  onClose: () => void;
+  onRequestClose: () => void;
   profile: { id: string; tipo: string; nombre?: string };
   onEventUpdated?: () => void;
 }
 
-export default function EventModal({ event, isOpen, onClose, profile, onEventUpdated }: EventModalProps) {
+export default function EventModal({ event, isOpen, onRequestClose, profile, onEventUpdated }: EventModalProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [eventData, setEventData] = useState<EventoCalendario | null>(null);
@@ -35,6 +40,15 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
   const [initialLoading, setInitialLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [esCreador, setEsCreador] = useState(false);
+  const [esBanda, setEsBanda] = useState(false);
+  const [esPendiente, setEsPendiente]= useState(false);
+  const [showConfirmarRechazarEvento, setShowConfirmarRechazarEvento] = useState(false);
+  const [showEliminarEvento, setShowEliminarEvento] = useState(false);
+  const [showEstadoparticipacion, setShowEstadoparticipacion] = useState(false);
+  const [eleccion, setEleccion] = useState(Boolean);
+
+
+
 
   useEffect(() => {
     if (isOpen && event?.id) {
@@ -54,11 +68,14 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
 
     setLoading(true);
     try {
-      const data = await getEventoById(event.id);
+      const data = await getEventoByIdV2(event.id,profile.id);
       if (!data) throw new Error('No se encontró el evento');
       
       setEventData(data);
+      console.log(data)
       setEsCreador(data.id_creador === profile.id);
+      setEsBanda(profile.tipo === 'banda');
+      setEsPendiente(data.estado_participacion === 'pendiente'); // si estado participacion es pendiente se guarda como true 
     } catch (err: any) {
       console.error('Error cargando evento completo:', err);
       setError(err.message || 'Error al cargar detalles del evento');
@@ -67,25 +84,72 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
       setInitialLoading(false);
     }
   };
+  
 
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+
+  const handleEliminarParticipacion = async (eventoId: string, participanteId: string) => {
+  try {
+    const resultado = await eliminarParticipacionEvento(eventoId, participanteId);
+    
+    if (!resultado.success) {
+      throw new Error(resultado.error);
+    }
+    
+    // Éxito - recargar datos
+    fetchEventData();
+    if (onEventUpdated) onEventUpdated();
+    setShowEliminarEvento(false);
+      onRequestClose()
+  } catch (error: any) {
+    console.error('Error eliminando participación:', error);
+    throw error;
+  }
+};
+
+  const handleConfirmarRechazarParticipacion = async (eventoId: string, participanteId: string) => {
+  try {
+    const resultado = await aceptarRechazarParticipacionEvento(
+      eventoId, 
+      participanteId, 
+      eleccion ? true : false
+    );
+    
+    if (resultado.success) {
+      // Recargar datos del evento
+      fetchEventData();
+      if (onEventUpdated) onEventUpdated();
+    } else {
+      throw new Error(resultado.error);
+    }
+  } catch (error: any) {
+    console.error('Error al procesar participación:', error);
+    throw error;
+  }
+};
+const formatDate = (date: Date | string) => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  // Usar UTC para el día también
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC'  // <-- Esto asegura que use la fecha UTC
   };
+  
+  return dateObj.toLocaleDateString('es-ES', options);
+};
 
-  const formatTime = (date: Date | string) => {
-    return new Date(date).toLocaleTimeString('es-ES', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-
-  const getStatusColor = (esBloqueo: boolean) => esBloqueo ? 'bg-red-500' : 'bg-green-500';
-  const getStatusText = (esBloqueo: boolean) => esBloqueo ? 'Bloqueado' : 'Activo';
+const formatTime = (date: Date | string) => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  // Usar UTC para mostrar la hora correcta
+  const hours = dateObj.getUTCHours().toString().padStart(2, '0');
+  const minutes = dateObj.getUTCMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+  const getStatusColor = (esBloqueo: boolean) => esBloqueo ? 'bg-red-500' : 'bg-sky-500';
+  const getStatusText = (esBloqueo: boolean) => esBloqueo ? 'Bloqueo' : 'Evento';
 
   if (!isOpen) return null;
 
@@ -108,7 +172,7 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
           <h3 className="text-xl font-bold text-white mb-2">Error</h3>
           <p className="text-gray-300 mb-6">{error || 'No se pudo cargar el evento'}</p>
           <button 
-            onClick={onClose}
+            onClick={onRequestClose}
             className="px-6 py-2 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white"
           >
             Cerrar
@@ -169,7 +233,7 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
               </div>
             </div>
             <button
-              onClick={onClose}
+              onClick={onRequestClose}
               className="p-3 text-gray-400 hover:text-white hover:bg-neutral-800 rounded-xl transition-colors"
             >
               <HiX className="text-2xl" />
@@ -241,7 +305,7 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
                       <MdDescription className="text-blue-400" />
                       Descripción
                     </h3>
-                    <div className="bg-neutral-900/50 p-6 rounded-xl border border-neutral-800 whitespace-pre-wrap">
+                    <div className="bg-neutral-900/50 text-gray-200 p-6 rounded-xl border border-neutral-800 whitespace-pre-wrap">
                       {descripcion}
                     </div>
                   </div>
@@ -494,14 +558,14 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
 
           {/* Footer */}
           <div className="sticky bottom-0 p-5 border-t border-neutral-800 bg-neutral-950/90 backdrop-blur-sm flex justify-between items-center">
-       
 
-            <div className="flex gap-4">
-              {esCreador && (
+
+            <div className="flex flex-row justify-between md:justify-center w-auto gap-2">
+              {esCreador? (
                 <>
                   <button
                     onClick={() => setShowEditModal(true)}
-                    className="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-sky-900/30"
+                    className="px-3 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-sky-900/30"
                   >
                     <FaEdit />
                     Editar Evento
@@ -509,21 +573,79 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
 
                   <button
                     onClick={() => setShowDeleteModal(true)}
-                    className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-red-900/30"
+                    className="px-3 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-red-900/30"
                   >
                     <FaTrashAlt />
-                    Eliminar
+                    Eliminar Evento
                   </button>
+                  {esBanda &&(
+                    <>
+                                   <button
+                              onClick ={()=>{  
+                                setShowEstadoparticipacion(true)
+                              
+                                 }}
+                            className="px-3 py-3 bg-sky-700 hover:bg-sky-600 text-white rounded-xl transition-colors flex items-center gap-2">
+                                  Ver Estado Participacion   
+                                 </button>
+                    </>
+                  )
+                    
+                  }
                 </>
-              )}
+                     ):(
+                  <>
+                    {esPendiente && !esBanda?
+              
+                   (
+                   <>
+                   <button
+                   onClick ={()=>{  
+                    setShowConfirmarRechazarEvento(true)
+                    setEleccion(true)  
 
-              <button
-                onClick={onClose}
-                className="px-6 py-3 bg-neutral-700 hover:bg-neutral-600 text-white rounded-xl transition-colors flex items-center gap-2"
-              >
-                <HiX />
-                Cerrar
-              </button>
+                   }}
+                className="px-3 py-3 bg-green-700/80 hover:bg-green-600/80 text-white rounded-xl transition-colors flex items-center gap-2">
+                  <MdOutlineThumbUp/>  Confirmar
+                   </button>
+                   <button
+                   onClick ={()=>{  
+                    setShowConfirmarRechazarEvento(true)
+                    setEleccion(false)  
+
+                   }}
+                className="px-3 py-3 bg-red-700/80 hover:bg-red-600/80 text-white rounded-xl transition-colors flex items-center gap-2">
+                     <MdOutlineThumbDownOffAlt/>   Rechazar
+                     </button>
+                   </>
+
+
+                     ):( 
+
+                     <>
+                      <button
+                              onClick ={()=>{  
+                                setShowEstadoparticipacion(true)
+                              
+                                 }}
+                            className="px-3 py-3 bg-sky-700 hover:bg-sky-600 text-white rounded-xl transition-colors flex items-center gap-2">
+                                  Ver Estado Participacion   
+                                 </button>
+                      <button
+                              onClick ={()=>{  
+                                setShowEliminarEvento(true)
+                              
+                                 }}
+                            className="px-3 py-3 bg-red-700 hover:bg-red-600 text-white rounded-xl transition-colors flex items-center gap-2">
+                                    Abandonar evento 
+                                 </button>
+                    </>
+                  )}
+                     </> 
+
+                     ) 
+               }
+
             </div>
           </div>
         </div>
@@ -538,7 +660,7 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
             fetchEventData();
           }}
           profile={profile}
-          evento={eventData}           // ← Cambio clave: pasamos el EventoCalendario completo
+          evento={eventData}           
           onSuccess={() => {
             setShowEditModal(false);
             fetchEventData();
@@ -556,11 +678,47 @@ export default function EventModal({ event, isOpen, onClose, profile, onEventUpd
           isOpen={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onSuccess={() => {
-            onClose();
+            onRequestClose();
             if (onEventUpdated) onEventUpdated();
           }}
         />
       )}
+
+      {showConfirmarRechazarEvento && (
+            <ConfirmarRechazarEventoModal
+            eventoId={eventData.id}
+            idParticipante={profile.id}
+            eleccion={eleccion}
+               isOpen={showConfirmarRechazarEvento}
+           onClose={() => setShowConfirmarRechazarEvento(false)}
+           onAceptar={handleConfirmarRechazarParticipacion}
+
+          />
+
+      )}
+      {showEliminarEvento&& (
+
+       <EliminarParticipacionEventoModal
+        eventId={eventData.id}
+        perfilId={profile.id}
+        isOpen={showEliminarEvento}
+        onClose={() =>{ 
+                        setShowEliminarEvento(false)
+                      
+        }}
+        onAceptar={handleEliminarParticipacion}
+      />
+          )}
+
+          {showEstadoparticipacion && (
+            <ParticipacionArtistasBandaModal
+              isOpen={showEstadoparticipacion}
+              onClose={() => setShowEstadoparticipacion(false)}
+              eventoId={eventData.id}
+              perfilId={profile.id}
+              eventoTitulo={eventData.titulo}
+            />
+          )}
     </>
   );
 }

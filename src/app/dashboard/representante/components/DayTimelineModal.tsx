@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { FaCheckCircle, FaLock, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUser, FaEnvelope, FaLink, FaImage, FaChevronRight } from 'react-icons/fa';
-import { HiChevronRight, HiX } from 'react-icons/hi';
+import { HiCalendar, HiChevronRight, HiX } from 'react-icons/hi';
 import EventModal from './EventModal';
 import CrearEventoModal from './CrearEventoModal';
 import BlockDateModal from './BlockDateModal';
@@ -23,6 +23,7 @@ interface DayTimelineModalProps {
 export default function DayTimelineModal({ profile, date, isOpen, onClose, onEventUpdated }: DayTimelineModalProps) {
   const [selectedEvent, setSelectedEvent] = useState<EventoCalendario | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [showDesbloquearModal, setshowDesbloquearModal] = useState(false);
   const [events, setEvents] = useState<EventoCalendario[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,8 +63,15 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
   );
 
   const getEventColor = (event: EventoCalendario) => {
-    if (event.es_bloqueo) return 'bg-red-600/40';
-    return 'bg-sky-600/40'; // Puedes agregar más condiciones si quieres
+    if (event.es_evento_integrante) {
+
+      return 'bg-gray-600/40'
+
+    } else {
+      if (event.es_bloqueo) return 'bg-red-600/40 border-red-500';
+      return 'bg-sky-600/40 '; 
+      
+    }
   };
 
   const getEventIcon = (event: EventoCalendario) => {
@@ -71,29 +79,59 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
     return <FaCheckCircle className="text-sm" />;
   };
 
-  const calculateEventPosition = (event: EventoCalendario) => {
-    const eventStart = new Date(event.inicio);
-    const eventEnd = event.fin ? new Date(event.fin) : new Date(event.inicio);
-    
-    const dayStart = new Date(date);
-    dayStart.setHours(0, 0, 0, 0);
-    const dayEnd = new Date(date);
-    dayEnd.setHours(24, 0, 0, 0);
+const calculateEventPosition = (event: EventoCalendario) => {
+  // 1. Parsear las fechas SIN que JavaScript las convierta
+  const inicioString = typeof event.inicio === 'string' ? event.inicio : event.inicio.toISOString();
+  const finString = event.fin ? (typeof event.fin === 'string' ? event.fin : event.fin.toISOString()) : inicioString;
+  const eventStart = new Date(inicioString.replace('+00:00', 'Z'));
+  const eventEnd = event.fin ? new Date(finString.replace('+00:00', 'Z')) : new Date(inicioString.replace('+00:00', 'Z'));
+  
+  // 2. Crear día base usando el MISMO método que usa el evento
+  const dayStart = new Date(Date.UTC(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    0, 0, 0, 0
+  ));
+  
+  const dayEnd = new Date(Date.UTC(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    24, 0, 0, 0
+  ));
 
-    const start = Math.max(eventStart.getTime(), dayStart.getTime());
-    const end = Math.min(eventEnd.getTime(), dayEnd.getTime());
-    
-    const totalDayDuration = 24 * 60 * 60 * 1000;
-    const startOffset = start - dayStart.getTime();
-    const duration = end - start;
-    
-    const top = (startOffset / totalDayDuration) * 120;
-    const height = (duration / totalDayDuration) * 120;
-    
-    return { top: `${top}%`, height: `${height}%` };
-  };
+  // 3. Comparar timestamps (todos en UTC internamente)
+  const eventStartTime = eventStart.getTime();
+  const eventEndTime = eventEnd.getTime();
+  const dayStartTime = dayStart.getTime();
+  const dayEndTime = dayEnd.getTime();
 
-  const formatTime = (date: Date) => format(date, 'HH:mm', { locale: es });
+  const start = Math.max(eventStartTime, dayStartTime);
+  const end = Math.min(eventEndTime, dayEndTime);
+  
+  const totalDayDuration = 24 * 60 * 60 * 1000;
+  const startOffset = start - dayStartTime;
+  const duration = end - start;
+  
+  const top = (startOffset / totalDayDuration) * 120;
+  const height = (duration / totalDayDuration) * 120;
+  
+  return { top: `${top}%`, height: `${height}%` };
+};
+
+const formatTime = (dateString: string | Date) => {
+  // MOSTRAR LA HORA EXACTA DEL EVENTO (19:00, no 16:00)
+  const date = new Date(dateString);
+  
+  // Usar UTC para mostrar lo que realmente está guardado
+  const hours = date.getUTCHours().toString().padStart(2, '0');
+  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+  
+  return `${hours}:${minutes}`;
+};
+
+
   const formatFullDate = (date: Date) => format(date, "EEEE d 'de' MMMM 'de' yyyy", { locale: es });
 
   const MobileView = () => (
@@ -101,13 +139,23 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
       <div className="space-y-3">
         {sortedEvents.map((event, index) => {
           const isBlocked = event.es_bloqueo;
+            const esEventoDeIntegrante = event.es_evento_integrante;
+       
           return (
+          <div key={event.id || index}>
+          {!esEventoDeIntegrante? (
+            <>
             <div
               key={event.id || index}
               className="flex items-start gap-3 p-3 rounded-lg bg-neutral-800/50 hover:bg-neutral-800/70 cursor-pointer transition-colors border border-neutral-700"
               onClick={() => {
+                if(isBlocked){
+                  
+                  setshowDesbloquearModal(true);
+                }else{
+                  setShowEventModal(true);
+                }
                 setSelectedEvent(event);
-                setShowEventModal(true);
               }}
             >
               <div className={`p-2 rounded ${getEventColor(event)}`}>
@@ -126,6 +174,33 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
               </div>
               <HiChevronRight className="text-gray-400 text-xl ml-2" />
             </div>
+            </>
+            ):(
+            <>
+               <div
+              key={event.id || index}
+              className="flex items-start gap-3 p-3 rounded-lg bg-neutral-800/50 hover:bg-neutral-800/70 cursor-pointer transition-colors border border-neutral-700"
+             
+            >
+              <div className={`p-2 rounded bg-gray-500/70`}>
+               <HiCalendar/>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className={`font-medium text-white'`}>
+                   Evento integrante
+                </h4>
+                <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
+                  <FaClock className="text-xs" />
+                  <span>
+                    {formatTime(new Date(event.inicio))} - {event.fin ? formatTime(new Date(event.fin)) : 'Sin fin'}
+                  </span>
+                </div>
+              </div>
+              <HiChevronRight className="text-gray-400 text-xl ml-2" />
+            </div>
+            </>
+          )}
+          </div>
           );
         })}
       </div>
@@ -187,36 +262,57 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
                     {sortedEvents.map((event, index) => {
                       const position = calculateEventPosition(event);
                       const isBlocked = event.es_bloqueo;
+                      const esEventoDeIntegrante = event.es_evento_integrante;
 
                       return (
                         <div
                           key={event.id || index}
-                          className={`absolute z-50 left-4 right-4 rounded-lg border ${getEventColor(event)} ${isBlocked ? 'border-red-500' : 'border-gray-300/50'} shadow-lg overflow-hidden cursor-pointer hover:opacity-90 transition-all`}
+                          className={`absolute z-50 left-4 right-4 rounded-lg border ${getEventColor(event)} ${isBlocked && !esEventoDeIntegrante ? 'border-red-500' : 'border-gray-300/50'}${esEventoDeIntegrante?'z-0':'z-9999'} shadow-lg overflow-hidden cursor-pointer hover:opacity-90 transition-all`}
                           style={{
                             top: position.top,
                             height: position.height,
                           }}
                           onClick={() => {
-                            setSelectedEvent(event);
-                            setShowEventModal(true);
-                          }}
+                                if(isBlocked){
+                  
+                                  setshowDesbloquearModal(true);
+                                }else{
+                                   setShowEventModal(true);
+                                 }
+                                 setSelectedEvent(event);
+                                }}
                         >
                           <div className={`absolute left-0 top-0 bottom-0 w-1 ${getEventColor(event)}`} />
                           <div className="absolute inset-0 pl-3 pr-2 py-2">
                             <div className="flex items-start gap-2 h-full">
                               <div className="mt-1">
+                                {!esEventoDeIntegrante? (
+                                  <>
                                 {getEventIcon(event)}
+                                  </>
+                                  ):(
+                                  <>
+                                  <HiCalendar/>
+                                  </>
+                                  )}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start">
-                                  <h4 className={`font-semibold truncate ${isBlocked ? 'text-red-200' : 'text-white'}`}>
+                                  <h4 className={`font-semibold truncate ${isBlocked && !esEventoDeIntegrante? 'text-red-200' : 'text-white'}`}>
+                                   {!esEventoDeIntegrante? 
+                                    (<>
                                     {event.titulo}
+                                    </>):(
+                                      <>
+                                      <p>Evento Integrante</p>
+                                      </>
+                                    )}
                                   </h4>
                                   <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
                                     {formatTime(new Date(event.inicio))} - {event.fin ? formatTime(new Date(event.fin)) : 'Sin fin'}
                                   </span>
                                 </div>
-                                {isBlocked && event.motivo_bloqueo && (
+                                {isBlocked && !esEventoDeIntegrante && event.motivo_bloqueo && (
                                   <p className="text-xs text-red-300 mt-1 truncate">
                                     {event.motivo_bloqueo}
                                   </p>
@@ -238,21 +334,44 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
                   <div className="space-y-3 overflow-y-scroll custom-scrollbar h-[calc(100%-100px)]">
                     {sortedEvents.map((event, index) => {
                       const isBlocked = event.es_bloqueo;
+                      const esEventoDeIntegrante = event.es_evento_integrante;
+
                       return (
                         <div
                           key={event.id || index}
                           className="flex items-start gap-3 p-3 rounded-lg bg-neutral-900/50 hover:bg-neutral-800/70 cursor-pointer transition-colors"
                           onClick={() => {
-                            setSelectedEvent(event);
-                            setShowEventModal(true);
-                          }}
+                        if(isBlocked){
+                  
+                          setshowDesbloquearModal(true);
+                          }else{
+                             setShowEventModal(true);
+                           }
+                           setSelectedEvent(event);
+                                     }}
                         >
                           <div className={`p-2 rounded ${getEventColor(event)}`}>
-                            {getEventIcon(event)}
+                                         {!esEventoDeIntegrante? (
+                                <>
+                              {getEventIcon(event)}
+                                </>
+                                ):(
+                                <>
+                               <HiCalendar/>
+                                </>
+                              )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className={`font-medium ${isBlocked ? 'text-red-200' : 'text-white'}`}>
+                            <h4 className={`font-medium ${isBlocked && !esEventoDeIntegrante ? 'text-red-200' : 'text-white'}`}>
+                              {!esEventoDeIntegrante? (
+                                <>
                               {event.titulo}
+                                </>
+                                ):(
+                                <>
+                                <p>Evento Integrante</p>
+                                </>
+                              )}
                             </h4>
                             <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
                               <FaClock className="text-xs" />
@@ -290,6 +409,7 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
                 <button
                   onClick={() => {
                     setNewEventDate(date);
+                    console.log(date);
                     setShowCrearEventoModal(true);
                   }}
                   className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
@@ -315,7 +435,7 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
         <EventModal
           event={selectedEvent}
           isOpen={showEventModal}
-          onClose={() => {
+          onRequestClose={() => {
             setShowEventModal(false);
             setSelectedEvent(null);
           }}

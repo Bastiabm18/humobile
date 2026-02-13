@@ -4,10 +4,11 @@
 import { useEffect, useState } from 'react';
 import { Calendar as BigCalendar, dateFnsLocalizer, Views, View } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { format, startOfWeek, getDay, isSameDay, isSameMonth, isWithinInterval } from 'date-fns';
+import { format, startOfWeek, getDay, isSameDay, isSameMonth, isWithinInterval, subHours } from 'date-fns';
 import { HiChevronDown, HiCalendar, HiPlus, HiLockClosed, HiCog } from 'react-icons/hi';
 import { es } from 'date-fns/locale';
-import { FiCalendar, FiCheckCircle, FiClock } from 'react-icons/fi';
+import { FiCalendar, FiCheckCircle, FiClock, FiXCircle } from 'react-icons/fi';
+import { addHours } from 'date-fns';
 
 import BlockDateModal from './BlockDateModal';
 import CrearEventoModal from './CrearEventoModal';
@@ -19,6 +20,7 @@ import DesbloquearModal from './DesbloquearModal';
 
 import { getEventosByPerfilParticipacion } from '../actions/actions';
 import { EventoCalendario } from '@/types/profile';
+import IntegrantesEventoModal from './IntegrantesEventoModal';
 const localizer = dateFnsLocalizer({
   format,
   parse: (str: string) => new Date(str),
@@ -28,7 +30,8 @@ const localizer = dateFnsLocalizer({
 });
 
 export default function CalendarView({ profileId, perfil }: { profileId: string; perfil: Profile }) {
-  const [view, setView] = useState<View>(Views.MONTH);
+  // PARTIMOS EN VISTA SEMANA??
+  const [view, setView] = useState<View>(Views.WEEK);
   const [date, setDate] = useState(new Date());
   const [showActionModal, setShowActionModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -44,6 +47,9 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
   const [selectedEvent, setSelectedEvent] = useState<EventoCalendario | null>(null);
   const [eventModalOpen, setEventModalOpen] = useState(false);
 
+  const [selectedEventointegrante, SetselectedEventointegrante] = useState<string | null>(null)
+  const [eventoIntegranteModalOpen, SeteventoIntegranteModalOpen]= useState(false)
+
   const [timelineModalOpen, setTimelineModalOpen] = useState(false);
   const [dayEventsForTimeline, setDayEventsForTimeline] = useState<EventoCalendario[]>([]);
   const [selectedDayForTimeline, setSelectedDayForTimeline] = useState<Date | null>(null);
@@ -54,11 +60,36 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
   const [showDateSelectors, setShowDateSelectors] = useState(false);
 
   const [estadoEvento, setEstadoEvento] = useState<string>(''); // '' = TODOS
+  // states para el selector de horas por arrastre 
+  const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null);
+  const [selectionModalOpen, setSelectionModalOpen] = useState(false);
+
+  // states para seleccion multiple en vista semana 
+  const [selectedFechaIni, setSelectedFechaIni] = useState<Date | undefined >(undefined);
+  const [selectedFechaFin, setSelectedFechaFin] = useState<Date | undefined >(undefined);
+
+  const [showHorasMultiplesModal, setShowHorasMultiplesModal] = useState(false);
+  const [isButtonClick, setIsButtonClick] = useState(false);
+
+
+  useEffect(() => {
+  // Resetear isButtonClick después de cierto tiempo por si acaso MNO CAMBIA EL ESTADO A FALSE
+  // IMPORTANTE PARA QUE FUNCIONE SELECTABLE EN VISTA SEMANA Y DIA
+  const timer = setTimeout(() => {
+    if (isButtonClick) {
+      setIsButtonClick(false);
+    }
+  }, 500);
+  
+  return () => clearTimeout(timer);
+}, [isButtonClick]);
+
 
   useEffect(() => {
     fetchEvents();
   }, [profileId, estadoEvento]);
 
+ // console.log('calendarview events: ',events)
   const fetchEvents = async () => {
     try {
       setLoading(true);
@@ -78,9 +109,61 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
     }
   };
 
-  const handleEventClick = (event: EventoCalendario) => {
-    setSelectedEvent(event);
-    setEventModalOpen(true);
+const handleSelectSlot = (slotInfo: { start: Date; end: Date; slots: Date[] }) => {
+  // Si el clic viene de un botón, IGNORAR completamente
+  if (isButtonClick) {
+    console.log('Ignorando selectSlot porque es clic en botón');
+    setIsButtonClick(false); // Reseteamos inmediatamente
+    return;
+  }
+
+  // Tu lógica original sigue aquí SIN CAMBIOS:
+  const hasExistingEvent = events.some(event => {
+    const eventStart = new Date(event.inicio).getTime();
+    const eventEnd = event.fin ? new Date(event.fin).getTime() : eventStart + 3600000;
+    const slotStart = slotInfo.start.getTime();
+    const slotEnd = slotInfo.end.getTime();
+
+    return subHours(slotStart,3) < subHours(eventEnd ,0)&& subHours(slotEnd,3) > subHours(eventStart,0);
+  });
+
+  if (hasExistingEvent) {
+    return;
+  }
+  
+  const fechaInicio = format(slotInfo.start, 'yyyy-MM-dd HH:mm:ss');
+  const fechaFin = format(slotInfo.end, 'yyyy-MM-dd HH:mm:ss');
+
+  console.log('Inicio:', fechaInicio);
+  console.log('Fin:', fechaFin);
+  setSelectedFechaIni(fechaInicio as unknown as Date);
+  setSelectedFechaFin(fechaFin as unknown as Date);
+  
+  // Solo mostrar modal en vista SEMANA/DÍA
+  if (view !== Views.MONTH) {
+    setShowHorasMultiplesModal(true);
+  }
+};
+
+// Añade esta función para manejar selección de eventos
+const handleSelectEvent = (event: EventoCalendario) => {
+  console.log('Evento seleccionado:', event);
+  handleEventClick(event, event.es_evento_integrante);
+};
+
+  const handleEventClick = (event: EventoCalendario, es_evento_integrante: Boolean | undefined) => {
+    console.log(es_evento_integrante)
+    if(es_evento_integrante){
+      console.log(event);
+      SetselectedEventointegrante(event.id)
+      console.log(profileId);
+      SeteventoIntegranteModalOpen(true);
+
+    }else{
+      setSelectedEvent(event);
+      setEventModalOpen(true);
+
+    }
   };
 
   const handleMultipleEventsClick = (eventsList: EventoCalendario[], date: Date) => {
@@ -89,26 +172,52 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
     setTimelineModalOpen(true);
   };
 
-  const handleBlockClick = (blockEvent: EventoCalendario) => {
-    setSelectedBlock(blockEvent);
-    setDesbloquearModalOpen(true);
+  const handleBlockClick = (blockEvent: EventoCalendario, es_evento_integrante: Boolean | undefined) => {
+    if(es_evento_integrante){
+      SetselectedEventointegrante(blockEvent.id)
+      console.log(profileId);
+      SeteventoIntegranteModalOpen(true);
+    }else{
+      blockEvent
+      setSelectedBlock(blockEvent);
+      setDesbloquearModalOpen(true);
+    }
+   
   };
 
   const handleBlockDeleted = () => {
     fetchEvents();
   };
 
-  const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
-    return events.filter(event => {
-      const eventStart = event.inicio;
-      const eventEnd = event.fin || event.inicio;
-      return isSameDay(eventStart, targetDate) ||
-             isSameDay(eventEnd, targetDate) ||
-             isWithinInterval(targetDate, { start: eventStart, end: eventEnd });
-    });
-  };
+const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
+  // 1. Convertimos la fecha de la celda del calendario a un string "2026-01-03"
+  const targetString = format(targetDate, 'yyyy-MM-dd');
 
-  const CustomDateCellWrapper = ({ children, value }: any) => {
+  return events.filter(event => {
+    // 2. Extraemos solo la parte de la fecha de los strings de la base de datos
+    // event.inicio suele ser "2026-01-03T00:00:00+00:00" -> tomamos los primeros 10 caracteres
+    const startString = event.inicio.toString().substring(0, 10);
+    const endString = (event.fin || event.inicio).toString().substring(0, 10);
+
+    // 3. Caso simple: ¿Es el mismo día de inicio o fin?
+    if (startString === targetString || endString === targetString) {
+      return true;
+    }
+
+    // 4. Caso rango: Si el evento dura varios días, verificamos si target está al medio
+    // Aquí sí usamos Date pero sin horas para que la comparación sea pura de fechas nos ahorramos el utc 
+    const dTarget = new Date(targetString);
+    const dStart = new Date(startString);
+    const dEnd = new Date(endString);
+
+    return dTarget >= dStart && dTarget <= dEnd;
+  });
+};
+
+  const defaultScrollTime = new Date();
+    defaultScrollTime.setHours(8, 0, 0);
+
+  const CustomDateCellWrapper = ({ children, value,resource }: any) => {
     const dayEvents = getEventsForDate(value);
     const isToday = isSameDay(value, new Date());
     const isCurrentMonth = isSameMonth(value, date);
@@ -125,7 +234,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
     return (
       <div className="relative h-full w-full">
         {isToday && (
-          <div className="absolute inset-0 border-2 border-indigo-100 bg-indigo-600/50 rounded-lg pointer-events-none z-10" />
+          <div className="absolute inset-0 border-2 border-sky-100 bg-sky-600/50 rounded-lg pointer-events-none z-10" />
         )}
 
         <div className="relative z-10 h-full">
@@ -145,8 +254,8 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
         )}
 
         {isEmptyDay && (
-          <div className="absolute inset-0 flex items-center justify-center gap-1 md:gap-2 z-20 bg-neutral-800/40 hover:bg-neutral-700/80 shine rounded-lg transition-opacity duration-200 pointer-events-auto">
-            <div className="md:hidden">
+          <div className="absolute inset-0  flex items-center justify-center gap-1 md:gap-2 z-20 bg-neutral-800/40 hover:bg-neutral-700/80 shine rounded-lg transition-opacity duration-200 pointer-events-auto">
+            <div className="md:hidden border border-neutral-500/40 w-[99vw] h-[99%] flex">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -154,62 +263,78 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
                   setSelectedDate(value);
                   setShowActionModal(true);
                 }}
-                className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
+                className=" text-green-100 p-2 w-full h-full  shadow-xl hover:scale-110 transition-all duration-200"
                 title="Gestionar día"
               >
-                <HiCog size={16} />
+              
               </button>
             </div>
 
-            <div className="hidden md:flex gap-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setSelectedEventDate(value);
-                  setCreateEventModalOpen(true);
-                }}
-                className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
-                title="Agregar evento"
-              >
-                <HiPlus size={18} />
-              </button>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setBlockModalOpen(true);
-                  setBlockInitialDate(value);
-                }}
-                className="bg-red-600 hover:bg-red-800/80 text-white p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
-                title="Bloquear día"
-              >
-                <HiLockClosed size={18} />
-              </button>
-            </div>
+              {view == Views.MONTH && (
+                <>
+                            <div className="hidden md:flex gap-2 z-40">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                 setIsButtonClick(true); 
+                                setSelectedEventDate(value);
+                                setCreateEventModalOpen(true);
+                              }}
+                              className="bg-green-600/70  hover:bg-green-700/80 text-green-100/80 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
+                              title="Agregar evento"
+                            >
+                              <HiPlus size={18} />
+                            </button>
+                            
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                 setIsButtonClick(true); 
+                                setBlockModalOpen(true);
+                                setBlockInitialDate(value);
+                              }}
+                              className="bg-red-600/70 hover:bg-red-800/80 text-red-100 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
+                              title="Bloquear día"
+                            >
+                              <HiLockClosed size={18} />
+                            </button>
+                          </div>
+                </>
+              )}
+              
           </div>
         )}
       </div>
     );
   };
 
-  const CustomTimeSlotWrapper = ({ children, value }: any) => {
-    const slotDate = new Date(value);
-    
-    const eventsAtThisSlot = events.filter(event => {
-      return slotDate >= event.inicio && slotDate < (event.fin || event.inicio);
-    });
+  const CustomTimeSlotWrapper = ({ children, value,resource }: any) => {
+     // 'resource' indica la columna (undefined = columna de horas, 0 = Lunes, etc.)
+  const esColumnaHora = resource === undefined || resource === 'timeGutter';
+   const slotDate = subHours(value, 3); // ajuste de horas para el utc de la shit!!!
 
+  const slotMs = slotDate.getTime()
+  
+  const eventsAtThisSlot = events.filter(event => {
+
+    const inicioMs = Date.parse(event.inicio as unknown as string);
+    const finMs = event.fin 
+      ? Date.parse(event.fin as unknown as string)
+      : inicioMs + 3600000;
+    
+    return slotMs >= inicioMs && slotMs < finMs;
+  });
     const isBlockedAtThisSlot = eventsAtThisSlot.some(event => event.es_bloqueo);
     const hasEventsAtThisSlot = eventsAtThisSlot.length > 0;
     const isEmptySlot = !hasEventsAtThisSlot && !isBlockedAtThisSlot;
 
     return (
-      <div className="relative h-full w-full group bg-card">
+      <div className="relative h-full w-full group transparent">
         {children}
         
-        {hasEventsAtThisSlot && (
+        {hasEventsAtThisSlot && !esColumnaHora && (
           <EventBadge 
             profile={perfil}
             events={eventsAtThisSlot}
@@ -219,12 +344,13 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
             onEventClick={handleEventClick}
             onMultipleEventsClick={handleMultipleEventsClick}
             onBlockClick={handleBlockClick}
+             esColumnaHora={esColumnaHora}
           />
         )}
         
-        {isEmptySlot && view !== Views.MONTH && (
-          <div className="absolute inset-0 flex items-center justify-center z-20 rounded transition-opacity duration-200">
-            <div className="md:hidden">
+        {isEmptySlot && view !== Views.MONTH && !esColumnaHora && (
+          <div className="absolute inset-0 flex items-center justify-center z-40 rounded transition-opacity duration-200">
+            <div className="md:hidden  border border-neutral-500/40 w-[99vw] h-[99%] flex">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -232,13 +358,13 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
                   setSelectedDate(slotDate);
                   setShowActionModal(true);
                 }}
-                className="bg-green-600 hover:bg-green-500 text-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-all"
+                className="bg-neutral-800/30 hover:bg-green-500 w-full h-full text-white p-1.5 shadow-lg hover:scale-110 transition-all"
                 title="Gestionar horario"
               >
-                <HiCog size={12} />
+              
               </button>
             </div>
-
+{/**
             <div className="hidden md:flex gap-1">
               <button
                 onClick={(e) => {
@@ -266,14 +392,19 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
                 <HiLockClosed size={14} />
               </button>
             </div>
+
+             */}
           </div>
         )}
 
-        {isBlockedAtThisSlot && view !== Views.MONTH && (
+    {/** 
+            * 
+        {isBlockedAtThisSlot && view !== Views.MONTH && !esColumnaHora && (
           <div className="absolute inset-0 bg-red-900/40 pointer-events-none z-10 flex items-center justify-center">
             <HiLockClosed size={20} className="text-red-400 opacity-70" />
           </div>
         )}
+          */}
       </div>
     );
   };
@@ -308,10 +439,10 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
       
         <div className="text-lg font-semibold flex items-center justify-center flex-col gap-3 mb-6 text-white order-1 md:order-2">
           {toolbar.label}
-          <div className="flex items-center gap-2 order-3">
+          <div className="grid grid-cols-2 md:flex items-center gap-1 order-3">
             <button
               onClick={() => setEstadoEvento('')}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === '' ? 'bg-blue-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === '' ? 'bg-green-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
             >
               <FiCalendar className="h-4 w-4" />
               Todos
@@ -327,10 +458,17 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
                 
             <button
               onClick={() => setEstadoEvento('confirmado')}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === 'confirmado' ? 'bg-green-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === 'confirmado' ? 'bg-blue-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
             >
               <FiCheckCircle className="h-4 w-4" />
               Confirmados
+            </button>
+            <button
+              onClick={() => setEstadoEvento('rechazado')}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${estadoEvento === 'rechazado' ? 'bg-red-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700'}`}
+            >
+              <FiXCircle className="h-4 w-4" />
+              Rechazados
             </button>
           </div>
         </div>
@@ -358,10 +496,11 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
       </div>
     );
   };
+  
 
   return (
     <>
-      <div className="h-[600px] md:h-[750px] lg:h-[900px] mt-10 bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70 relative">
+      <div className="h-[750px] md:h-[1050px] lg:h-[1050px] mt-10 bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70 relative">
         
         {/* FloatingDateSelector completo */}
         <button
@@ -379,7 +518,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
         </button>
 
         {showDateSelectors && (
-          <div className="absolute top-16 right-4 z-30 bg-neutral-800/95 backdrop-blur-sm p-4 rounded-xl border border-neutral-700 shadow-2xl w-64">
+          <div className="absolute top-16 right-4 z-50 bg-neutral-800/95 backdrop-blur-sm p-4 rounded-xl border border-neutral-700 shadow-2xl w-64">
             <div className="mb-3">
               <label className="block text-sm text-neutral-300 mb-1">Seleccionar Mes</label>
               <div className="grid grid-cols-3 gap-2">
@@ -438,16 +577,19 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
 
         <BigCalendar
           localizer={localizer}
-          events={[]} // ← Como tú dijiste: NO se usan eventos aquí, EventBadge los renderiza
+          events={[]} // NO se usan eventos aquí, EventBadge los renderiza
           startAccessor="start"
           endAccessor="end"
+          scrollToTime={defaultScrollTime}
           view={view}
           onView={setView}
           date={date}
           onNavigate={setDate}
           views={['month', 'week', 'day']}
           culture="es"
-          selectable
+          selectable       
+  onSelectSlot={handleSelectSlot} // ← AÑADE ESTO
+  
           popup
           step={60}
           messages={{
@@ -463,7 +605,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
             dateCellWrapper: CustomDateCellWrapper,
             timeSlotWrapper: CustomTimeSlotWrapper,
             header: ({ label }: any) => (
-              <div className="text-md md:text-xl md:text-center">
+              <div className="text-md  md:text-xl md:text-center">
                 {label}
               </div>
             ),
@@ -476,8 +618,8 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
         <div className="fixed inset-0 bg-neutral-900/80 flex items-center justify-center z-50 p-4 md:hidden">
           <div className="bg-neutral-800 rounded-2xl p-6 w-full max-w-sm">
             <h3 className="text-white text-lg font-bold mb-4">
-              Gestiona {format(selectedDate, 'dd/MM/yyyy')}
-            </h3>
+              Gestionar    {format(selectedDate, 'dd/MM/yyyy')}
+             </h3>
             
             <div className="flex gap-3 mb-4">
               <button
@@ -514,6 +656,53 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
           </div>
         </div>
       )}
+      {/* Modal de acciones vista semana */}
+      { showHorasMultiplesModal && selectedFechaIni && selectedFechaFin && (
+        <div className="fixed inset-0 bg-neutral-900/80 flex items-center justify-center z-50 p-4 ">
+          <div className="bg-neutral-800 rounded-2xl p-6 w-full max-w-sm">
+            <h3 className="text-white text-lg font-bold mb-4">
+              Gestiona {selectedFechaIni ? format(selectedFechaIni, 'dd-MM-yyyy') : ''}
+            </h3>
+            <h4>
+            Periodo: {selectedFechaIni ? format(selectedFechaIni, 'HH:mm:ss') : ''} - {selectedFechaFin ? format(selectedFechaFin, 'HH:mm:ss') : ''}
+            </h4>
+    
+            
+            <div className="flex gap-3 mb-4">
+              <button
+                onClick={() => {
+                  setSelectedEventDate(selectedFechaIni);
+                  setCreateEventModalOpen(true);
+                  setShowHorasMultiplesModal(false);
+                }}
+                className="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+              >
+                <HiPlus size={20} />
+                Evento
+              </button>
+              
+              <button
+                onClick={() => {
+                  setBlockModalOpen(true);
+                  setBlockInitialDate(selectedDate);
+                  setShowHorasMultiplesModal(false);
+                }}
+                className="flex-1 bg-red-600 hover:bg-red-800 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+              >
+                <HiLockClosed size={20} />
+                Bloquear
+              </button>
+            </div>
+            
+            <button
+              onClick={() => setShowHorasMultiplesModal(false)}
+              className="w-full bg-neutral-500 hover:bg-neutral-600 text-white py-2 rounded-lg"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       {blockModalOpen && (
         <BlockDateModal
@@ -521,9 +710,12 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
           onClose={() => {
             setBlockModalOpen(false);
             fetchEvents();
+            setSelectedFechaFin(undefined)
+            setSelectedFechaIni(undefined)
           }}
           profile={perfil}
-          initialDate={blockInitialDate || new Date()}
+          initialDate={selectedFechaIni ? selectedFechaIni: blockInitialDate || new Date()}
+          finalDate={selectedFechaFin}
         />
       )}
 
@@ -534,9 +726,11 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
             setCreateEventModalOpen(false);
             setSelectedEventDate(null);
             fetchEvents();
+            setSelectedFechaFin(undefined);
           }}
           profile={perfil}
           selectedDate={selectedEventDate}
+          selectedEndDate={selectedFechaFin}
         />
       )}
 
@@ -544,7 +738,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
         <EventModal
           event={selectedEvent}
           isOpen={eventModalOpen}
-          onClose={() => {
+          onRequestClose={() => {
             setEventModalOpen(false);
             setSelectedEvent(null);
           }}
@@ -562,6 +756,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
             setTimelineModalOpen(false);
             setDayEventsForTimeline([]);
             setSelectedDayForTimeline(null);
+            fetchEvents();
           }}
           onEventUpdated={fetchEvents}
         />
@@ -577,6 +772,22 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
           }}
           onBlockDeleted={handleBlockDeleted}
         />
+      )}
+
+      {/**MUESTRA UN MODAL PARA INFORMAR A 1 BANDA CUANDO 1 INTEGRANTE TIENE 1 EVENTO EN UNA FECHA Y HORA DE MANERA INDIVIDUAL Y NO CON LA BANDA  */}
+      {eventoIntegranteModalOpen &&  selectedEventointegrante &&(
+
+        <IntegrantesEventoModal
+          isOpen={eventoIntegranteModalOpen}
+          onClose={()=>{
+            SeteventoIntegranteModalOpen(false);
+          }}
+          bandaId={profileId}
+          eventoId={selectedEventointegrante}
+        
+        
+        />
+
       )}
     </>
   );

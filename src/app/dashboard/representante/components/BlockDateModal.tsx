@@ -8,22 +8,31 @@ import { createDateBlock } from '../actions/actions';
 import RespuestaModal from './RespuestaModal';
 import { Profile } from '@/types/profile';
 
+import { addHours } from 'date-fns';
+
 interface BlockDateModalProps {
   open: boolean;
   onClose: () => void;
   profile: Profile;
   initialDate?: Date;
+  finalDate?:Date
 }
 
-export default function BlockDateModal({ open, onClose, profile, initialDate }: BlockDateModalProps) {
+export default function BlockDateModal({ open, onClose, profile, initialDate, finalDate }: BlockDateModalProps) {
   const [title, setTitle] = useState('');
   const [reason, setReason] = useState('');
+
+  // seteo de fechas si fue con selectable o fue con el boton de vista mes 
   const [startDateTime, setStartDateTime] = useState(
     initialDate
       ? format(initialDate, "yyyy-MM-dd'T'HH:mm")
-      : format(new Date(), "yyyy-MM-dd'T'HH:mm")
+      : format(new Date(), "yyyy-MM-dd'T'00:00")
   );
-  const [endDateTime, setEndDateTime] = useState('');
+  const [endDateTime, setEndDateTime] = useState(
+    finalDate
+    ? format(finalDate,  "yyyy-MM-dd'T'HH:mm")
+      : format(addHours(new Date(),12), "yyyy-MM-dd'T'00:00")
+  );
   const [loading, setLoading] = useState(false);
 
   const [modalState, setModalState] = useState({

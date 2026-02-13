@@ -16,7 +16,8 @@ import {
   getArtistasVisibles,
   getLugaresVisibles,
   getCategoriasVisibles,
-  updateEvento, // 
+  updateEvento,
+  updateEventov2, // 
 } from '../actions/actions';
 import { getSupabaseBrowser } from '@/lib/supabase/supabase-client';
 import RespuestaModal from './RespuestaModal';
@@ -246,8 +247,9 @@ export default function EditarEventoModal({
       return;
     }
 
-    const ini = new Date(form.fecha_hora_ini);
-    const fin = form.fecha_hora_fin ? new Date(form.fecha_hora_fin) : null;
+    const ini = new Date(form.fecha_hora_ini + 'Z');
+    const fin = form.fecha_hora_fin ? new Date(form.fecha_hora_fin + 'Z') : null;
+    
 
     if (fin && ini >= fin) {
       alert('La fecha/hora de inicio debe ser anterior a la de fin');
@@ -278,10 +280,13 @@ export default function EditarEventoModal({
         })),
       };
 
-      const result = await updateEvento(dataToSend);
+      console.log(dataToSend)
+      const result = await updateEventov2(dataToSend);
 
       if (!result.success) {
         throw new Error(result.error || 'Error desconocido al actualizar');
+      }else{
+        console.log(result)
       }
 
       setModalState({
