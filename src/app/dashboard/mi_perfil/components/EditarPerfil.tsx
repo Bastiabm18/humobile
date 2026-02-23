@@ -1,7 +1,7 @@
 // app/dashboard/mi_perfil/EditarPerfil.tsx
 'use client';
 
-import { Perfil, PerfilSelect } from '@/types/profile';
+import { categoria_perfil, Perfil, PerfilSelect } from '@/types/profile';
 import { 
   FaGuitar, 
   FaBuilding, 
@@ -29,7 +29,7 @@ import { useState, useEffect } from 'react';
 import { getSupabaseBrowser } from '@/lib/supabase/supabase-client';
 import { FiUploadCloud, FiX, FiGlobe } from 'react-icons/fi';
 import LocationPickerMap from './LocationPickerMap';
-import { getGeoData, getPerfilesArtistaVisibles, getPerfilesRepresentanteVisibles, getPerfilesTodoUso } from '../actions/actions';
+import { getCategoriasPerfilActivas, getGeoData, getPerfilesArtistaVisibles, getPerfilesRepresentanteVisibles, getPerfilesTodoUso } from '../actions/actions';
 import { GeoData } from '@/types/profile';
 
 interface EditarPerfilProps {
@@ -41,7 +41,7 @@ interface EditarPerfilProps {
 
 export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: EditarPerfilProps) {
   const [formData, setFormData] = useState<Perfil>({ ...perfil });
-  console.log(perfil)
+  //console.log(perfil)
   // Estados para manejar los arrays de IDs
   const [integrantesSeleccionados, setIntegrantesSeleccionados] = useState<string[]>(
     Array.isArray(perfil.integrantes_perfil) ? perfil.integrantes_perfil : []
@@ -59,6 +59,9 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
     Array.isArray(perfil.representantes_ids)? perfil.representantes_ids : []
   );
 
+    // estado para categoria de perfiles 
+    const [categoriasPerfil, setCategoriasPerfil] = useState<categoria_perfil[]>([]);
+    const [cargandoCategorias, setCargandoCategorias] = useState(false);
 
   // manejar los integrantes a eliminar 
   const [integrantesEliminar, setIntegrantesEliminar] = useState<string[]>([]);
@@ -86,6 +89,23 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
   
   const supabase = getSupabaseBrowser();
 
+// categorias
+  useEffect(() => {
+  if (formData.tipo_perfil) {
+    setCargandoCategorias(true);
+    getCategoriasPerfilActivas(formData.tipo_perfil)
+      .then(categorias => {
+        console.log('Categorías activas:', categorias);
+        setCategoriasPerfil(categorias);
+      })
+      .catch(error => {
+        console.error('Error cargando categorías:', error);
+      })
+      .finally(() => {
+        setCargandoCategorias(false);
+      });
+  }
+}, [formData.tipo_perfil]);
   // Cargar perfiles disponibles según el tipo
   useEffect(() => {
     if (formData.tipo_perfil === 'banda' || formData.tipo_perfil === 'representante' || formData.tipo_perfil === 'artista') {
@@ -104,7 +124,7 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
     }));
   }, [integrantesSeleccionados, representadosSeleccionados]);
 
-  // Inicializar datos de ubicación
+  // 
   useEffect(() => {
     if (geoData) {
       // Obtener nombres de la ubicación actual
@@ -472,7 +492,7 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
           <div className="p-2 bg-purple-500/10 rounded-lg">
             <FaUsers className="w-5 h-5 text-purple-400" />
           </div>
-          <span>Mienbro En</span>
+          <span>Miembro En</span>
         </h2>
         
         <div className="space-y-4">
@@ -653,6 +673,58 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
     );
   };
 
+const renderCamposcategoria = () => {
+  // Si no hay categorías o no es un tipo que tenga categorías, no mostrar nada
+        if (!formData.tipo_perfil || 
+            formData.tipo_perfil === 'representante' || 
+            formData.tipo_perfil === 'productor') {
+          return null;
+        }
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-neutral-400 mb-2">
+          Categoría del Perfil
+        </label>
+        
+        <div className="flex gap-2 mb-4">
+          {cargandoCategorias ? (
+            <div className="flex-1 bg-black/50 border border-purple-600/30 rounded-xl px-4 py-3 flex items-center gap-3">
+              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-purple-500"></div>
+              <span className="text-gray-400">Cargando categorías...</span>
+            </div>
+          ) : (
+            <select
+              value={formData.id_categoria || ''}
+              onChange={(e) => setFormData({...formData, id_categoria: e.target.value})}
+              className="flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 text-white"
+              disabled={categoriasPerfil.length === 0}
+            >
+              <option value="">Seleccionar categoría</option>
+              {categoriasPerfil.map((categoria) => (
+                <option key={categoria.id_categoria} value={categoria.id_categoria}>
+                  {categoria.nombre_categoria}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Mostrar categoría actual seleccionada */}
+        {formData.id_categoria && (
+          <div className="mt-2 p-3 bg-purple-900/20 border border-purple-800/30 rounded-lg">
+            <p className="text-sm text-purple-300">
+              <span className="font-medium">Categoría seleccionada: </span>
+              {categoriasPerfil.find(c => String(c.id_categoria) === String(formData.id_categoria))?.nombre_categoria || 'Cargando...'}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
   return (
     <>
       <motion.div
@@ -812,10 +884,26 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
                 </div>
               </div>
 
+
+
+              {(formData.tipo_perfil !== 'representante' && formData.tipo_perfil !== 'productor') && (
+              <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
+                <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+                  <div className="p-2 bg-purple-500/10 rounded-lg">
+                    <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l5 5a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-5-5A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                  </div>
+                  <span>Categoría del Perfil</span>
+                </h2>
+                {renderCamposcategoria()}
+              </div>
+            )}
               {/* Sección de Integrantes (solo para banda) */}
               {renderIntegrantesSection()}
               {/* Sección de Integrante en banda (solo para artista) */}
               {renderIntegranteDeBandaSection()}
+
 
               {/* Sección de Representados (solo para representante) */}
               {renderRepresentadosSection()}
@@ -942,7 +1030,7 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
                       </button>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-3">
+                    <div hidden className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="text-xs text-neutral-500 mb-1 block">Latitud</label>
                         <input

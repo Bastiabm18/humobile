@@ -35,6 +35,8 @@ export default function GridPerfiles({
   onDelete,
   onVer
 }: GridPerfilesProps) {
+
+ // console.log('Perfiles recibidos en GridPerfiles:', perfiles);
   if (perfiles.length === 0) {
     return (
       <div className="text-center py-12">

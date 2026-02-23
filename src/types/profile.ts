@@ -35,6 +35,13 @@ export interface PerfilParticipanteEvento {
   perfil_telefono?: string;
 }
 
+
+export interface categoria_perfil{
+  id_categoria: string;
+  nombre_categoria: string;
+  tipo_perfil: string;
+  estado: string;
+}
 export interface IntegranteEventoData{
  id_perfil: string;
   nombre: string;
@@ -319,6 +326,8 @@ export interface Perfil {
   bandas_nombres?: string[]; // Nombres de las bandas asociadas (si aplica)
   representantes_ids?: string[]; // IDs de los representantes asociados (si aplica)
   representantes_nombres?: string[]; // Nombres de los representantes asociados (si aplica)
+  id_categoria?: string; // ID de la categoría del perfil (don derek pidio apellido para el tipo de perfil)
+  nombre_categoria_perfil?: string; // Nombre de la categoría del perfil (opcional, para facilitar el acceso)
 }
 export interface PerfilConIntegrantes {
   // IDENTIFICACIÓN
@@ -362,7 +371,8 @@ export interface PerfilConIntegrantes {
   representantes_nombres?: string[]; // Nombres de los representantes asociados (si aplica)
   bandas_ids?: string[]; // IDs de las bandas asociadas (si aplica)
   bandas_nombres?: string[]; // Nombres de las bandas asociadas (si aplica)
-
+  id_categoria?: string; // ID de la categoría del perfil (don derek pidio apellido para el tipo de perfil)
+  nombre_categoria_perfil?: string; // Nombre de la categoría del perfil (opcional, para facilitar el acceso)
 }
 
 // Interfaz para perfil básico

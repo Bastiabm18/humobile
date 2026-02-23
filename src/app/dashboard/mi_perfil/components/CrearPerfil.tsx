@@ -1,7 +1,7 @@
 // app/dashboard/mi_perfil/CrearPerfil.tsx
 'use client';
 
-import { Perfil, PerfilSelect } from '@/types/profile';
+import { categoria_perfil, Perfil, PerfilSelect } from '@/types/profile';
 import { 
   FaBuilding,
   FaPhone,
@@ -29,7 +29,7 @@ import { getSupabaseBrowser } from '@/lib/supabase/supabase-client';
 import { FiUploadCloud, FiX, FiGlobe } from 'react-icons/fi';
 import LocationPickerMap from './LocationPickerMap';
 import { GeoData } from '@/types/profile';
-import { getPerfilesArtistaVisibles,getPerfilesRepresentanteVisibles  } from '../actions/actions';
+import { getPerfilesArtistaVisibles,getPerfilesRepresentanteVisibles,getCategoriasPerfilActivas  } from '../actions/actions';
 import { useRouter } from 'next/navigation';
 
 interface CrearPerfilProps {
@@ -65,7 +65,8 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
     productor_data: {},
     representante_data: {},
     integrantes_perfil: [],
-    representados_perfil: []
+    representados_perfil: [],
+    id_categoria: ''
   });
 
   // Estados para selección dinámica
@@ -88,6 +89,10 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
     comuna: ''
   });
 
+  // estado para categoria de perfiles 
+  const [categoriasPerfil, setCategoriasPerfil] = useState<categoria_perfil[]>([]);
+  const [cargandoCategorias, setCargandoCategorias] = useState(false);
+
   // Estado para artistas disponibles (SOLO artistas como dice tu función)
   const [artistasDisponibles, setArtistasDisponibles] = useState<PerfilSelect[]>([]);
   const [cargandoArtistas, setCargandoArtistas] = useState(false);
@@ -103,7 +108,14 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
     { id: 'productor', label: 'Productor', icon: <FaHeadphones />, color: 'bg-yellow-500' },
     { id: 'representante', label: 'Representante', icon: <FaBriefcase />, color: 'bg-red-500' }
   ];
+ 
   
+  useEffect(() => {
+    getCategoriasPerfilActivas(formData.tipo_perfil).then(categorias => {
+      //console.log('Categorías activas:', categorias);
+      setCategoriasPerfil(categorias);
+    });
+  },[formData.tipo_perfil]);
 
   // Cargar artistas visibles cuando es tipo banda
   useEffect(() => {
@@ -486,6 +498,53 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
         return null;
     }
   };
+  const renderCamposcategoria = () => {
+    switch (formData.tipo_perfil) {
+     default:
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-neutral-400 mb-2">
+                Seleccionar categoria
+              </label>
+              
+              {/* Select para agregar nuevo integrante */}
+              <div className="flex gap-2 mb-4">
+                {cargandoCategorias ? (
+                  <div className="flex-1 bg-black/50 border border-purple-600/30 rounded-xl px-4 py-3 flex items-center gap-3">
+                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-purple-500"></div>
+                    <span className="text-gray-400">Cargando categorias...</span>
+                  </div>
+                ) : (
+                  <select
+                    value={formData.id_categoria}
+                    onChange={(e) => setFormData({...formData, id_categoria: e.target.value})}
+                    className="flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 text-white"
+                    disabled={categoriasPerfil.length === 0}
+                  >
+                    <option value="">Seleccionar categoria</option>
+                    {categoriasPerfil.map((categoria) => (
+                      <option key={categoria.id_categoria} value={categoria.id_categoria}>
+                        {categoria.nombre_categoria}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                
+
+              </div>
+
+            </div>
+          </div>
+        );
+
+     
+
+    
+
+
+    }
+  };
 
   return (
     <>
@@ -677,6 +736,16 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
                 </div>
               </div>
 
+            {/* Campos categoria del perfil  */}
+              {(formData.tipo_perfil !== 'representante' && formData.tipo_perfil !== 'productor') && (
+                <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
+                  <h2 className="text-xl font-semibold text-white mb-5">
+                    categoria del perfil
+                  </h2>
+                  {renderCamposcategoria()}
+                </div>
+              )}
+
               {/* Campos adicionales según tipo */}
               {(formData.tipo_perfil === 'banda' || formData.tipo_perfil === 'representante') && (
                 <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
@@ -686,6 +755,8 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
                   {renderCamposAdicionales()}
                 </div>
               )}
+
+
 
               {/* Contacto */}
               <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
@@ -844,7 +915,7 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
                   {/* Coordenadas */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-neutral-400">Coordenadas</label>
+                      <label hidden className="text-sm font-medium text-neutral-400">Coordenadas</label>
                       <button
                         type="button"
                         onClick={() => setShowMapModal(true)}
@@ -858,6 +929,7 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <input
+                        hidden
                           type="number"
                           step="any"
                           value={formData.lat || ''}
@@ -868,6 +940,7 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
                       </div>
                       <div>
                         <input
+                        hidden
                           type="number"
                           step="any"
                           value={formData.lon || ''}

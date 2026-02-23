@@ -33,6 +33,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState } from 'react';
 import MapaLugar from './MapaLugar';
+import { MdCategory } from 'react-icons/md';
 
 interface VistaPerfilProps {
   perfil: PerfilConIntegrantes;
@@ -40,7 +41,7 @@ interface VistaPerfilProps {
 
 export default function VistaPerfil({ perfil }: VistaPerfilProps) {
   const [showFullMap, setShowFullMap] = useState(false);
-
+  console.log('Perfil en VistaPerfil:', perfil);
   const getTipoIcono = () => {
     switch (perfil.tipo_perfil) {
       case 'artista': return <FaUser className="w-6 h-6" />;
@@ -226,6 +227,36 @@ const getYouTubeId = (url:string) => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Columna izquierda - Información de contacto y ubicación */}
           <div className="space-y-6">
+            {/* Contacto */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
+            >
+              <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+                <div className="p-2 bg-blue-500/10 rounded-lg">
+                  <MdCategory className="w-5 h-5 text-blue-400" />
+                </div>
+                <span>Categoria</span>
+              </h2>
+              
+              <div className="space-y-4">
+                {perfil.nombre_categoria_perfil && (
+                  <div className="flex items-start gap-4 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors">
+                    <div className="p-2 bg-red-500/10 rounded-lg">
+                      <MdCategory className="w-4 h-4 text-red-400" />
+                    </div>
+                    <div className="flex-1">
+                 
+                      <p className="text-lg text-white font-medium">{perfil.nombre_categoria_perfil}</p>
+                    </div>
+                  </div>
+                )}
+                
+
+              </div>
+            </motion.div>
             {/* Contacto */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}

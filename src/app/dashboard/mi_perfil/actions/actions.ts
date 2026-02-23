@@ -1,7 +1,7 @@
 'use server'; 
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
-import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile,Perfil, PerfilConIntegrantes } from '@/types/profile'; 
+import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile,Perfil, PerfilConIntegrantes, categoria_perfil } from '@/types/profile'; 
 import { InvitacionData } from '@/types/profile';
 
 // ===========================================
@@ -473,7 +473,7 @@ export async function updateRepresentativeProfile(profileId: string, data: any) 
 export const getProfiles = async (userId: string): Promise<PerfilConIntegrantes[]> => {
   const supabaseAdmin = getSupabaseAdmin();
   
-  const { data, error } = await supabaseAdmin.rpc('get_perfiles_con_integrantes', {
+  const { data, error } = await supabaseAdmin.rpc('get_perfiles_con_integrantes_v2', {
     p_user_id: userId
   });
 
@@ -514,7 +514,9 @@ export const getProfiles = async (userId: string): Promise<PerfilConIntegrantes[
     representantes_perfil:p.representante_ids || [],
     representantes_nombres:p.representante_nombres || [],
     bandas_ids:p.bandas_ids || [],
-    bandas_nombres:p.bandas_nombres || []
+    bandas_nombres:p.bandas_nombres || [],
+    id_categoria: p.id_categoria_perfil || null,
+    nombre_categoria_perfil: p.nombre_categoria_perfil || null
   }));
 
   return perfiles;
@@ -602,6 +604,38 @@ export const getPerfilesArtistaVisibles = async (): Promise<Perfil[]> => {
   }));
 
   return perfilesVisibles;
+};
+export const getCategoriasPerfilActivas = async (tipo_perfil: string): Promise<categoria_perfil[]> => {
+  const supabaseAdmin = getSupabaseAdmin();
+  
+  // Consulta única a tabla perfil filtrando por tipo y visibilidad
+  const { data, error } = await supabaseAdmin
+    .from('categoria_perfil')
+    .select(`
+     *
+    `)
+    .eq('tipo', tipo_perfil)
+    .eq('estado', true);
+
+  // Manejo de errores
+  if (error) {
+    console.error("Error fetching visible profiles:", error);
+    throw new Error(`Fallo al obtener perfiles visibles: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  // Mapeo de artistas visibles directamente a la interfaz Perfil
+  const categoriasPerfilVisibles: categoria_perfil[] = data.map(p => ({
+    id_categoria: p.id_categoria,
+    nombre_categoria: p.categoria,
+    tipo_perfil: p.tipo,
+    estado: p.estado
+  }));
+
+  return categoriasPerfilVisibles;
 };
 export const getPerfilesTodoUso = async (): Promise<Perfil[]> => {
   const supabaseAdmin = getSupabaseAdmin();
@@ -879,6 +913,7 @@ export const actualizarPerfil = async (
       id_comuna: perfil.id_comuna,
       id_region: perfil.id_region,
       id_pais: perfil.id_pais,
+      id_categoria: perfil.id_categoria,
       actualizado_en: new Date().toISOString()
     };
 
@@ -946,6 +981,7 @@ export const actualizarPerfil = async (
       local_data: data.local_data || {},
       productor_data: data.productor_data || {},
       representante_data: data.representante_data || {},
+      id_categoria: data.id_categoria,
     };
 
     // Procesar integrantes y representados según el tipo de perfil

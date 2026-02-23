@@ -51,7 +51,7 @@ export default function RepresentanteContent({
    if (profiles.length === 0) {
       return (
         <div className="text-center py-20">
-          <p className="text-2xl text-gray-400">No tienes perfiles creados aún</p>
+          <p className="text-2xl text-gray-400">No tienes perfiles asociados aún</p>
           <p className="mt-4 text-gray-500">Ve a <strong>Mis Perfiles</strong> y crea uno</p>
         </div>
       );
