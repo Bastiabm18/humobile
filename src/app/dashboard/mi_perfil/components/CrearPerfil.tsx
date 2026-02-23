@@ -622,104 +622,106 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
               {/* Tipo de Perfil */}
               <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
                 <h2 className="text-xl font-semibold text-white mb-5">Tipo de Perfil</h2>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-             {tiposPerfil.map((tipo) => {
-                  // Verificar si este tipo requiere PREMIUM para usuarios no PREMIUM
-                  const requierePremium = membresia !== 'PREMIUM' && 
-                    (tipo.id === 'productor' || tipo.id === 'representante');
-                  const estaSeleccionado = formData.tipo_perfil === tipo.id;
+     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
+  {tiposPerfil.map((tipo) => {
+    // Verificar si este tipo requiere PREMIUM para usuarios no PREMIUM
+    const requierePremium = membresia !== 'PREMIUM' && 
+      (tipo.id === 'productor' || tipo.id === 'representante');
+    const estaSeleccionado = formData.tipo_perfil === tipo.id;
 
-                  return (
-                    <button
-                      key={tipo.id}
-                      type="button"
-                      onClick={() => {
-                        if (!requierePremium) {
-                          handleTipoPerfilChange(tipo.id as Perfil['tipo_perfil']);
-                        }
-                      }}
-                      disabled={requierePremium}
-                      className={`
-                        flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all
-                        relative group
-                        ${estaSeleccionado 
-                          ? `${tipo.color.replace('bg-', '')}/20 text-white border-${tipo.color.replace('bg-', '')}/50 bg-${tipo.color.replace('bg-', '')}/10` 
-                          : 'bg-neutral-800/50 text-neutral-400 border-neutral-700'
-                        }
-                        ${!estaSeleccionado && !requierePremium ? 'hover:border-neutral-600 hover:text-neutral-300' : ''}
-                        ${requierePremium ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}
-                      `}
-                    >
-                      {/* Badge PREMIUM para tipos que lo requieren */}
-                      {requierePremium && (
-                        <div className="absolute -top-2 -right-2 z-10">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-yellow-500/90 text-yellow-100 border border-yellow-500 shadow-lg">
-                            <FaCrown className="w-3 h-3 mr-1" />
-                            PREMIUM
-                          </span>
-                        </div>
-                      )}
+    return (
+      <button
+        key={tipo.id}
+        type="button"
+        onClick={() => {
+          if (!requierePremium) {
+            handleTipoPerfilChange(tipo.id as Perfil['tipo_perfil']);
+          }
+        }}
+        disabled={requierePremium}
+        className={`
+          flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl border-2 transition-all
+          relative group
+          ${estaSeleccionado 
+            ? `${tipo.color.replace('bg-', '')}/20 text-white border-${tipo.color.replace('bg-', '')}/50 bg-${tipo.color.replace('bg-', '')}/10` 
+            : 'bg-neutral-800/50 text-neutral-400 border-neutral-700'
+          }
+          ${!estaSeleccionado && !requierePremium ? 'hover:border-neutral-600 hover:text-neutral-300' : ''}
+          ${requierePremium ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}
+        `}
+      >
+        {/* Badge PREMIUM para tipos que lo requieren */}
+        {requierePremium && (
+          <div className="absolute -top-2 -right-2 z-10">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-yellow-500/90 text-yellow-100 border border-yellow-500 shadow-lg">
+              <FaCrown className="w-3 h-3 mr-1" />
+              PREMIUM
+            </span>
+          </div>
+        )}
 
-                      <div className={`
-                        text-2xl mb-2 transition-transform
-                        ${requierePremium ? '' : 'group-hover:scale-110'}
-                      `}>
-                        {tipo.icon}
-                      </div>
-                      
-                      <span className="text-xs font-medium text-center">{tipo.label}</span>
-                      
-                      {/* Tooltip para tipos PREMIUM */}
-                      {requierePremium && (
-                        <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 hidden group-hover:block z-20">
-                          <div className="bg-neutral-900 border border-neutral-700 rounded-lg p-3 shadow-xl whitespace-nowrap">
-                            <div className="flex items-center gap-2 text-yellow-400 font-medium">
-                              <FaCrown className="w-3 h-3" />
-                              <span className="text-xs">Requiere cuenta PREMIUM</span>
-                            </div>
-                            <div className="text-xs text-neutral-300 mt-1">
-                              Actualiza tu plan para desbloquear
-                            </div>
-                          </div>
-                          {/* Flecha del tooltip */}
-                          <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
-                            <div className="w-3 h-3 bg-neutral-900 border-l border-t border-neutral-700 rotate-45"></div>
-                          </div>
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
+        <div className={`
+          text-xl sm:text-2xl mb-1 sm:mb-2 transition-transform
+          ${requierePremium ? '' : 'group-hover:scale-110'}
+        `}>
+          {tipo.icon}
+        </div>
+        
+        <span className="text-[5px] sm:text-[8px] font-medium text-center leading-tight">
+          {tipo.label}
+        </span>
+        
+        {/* Tooltip para tipos PREMIUM */}
+        {requierePremium && (
+          <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 hidden group-hover:block z-20">
+            <div className="bg-neutral-900 border border-neutral-700 rounded-lg p-3 shadow-xl whitespace-nowrap">
+              <div className="flex items-center gap-2 text-yellow-400 font-medium">
+                <FaCrown className="w-3 h-3" />
+                <span className="text-xs">Requiere cuenta PREMIUM</span>
+              </div>
+              <div className="text-xs text-neutral-300 mt-1">
+                Actualiza tu plan para desbloquear
+              </div>
+            </div>
+            {/* Flecha del tooltip */}
+            <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+              <div className="w-3 h-3 bg-neutral-900 border-l border-t border-neutral-700 rotate-45"></div>
+            </div>
+          </div>
+        )}
+      </button>
+    );
+  })}
 
-                    {/* Mensaje informativo debajo de los botones */}
-                    {membresia !== 'PREMIUM' && (
-                      <div className="col-span-5 p-4 bg-gradient-to-r from-yellow-500/10 to-yellow-500/5 border border-yellow-500/20 rounded-xl mt-2">
-                        <div className="flex items-center justify-center gap-3">
-                          <div className="p-2 bg-yellow-500/20 rounded-lg">
-                            <FaCrown className="w-5 h-5 text-yellow-400" />
-                          </div>
-                          <div className="text-center">
-                            <p className="text-yellow-400 font-medium text-sm">
-                              Actualiza a PREMIUM para desbloquear todos los tipos de perfil
-                            </p>
-                            <p className="text-neutral-400 text-xs mt-1">
-                              Los perfiles de Productor y Representante están disponibles solo para usuarios PREMIUM
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                             router.push('/dashboard/membresia');
-                            }}
-                            className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
-                          >
-                            <FaCrown className="w-4 h-4" />
-                            Actualizar Plan
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                </div>
+  {/* Mensaje informativo debajo de los botones */}
+  {membresia !== 'PREMIUM' && (
+    <div className="col-span-2 sm:col-span-3 md:col-span-5 p-4 bg-gradient-to-r from-yellow-500/10 to-yellow-500/5 border border-yellow-500/20 rounded-xl mt-2">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="p-2 bg-yellow-500/20 rounded-lg">
+          <FaCrown className="w-5 h-5 text-yellow-400" />
+        </div>
+        <div className="text-center sm:text-left">
+          <p className="text-yellow-400 font-medium text-sm">
+            Actualiza a PREMIUM para desbloquear todos los tipos de perfil
+          </p>
+          <p className="text-neutral-400 text-xs mt-1">
+            Los perfiles de Productor y Representante están disponibles solo para usuarios PREMIUM
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+           router.push('/dashboard/membresia');
+          }}
+          className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap"
+        >
+          <FaCrown className="w-4 h-4" />
+          Actualizar Plan
+        </button>
+      </div>
+    </div>
+  )}
+</div>
                 <div className={`
                   mt-4 inline-flex items-center gap-2 px-4 py-2
                   ${getTipoColor()}
