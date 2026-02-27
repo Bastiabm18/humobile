@@ -427,22 +427,3 @@ body {
 }
 
 
-/*clases para cambiar el cursor*/
-
-
-/* Asegúra de que los elementos interactivos tampoco lo muestren */
-a, button, input, select, textarea {
-  cursor: none !important;
-}
-
-/* Oculta el cursor en toda la pantalla */
-html, body {
-  cursor: none !important;
-}
-
-/* Es vital forzarlo también en elementos interactivos, 
-   ya que el navegador suele restaurar el 'pointer' por defecto en ellos.
-*/
-a, button, input, select, textarea, [role="button"], .cursor-pointer {
-  cursor: none !important;
-}

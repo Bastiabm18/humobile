@@ -54,7 +54,7 @@ export default function RootLayout({
         <LayoutManager>
         <div className="-mt-16 bg-neutral-950">
         {children}
-        <CustomMouse/>
+    
         <PWAInstallPrompt />
         </div>
         </LayoutManager>
