@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaCrown, FaCheck, FaLock, FaArrowLeft, FaCheckCircle, 
-  FaStar, FaCalendarAlt, FaIdCard, FaGem 
+  FaStar, FaCalendarAlt, FaIdCard, FaGem, 
+  FaClock
 } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { insertMembresia, getMembbresias, eliminarMembresia } from '../actions/actions';
@@ -86,9 +87,15 @@ export default function PremiumContent({ userData }: { userData: UserData }) {
     }
   };
 
+
   // --- VISTA: USUARIO YA TIENE PLAN ACTIVO ---
   if (hasActivePlan && !pagoExitoso) {
     const { nombre_membresia, fecha_fin_membresia, estado_membresia, fecha_ini_membresia } = userData.membresia;
+    
+    const dias = fecha_fin_membresia && fecha_ini_membresia
+    ? Math.ceil((new Date(fecha_fin_membresia).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
+    : 0;
+    
     
     return (
       <>
@@ -139,6 +146,18 @@ export default function PremiumContent({ userData }: { userData: UserData }) {
                   <p className="text-xs text-neutral-500 uppercase font-bold">Vence el</p>
                   <p className="font-bold text-white">
                     {new Date(fecha_fin_membresia).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-orange-900/30 rounded-2xl">
+                  <FaClock className="text-orange-600 text-xl" />
+                </div>
+                <div>
+                
+                  <p className="text-xs text-neutral-500 uppercase font-bold">Dias restantes</p>
+                  <p className="font-bold text-white">
+                    {dias}
                   </p>
                 </div>
               </div>
