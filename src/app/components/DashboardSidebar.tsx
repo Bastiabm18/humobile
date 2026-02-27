@@ -62,6 +62,7 @@ export default function DashboardSidebar({ collapsed, onToggle, mobileOpen, setM
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [usuarioMembresia, setUsuarioMembresia] = useState<string | null>(null);
 
+  console.log(userMembresia)
   const router = useRouter();
     useEffect(() => {
     if (userMembresia) {
@@ -79,7 +80,7 @@ const menuItems = MENU_ITEMS.filter(item => {
   return item.membresia.includes('GRATIS');
 });
   const dias = userMembresia?.fecha_fin_membresia && userMembresia?.fecha_ini_membresia
-    ? Math.ceil((new Date(userMembresia.fecha_fin_membresia).getTime() - new Date(userMembresia.fecha_ini_membresia).getTime()) / (1000 * 3600 * 24))
+    ? Math.ceil((new Date(userMembresia.fecha_fin_membresia).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
     : 0;
   
 
@@ -240,7 +241,7 @@ const menuItems = MENU_ITEMS.filter(item => {
                       
                       </p>
                       <button
-                      onClick={()=>router.push('/dashboard/cuenta')}
+                      onClick={()=>router.push('/dashboard/serPremium')}
                       className=" cursor-pointer mt-3 gap-2 w-full flex items-center justify-center py-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-semibold shadow-lg shadow-amber-500/25">
                      <FaCrown size={18}/> Ver Mi Suscripción
                       </button>
@@ -402,7 +403,7 @@ const menuItems = MENU_ITEMS.filter(item => {
                       
                       </p>
                       <button
-                      onClick={()=>router.push('/dashboard/cuenta')}
+                      onClick={()=>router.push('/dashboard/serPremium')}
                       className=" cursor-pointer mt-3 gap-2 w-full flex items-center justify-center py-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-semibold shadow-lg shadow-amber-500/25">
                      <FaCrown size={18}/> Ver Mi Suscripción
                       </button>

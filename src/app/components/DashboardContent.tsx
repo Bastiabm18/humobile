@@ -86,7 +86,7 @@ export default function DashboardContent({ userName, userRole, userMembresia }: 
   }, [userMembresia]);
   
     const dias = userMembresia?.fecha_fin_membresia && userMembresia?.fecha_ini_membresia
-    ? Math.ceil((new Date(userMembresia.fecha_fin_membresia).getTime() - new Date(userMembresia.fecha_ini_membresia).getTime()) / (1000 * 3600 * 24))
+    ? Math.ceil((new Date(userMembresia.fecha_fin_membresia).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
     : 0;
  // console.log('membresia content', usuarioMembresia)
   const router = useRouter()
@@ -177,7 +177,7 @@ const menuItems = MENU_ITEMS.filter(item => {
            ):(
             <div>
                <motion.div
-               onClick={()=>router.push('/dashboard/cuenta')}
+               onClick={()=>router.push('/dashboard/serPremium')}
                       
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
