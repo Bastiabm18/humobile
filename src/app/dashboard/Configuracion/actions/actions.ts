@@ -1,8 +1,9 @@
 'use server'; 
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
-import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, CalendarEvent, User } from '@/types/profile'; 
+import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, CalendarEvent, User, categoria_perfil } from '@/types/profile'; 
 import { pregunta_frecuente } from '@/types/externo';
+import { create } from 'domain';
 
 
 
@@ -142,14 +143,14 @@ export async function getUsuarios(): Promise<User[]> {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     
-    console.log('📋 Iniciando obtención de usuarios master...');
+    console.log(' Iniciando obtención de usuarios master...');
     
     // Llamar a la función PostgreSQL
     const { data: usuariosData, error } = await supabaseAdmin
       .rpc('get_usuarios_master');
 
     if (error) {
-      console.error('❌ Error en la función PostgreSQL get_usuarios_master:', error);
+      console.error(' Error en la función PostgreSQL get_usuarios_master:', error);
       console.error('Detalles del error:', {
         code: error.code,
         message: error.message,
@@ -160,11 +161,11 @@ export async function getUsuarios(): Promise<User[]> {
     }
 
     if (!usuariosData || usuariosData.length === 0) {
-      console.log('ℹ️ No se encontraron usuarios');
+      console.log(' No se encontraron usuarios');
       return [];
     }
 
-    console.log(`✅ Se obtuvieron ${usuariosData.length} usuarios`);
+    console.log(` Se obtuvieron ${usuariosData.length} usuarios`);
     
     // Mapear los datos a nuestro tipo UsuarioMaster
     const usuarios: User[] = usuariosData.map((usuario: any) => {
@@ -235,7 +236,7 @@ export async function getUsuarios(): Promise<User[]> {
     return usuarios;
     
   } catch (error: any) {
-    console.error('❌ Error en getUsuarios:', error);
+    console.error(' Error en getUsuarios:', error);
     throw error;
   }
 }
@@ -357,5 +358,248 @@ export async function actualizarUsuario(
   }
 }
 
+export async function getCategoriasPerfil(): Promise<categoria_perfil[]> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+   
+    
+    const { data: categoriasData, error } = await supabaseAdmin
+      .from('categoria_perfil')
+      .select('*')
+      .order('tipo', { ascending: true })
+      .order('categoria', { ascending: true });
 
+    if (error) {
+      console.error('Error al obtener categorías:', error);
+      console.error('Detalles del error:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      throw new Error(`Error al obtener categorías: ${error.message}`);
+    }
+
+    if (!categoriasData || categoriasData.length === 0) {
+      console.log('ℹ No se encontraron categorías');
+      return [];
+    }
+
+    console.log(` Se obtuvieron ${categoriasData.length} categorías`);
+    
+    const categorias: categoria_perfil[] = categoriasData.map((cat: any) => ({
+      id_categoria: cat.id_categoria,
+      nombre_categoria: cat.categoria,
+      tipo_perfil: cat.tipo,
+      estado: cat.estado,
+      createdAt: cat.createdAt,
+      updatedAt: cat.updatedAt
+    }));
+
+    return categorias;
+    
+  } catch (error: any) {
+    console.error(' Error en getCategoriasPerfil:', error);
+    throw error;
+  }
+}
+
+// CREAR nueva categoría
+export async function crearCategoriaPerfil(
+  categoriaData: Omit<categoria_perfil, 'id_categoria'>
+): Promise<categoria_perfil> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    console.log('📝 Creando nueva categoría:', categoriaData);
+    
+    const { data, error } = await supabaseAdmin
+      .from('categoria_perfil')
+      .insert([{
+        categoria: categoriaData.nombre_categoria,
+        tipo: categoriaData.tipo_perfil,
+        estado: categoriaData.estado ?? true
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error(' Error al crear categoría:', error);
+      throw new Error(`Error al crear categoría: ${error.message}`);
+    }
+
+    console.log(' Categoría creada exitosamente:', data.id_categoria);
+    
+    return {
+      id_categoria: data.id_categoria,
+      nombre_categoria: data.categoria,
+      tipo_perfil: data.tipo,
+      estado: data.estado
+    };
+    
+  } catch (error: any) {
+    console.error(' Error en crearCategoriaPerfil:', error);
+    throw error;
+  }
+}
+
+// ACTUALIZAR categoría existente
+export async function actualizarCategoriaPerfil(
+  id: number,
+  updates: Partial<Omit<categoria_perfil, 'id_categoria'>>
+): Promise<categoria_perfil> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    console.log('📝 Actualizando categoría:', id, updates);
+    
+    const updateData: any = {
+      updated_at: new Date().toISOString()
+    };
+    
+    if (updates.nombre_categoria !== undefined) updateData.categoria = updates.nombre_categoria;
+    if (updates.tipo_perfil !== undefined) updateData.tipo = updates.tipo_perfil;
+    if (updates.estado !== undefined) updateData.estado = updates.estado;
+    
+    const { data, error } = await supabaseAdmin
+      .from('categoria_perfil')
+      .update(updateData)
+      .eq('id_categoria', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error(' Error al actualizar categoría:', error);
+      throw new Error(`Error al actualizar categoría: ${error.message}`);
+    }
+
+    console.log(' Categoría actualizada exitosamente:', id);
+    
+    return {
+      id_categoria: data.id_categoria,
+      nombre_categoria: data.categoria,
+      tipo_perfil: data.tipo,
+      estado: data.estado
+    };
+    
+  } catch (error: any) {
+    console.error(' Error en actualizarCategoriaPerfil:', error);
+    throw error;
+  }
+}
+
+// CAMBIAR ESTADO de categoría (activar/desactivar)
+export async function cambiarEstadoCategoriaPerfil(
+  id: number,
+  estado: boolean
+): Promise<void> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    console.log(` Cambiando estado de categoría ${id} a:`, estado);
+    
+    const { error } = await supabaseAdmin
+      .from('categoria_perfil')
+      .update({ 
+        estado: estado,
+        updatedAt: new Date().toISOString()
+      })
+      .eq('id_categoria', id);
+
+    if (error) {
+      console.error(' Error al cambiar estado de categoría:', error);
+      throw new Error(`Error al cambiar estado: ${error.message}`);
+    }
+
+    console.log(` Estado de categoría ${id} cambiado a ${estado ? 'activo' : 'inactivo'}`);
+    
+  } catch (error: any) {
+    console.error(' Error en cambiarEstadoCategoriaPerfil:', error);
+    throw error;
+  }
+}
+
+// ELIMINAR categoría 
+export async function eliminarCategoriaPerfil(id: number): Promise<void> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    console.log('Eliminando categoría:', id);
+    
+    // Verificar si la categoría está siendo usada por algún perfil
+    const { data: perfilesConCategoria, error: errorVerificacion } = await supabaseAdmin
+      .from('perfil')
+      .select('id_perfil')
+      .eq('id_categoria', id)
+      .limit(1);
+
+    if (errorVerificacion) {
+      console.error(' Error al verificar uso de categoría:', errorVerificacion);
+      throw new Error(`Error al verificar categoría: ${errorVerificacion.message}`);
+    }
+
+    if (perfilesConCategoria && perfilesConCategoria.length > 0) {
+      throw new Error('No se puede eliminar la categoría porque está siendo usada por uno o más perfiles');
+    }
+
+    // Eliminar categoría
+    const { error } = await supabaseAdmin
+      .from('categoria_perfil')
+      .delete()
+      .eq('id_categoria', id);
+
+    if (error) {
+      console.error(' Error al eliminar categoría:', error);
+      throw new Error(`Error al eliminar categoría: ${error.message}`);
+    }
+
+    console.log(' Categoría eliminada permanentemente:', id);
+    
+  } catch (error: any) {
+    console.error(' Error en eliminarCategoriaPerfil:', error);
+    throw error;
+  }
+}
+
+// OBTENER categorías por tipo
+export async function getCategoriasPorTipo(tipo: string): Promise<categoria_perfil[]> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    console.log(` Obteniendo categorías para tipo: ${tipo}`);
+    
+    const { data, error } = await supabaseAdmin
+      .from('categoria_perfil')
+      .select('*')
+      .eq('tipo', tipo)
+      .eq('estado', true)
+      .order('categoria', { ascending: true });
+
+    if (error) {
+      console.error(' Error al obtener categorías por tipo:', error);
+      throw new Error(`Error al obtener categorías: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      console.log(` No se encontraron categorías para tipo: ${tipo}`);
+      return [];
+    }
+
+    console.log(` Se obtuvieron ${data.length} categorías para tipo ${tipo}`);
+    
+    const categorias: categoria_perfil[] = data.map((cat: any) => ({
+      id_categoria: cat.id_categoria,
+      nombre_categoria: cat.categoria,
+      tipo_perfil: cat.tipo,
+      estado: cat.estado
+    }));
+
+    return categorias;
+    
+  } catch (error: any) {
+    console.error(' Error en getCategoriasPorTipo:', error);
+    throw error;
+  }
+}
 

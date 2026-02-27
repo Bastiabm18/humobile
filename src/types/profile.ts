@@ -35,12 +35,45 @@ export interface PerfilParticipanteEvento {
   perfil_telefono?: string;
 }
 
+export interface UserData {
+  uid: string;
+  email: string;
+  role: string;
+  name: string;
+  membresia: MembresiaData;
+  phone?: string | null;
+  rut_usuario?: string | null;
+  estado?: string;
+}
+
+
+export interface MembresiaData {
+  estado_membresia: string;
+  fecha_fin_membresia: string;
+  fecha_ini_membresia: string;
+  id: string;
+  nombre_membresia: string;
+  precio_membresia: number;
+}
+
+
+export interface Membresia {
+  id_membership: string;
+  nombre: string;
+  precio_mensual: string;
+  duracion_dias: number | null;
+}
+
+
 
 export interface categoria_perfil{
   id_categoria: string;
   nombre_categoria: string;
   tipo_perfil: string;
   estado: string;
+  createdAt?: string;
+  updatedAt?: string;
+
 }
 export interface IntegranteEventoData{
  id_perfil: string;
@@ -112,13 +145,29 @@ export interface FiltrosEventos {
   fechaHasta?: string;
   tipoEvento?: string;
   artista?: string;
+  lat?: number | null;
+  lon?: number | null;
+  radio?: number;
 }
+
+export interface ComunaData {
+  id_comuna: string;      // uuid
+  nombre_comuna: string;  // text
+  id_region: string;      // uuid (por si la necesitas para filtrar)
+  nombre_region: string;  // text (viene del JOIN con la tabla Region)
+  lat: number | null;     // numeric
+  lon: number | null;     // numeric
+}[]  // [] indica que es un array de objetos con esta estructura
 
 export interface FiltrosPerfiles {
   artista: boolean;
   banda: boolean;
   lugar: boolean;
+  todos?: boolean; 
+  categoriasIds: number[];
 }
+
+
 
 
 
@@ -196,6 +245,8 @@ export interface Profile {
   lon?:number;
   pertenece_a_grupo?:ArtistaEnBanda[]
   perfil_visible?:boolean;
+  id_categoria?: string;
+  nombre_categoria_perfil?: string;
 }
 
 export interface ArtistaEnBanda{
@@ -476,7 +527,7 @@ export interface EventoCalendario {
   es_evento_integrante?:boolean;
   // indica si es un evento de banda (si estamos en perfil artista indica si es evento propio o de banda)
   es_evento_banda?:boolean;
-
+  distancia?: number; // Distancia en km desde la ubicación del usuario (si se calcula)
 
 
 
@@ -587,3 +638,17 @@ export interface SolicitudRespuesta {
   es_invitacion_banda?: boolean;
   nombre_banda_asociada?: string;
 }
+
+export type TipoSeccion = 
+  | 'preguntas_frecuentes' 
+  | 'tablas_configuracion' 
+  | 'gestion_usuarios' 
+  | 'notificaciones' 
+  | 'apariencia' 
+  | 'configuracion_general'
+  | 'respaldo_datos'
+  | 'calendario'
+  | 'reportes'
+  | 'seguridad'
+  | 'gestor_perfil'
+  | 'pagos';

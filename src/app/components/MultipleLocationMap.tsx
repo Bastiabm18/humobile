@@ -276,7 +276,7 @@ export default function LugareCercanosMap() {
   console.log('mapa ubicacion: ', ubicacion?.latitud, ubicacion?.longitud);
   console.log('lugares cargados: ', lugaresReales.length);
 
-  const accessToken = 'pk.eyJ1IjoiYXZlZ2FwNDEiLCJhIjoiY2tibWtpdGttMGl1NjJybjhjNTVxaGtpcyJ9.dLbDgSiWkdlq8SyzhREO7A';
+  const accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
   const tileUrl = `https://api.mapbox.com/styles/v1/mapbox/navigation-night-v1/tiles/{z}/{x}/{y}?access_token=${accessToken}`;
 
   return (

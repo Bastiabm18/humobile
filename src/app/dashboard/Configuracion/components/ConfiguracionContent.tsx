@@ -17,23 +17,15 @@ import {
 } from 'react-icons/fa';
 import ModalPreguntasFrecuentes from './ModalPreguntasFrecuentes';
 import ModalGestionUsuarios from './ModalGestionUsuarios';
+import { FaUserAstronaut } from 'react-icons/fa6';
+import { TipoSeccion } from '@/types/profile';
+import ModalGestionCategorias from './ModalGestionCategorias';
 
 interface ConfiguracionContentProps {
   userData:UserData[];
 }
 
-type TipoSeccion = 
-  | 'preguntas_frecuentes' 
-  | 'tablas_configuracion' 
-  | 'gestion_usuarios' 
-  | 'notificaciones' 
-  | 'apariencia' 
-  | 'configuracion_general'
-  | 'respaldo_datos'
-  | 'calendario'
-  | 'reportes'
-  | 'seguridad'
-  | 'pagos';
+
 
 
 interface UserData {
@@ -50,6 +42,7 @@ export default function ConfiguracionContent({
   const [seccionActiva, setSeccionActiva] = useState<TipoSeccion | null>(null);
   const [mostrarModalPreguntas, setMostrarModalPreguntas] = useState(false);
   const [mostrarModalGestionUsuario, setMostrarModalGestionUsuario] = useState(false);
+  const [mostrarModalGestorPerfil, setMostrarModalGestorPerfil] = useState(false);
 
   const secciones = [
     {
@@ -58,6 +51,13 @@ export default function ConfiguracionContent({
       icono: <FaQuestionCircle />,
       colorIcono: 'text-red-600 hover:text-red-700',
       colorFondo: 'hover:bg-red-50 dark:hover:bg-red-900/20'
+    },
+    {
+      id: 'gestor_perfil' as TipoSeccion,
+      titulo: 'Gestor Perfil',
+      icono: <FaUserAstronaut />,
+      colorIcono: 'text-orange-600 hover:text-orange-700',
+      colorFondo: 'hover:bg-orange-50 dark:hover:bg-orange-900/20'
     },
     {
       id: 'tablas_configuracion' as TipoSeccion,
@@ -143,6 +143,15 @@ export default function ConfiguracionContent({
     if (seccionId === 'gestion_usuarios') {
       setMostrarModalGestionUsuario(true);
     }
+
+    if (seccionId === 'gestor_perfil') {
+
+      setMostrarModalGestorPerfil(true);
+    }
+  };
+
+  const cerrarModalGestorPerfil = () => {
+    setMostrarModalGestorPerfil(false);
   };
 
   const cerrarModalPreguntas = () => {
@@ -255,6 +264,11 @@ export default function ConfiguracionContent({
       <ModalGestionUsuarios
         estaAbierto={mostrarModalGestionUsuario}
         alCerrar={cerrarModalGestionUsuario}
+      />
+
+      <ModalGestionCategorias
+        estaAbierto={mostrarModalGestorPerfil}
+        alCerrar={cerrarModalGestorPerfil}
       />
     </div>
   );

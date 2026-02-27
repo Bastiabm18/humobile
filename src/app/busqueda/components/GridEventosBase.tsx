@@ -133,7 +133,7 @@ export default function GridEventosBase({
             ref={carruselRef}
             className="
               grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-5 py-5 px-5
-              w-[90vw]
+              w-full
               [&::-webkit-scrollbar]:hidden
               [-ms-overflow-style:none]
               [scrollbar-width:none]

@@ -1,31 +1,55 @@
 // components/CuentaContent.tsx
 'use client';
 
+import { UserData } from '@/types/profile';
 import { motion } from 'framer-motion';
-import { FaCrown, FaEnvelope, FaUser, FaShieldAlt, FaCalendarAlt, FaTag } from 'react-icons/fa';
+import { get } from 'http';
+import { useEffect, useState } from 'react';
+import { FaCrown, FaEnvelope, FaUser, FaShieldAlt, FaCalendarAlt, FaTag, FaUserAlt } from 'react-icons/fa';
+import { actualizarRutUsuario, getUserData } from '../actions/actions';
+import { FaCheck, FaKeycdn } from 'react-icons/fa6';
+import ModalVerificarRut from './ModalVerificarRut';
+import { MdDangerous } from 'react-icons/md';
+import Link from 'next/link';
 
-interface MembresiaData {
-  estado_membresia: string;
-  fecha_fin_membresia: string;
-  fecha_ini_membresia: string;
-  id: string;
-  nombre_membresia: string;
-  precio_membresia: number;
-}
 
-interface UserData {
-  uid: string;
-  email: string;
-  role: string;
-  name: string;
-  membresia: MembresiaData;
-}
+
 
 interface CuentaContentProps {
   userData: UserData;
 }
 
 export default function CuentaContent({ userData }: CuentaContentProps) {
+
+  const [userDataState, setUserDataState]= useState<UserData>(userData);
+  const [esPremium, setEsPremium] = useState(false);
+  const [modalRutAbierto, setModalRutAbierto] = useState(false);
+
+  const abrirModalVerificarRut = () => {
+    setModalRutAbierto(true);
+  };
+const handleGuardarRut = async (rut: string) => {
+  try {
+    // Llamar directamente a la server action
+    await actualizarRutUsuario(userDataState.uid, rut);
+    
+    // Actualizar el estado local con el RUT formateado
+    setUserDataState(prev => prev ? { 
+      ...prev, 
+      rut_usuario: rut  
+    } : prev);
+    
+    setModalRutAbierto(false);
+    
+    // Opcional: mostrar mensaje de éxito
+    // toast.success('RUT verificado correctamente');
+    
+  } catch (error: any) {
+    // El error se mostrará en el modal a través del catch
+    throw new Error(error.message);
+  }
+};
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
       year: 'numeric',
@@ -34,6 +58,24 @@ export default function CuentaContent({ userData }: CuentaContentProps) {
     });
   };
 
+  useEffect(() => {
+    const cargarUserData = async () => {
+    try {
+      const data = await getUserData(userData.uid);
+      setUserDataState(data);
+      if(data.membresia.nombre_membresia === 'GRATIS'){
+        setEsPremium(false);
+      }else{
+        setEsPremium(true);
+      }
+    } catch (error) {
+      console.log("Error al establecer userDataState:", error);
+    }
+  }
+  cargarUserData();
+  }, [userData]);
+
+  console.log("DEBUG CuentaContent userDataState:", userDataState);
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CL', {
       style: 'currency',
@@ -70,6 +112,7 @@ export default function CuentaContent({ userData }: CuentaContentProps) {
   };
 
   return (
+    <>
     <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -120,6 +163,27 @@ export default function CuentaContent({ userData }: CuentaContentProps) {
               </div>
 
               <div className="flex items-center gap-4 p-4 bg-neutral-700/50 rounded-xl hover:bg-neutral-700/70 transition-colors">
+                <FaKeycdn className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm text-neutral-400">Rut</p>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium bg-blue-600/20 text-blue-400`}>
+                 {userDataState?.rut_usuario ? (
+                      <span className="text-white font-medium">{userDataState.rut_usuario}</span>
+                      ) : (
+                        <button
+                          onClick={abrirModalVerificarRut}
+                          title="Agregar Rut para verificar tu identidad"
+                          className="text-amber-400 animate-pulse gap-5 flex flex-row items-center justify-center hover:text-amber-300 font-medium underline decoration-dotted underline-offset-4 transition-colors"
+                        >
+                          NO VERIFICADO   <MdDangerous size={24} className='text-red-600/80 ' />
+                        </button>
+                  )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 p-4 bg-neutral-700/50 rounded-xl hover:bg-neutral-700/70 transition-colors">
                 <FaShieldAlt className="w-5 h-5 text-blue-400 flex-shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm text-neutral-400">Rol del Sistema</p>
@@ -153,9 +217,9 @@ export default function CuentaContent({ userData }: CuentaContentProps) {
           >
             <div className="flex items-center gap-3 mb-6">
               <div className="p-3 bg-gradient-to-br from-yellow-600/30 to-orange-600/30 rounded-xl">
-                <FaCrown className="w-6 h-6 text-yellow-400" />
+               {esPremium ? <FaCrown className="w-6 h-6 text-yellow-400" /> : <FaUserAlt className="w-6 h-6 text-yellow-400" />} 
               </div>
-              <h2 className="text-xl font-semibold text-white">Membresía Premium</h2>
+              <h2 className="text-xl font-semibold text-white">Membresía {esPremium ? 'Premium' : 'Gratis'}</h2>
             </div>
 
             <motion.div variants={itemVariants} className="space-y-4">
@@ -189,7 +253,7 @@ export default function CuentaContent({ userData }: CuentaContentProps) {
                     <p className="text-sm text-neutral-400">Fecha de Vencimiento</p>
                   </div>
                   <p className="text-white font-medium">
-                    {formatDate(userData.membresia.fecha_fin_membresia)}
+                    {formatDate(userData.membresia.fecha_fin_membresia? userData.membresia.fecha_fin_membresia : userData.membresia.fecha_ini_membresia )}
                   </p>
                 </div>
               </div>
@@ -234,12 +298,28 @@ export default function CuentaContent({ userData }: CuentaContentProps) {
               className="mt-6 pt-6 border-t border-neutral-700/50"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <button className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors">
+                {esPremium ? 
+                (
+                <>
+                 <button className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors">
                   Renovar Membresía
                 </button>
                 <button className="px-4 py-3 bg-neutral-700 hover:bg-neutral-600 text-white font-medium rounded-xl transition-colors">
                   Ver Facturación
                 </button>
+                </>
+                ):(
+                <>
+                 <Link href='/dashboard/serPremium' className="px-4 py-3 bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-xl transition-colors">
+                  Obtener Membresia
+                </Link>
+                <button className="px-4 py-3 bg-neutral-700 hover:bg-neutral-600 text-white font-medium rounded-xl transition-colors">
+                  Saber Más
+                </button>
+                </>
+                  )
+                  }
+          
               </div>
             </motion.div>
           </motion.div>
@@ -255,21 +335,28 @@ export default function CuentaContent({ userData }: CuentaContentProps) {
           <div className="bg-neutral-800/50 backdrop-blur-sm rounded-xl p-4 border border-neutral-700/50">
             <p className="text-sm text-neutral-400">Días Restantes</p>
             <p className="text-2xl font-bold text-white">
-              {Math.ceil((new Date(userData.membresia.fecha_fin_membresia).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}
+              {Math.ceil((new Date(userData.membresia.fecha_fin_membresia? userData.membresia.fecha_fin_membresia : userData.membresia.fecha_ini_membresia).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}
             </p>
           </div>
           <div className="bg-neutral-800/50 backdrop-blur-sm rounded-xl p-4 border border-neutral-700/50">
             <p className="text-sm text-neutral-400">Beneficios Activos</p>
-            <p className="text-2xl font-bold text-white">15+</p>
+            <p className="text-2xl font-bold text-white">1+</p>
           </div>
           <div className="bg-neutral-800/50 backdrop-blur-sm rounded-xl p-4 border border-neutral-700/50">
             <p className="text-sm text-neutral-400">Próxima Renovación</p>
             <p className="text-lg font-semibold text-white">
-              {formatDate(userData.membresia.fecha_fin_membresia)}
+              {formatDate(userData.membresia.fecha_fin_membresia? userData.membresia.fecha_fin_membresia : userData.membresia.fecha_ini_membresia )}
             </p>
           </div>
         </motion.div>
       </div>
     </div>
+     {/* Modal */}
+      <ModalVerificarRut
+        estaAbierto={modalRutAbierto}
+        alCerrar={() => setModalRutAbierto(false)}
+        onGuardar={handleGuardarRut}
+      />
+    </>
   );
 }

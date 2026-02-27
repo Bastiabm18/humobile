@@ -17,7 +17,8 @@ export default function SignUpPage() {
     confirmPassword: '',
     name: '',
     lastName: '',
-    phone: ''
+    phone: '',
+    rut:''
   });
   
   const [error, setError] = useState('');
@@ -59,7 +60,9 @@ export default function SignUpPage() {
             phone: formData.phone,
             // Guardamos también por separado por si los necesitas
             first_name: formData.name,
-            last_name: formData.lastName
+            last_name: formData.lastName,
+            rut: formData.rut
+          
           }
         }
       });
@@ -68,7 +71,7 @@ export default function SignUpPage() {
 
       // 2. Como tenemos confirmación DESACTIVADA, recibimos sesión inmediatamente
       if (data.session) {
-        console.log('✅ Usuario creado en Auth, sincronizando con DB...');
+        console.log(' Usuario creado en Auth, sincronizando con DB...');
         
         // 3. Usar tu flujo existente de /api/auth/session para crear perfil y membresía
         const sessionResponse = await fetch('/api/auth/session', {
@@ -87,7 +90,7 @@ export default function SignUpPage() {
         }
 
         const result = await sessionResponse.json();
-        console.log('✅ Usuario sincronizado con DB, rol:', result.role);
+        console.log(' Usuario sincronizado con DB, rol:', result.role);
         
         // 4. Redirigir al dashboard
         router.push('/dashboard');
@@ -188,7 +191,20 @@ export default function SignUpPage() {
                   />
                 </div>
               </div>
-
+              <div className="flex flex-col">
+                <label htmlFor="rut" className="text-sm text-gray-400 mb-1">
+                  Rut *
+                </label>
+                <input
+                  id="rut"
+                  type="text"
+                  value={formData.rut}
+                  onChange={handleChange}
+                  required
+                  className="px-4 py-3 bg-gray-600 text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder-gray-400"
+                  placeholder="12345678-9"
+                />
+              </div>
               {/* Email */}
               <div className="flex flex-col">
                 <label htmlFor="email" className="text-sm text-gray-400 mb-1">
@@ -204,6 +220,7 @@ export default function SignUpPage() {
                   placeholder="tu@email.com"
                 />
               </div>
+            
 
               {/* Teléfono */}
               <div className="flex flex-col">

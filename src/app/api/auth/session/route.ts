@@ -34,6 +34,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const fullName = decodedToken.user_metadata?.full_name;
         const name = fullName ? fullName.trim() : email?.split('@')[0] || 'Usuario';
         const phone = decodedToken.user_metadata?.phone || null;
+        const rut_usuario = decodedToken.user_metadata?.rut || null;
         console.log(`POST: UID=${uid}, Email=${email}, Name=${name}`);
 
         const supabaseAdmin = getSupabaseAdmin();
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 name: name,
                 role: 'user',
                 phone: phone || null,
+                rut_usuario : rut_usuario || null
             };
 
             // 2.1. INSERTAR USUARIO

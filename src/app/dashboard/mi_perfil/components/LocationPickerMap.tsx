@@ -90,8 +90,8 @@ export default function LocationPickerMap({
   }, [initialLat, initialLng]);
 
   // Tu token (funciona, ya lo confirmaste)
-  const accessToken = 'pk.eyJ1IjoiYXZlZ2FwNDEiLCJhIjoiY2tibWtpdGttMGl1NjJybjhjNTVxaGtpcyJ9.dLbDgSiWkdlq8SyzhREO7A';
-  const mapStyleId =  'mapbox/navigation-night-v1' ;
+  const accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || ''; 
+  const mapStyleId =  'mapbox/streets-v11' ;
   const tileUrl = `https://api.mapbox.com/styles/v1/${mapStyleId}/tiles/{z}/{x}/{y}?access_token=${accessToken}`;
   const attribution = 'Map data &copy; OpenStreetMap contributors, Imagery © Mapbox';
 

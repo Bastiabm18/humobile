@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import Buscador from './Buscador';
 import NeonSign from '@/app/components/NeonSign';
 import { EventoCalendario, FiltrosEventos, FiltrosPerfiles, Profile } from '@/types/profile';
-import { obtenerEventosBusqueda, obtenerPerfilesBusqueda } from '../actions/actions'
+import { obtenerComunasBusqueda, obtenerEventosBusqueda, obtenerPerfilesBusqueda } from '../actions/actions'
 import CarruselBase from '@/app/components/CarruselBase';
 import CarruselEvento from '@/app/components/CarruselEvento';
 import CarruselEventosBase from '@/app/components/CarruselEventosBase';
@@ -33,6 +33,8 @@ export default function BusquedaContent({
     const [eventosFiltrados, setEventosFiltrados]= useState<EventoCalendario[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+       const [comunas, setComunas] = useState([]); // Array para el buscador desplegable
     
     useEffect(() => {
             const cargarEventos = async () => {
@@ -72,96 +74,127 @@ export default function BusquedaContent({
 
           cargarPerfiles();
         }, []);
+   useEffect(() => {
+    const cargarComunas = async () => {
+      try {
+        const data = await obtenerComunasBusqueda();
+        setComunas(data);
+      } catch (err: any) {
+        console.error('Error cargando comunas:', err);
+      }
+    };
+    cargarComunas();
+  }, []);
 
       
   console.log(todosPerfiles)
   // FUNCIÓN PRINCIPAL: Recibe la búsqueda del componente Buscador
-  const handleBuscar = (query: string, filtros: FiltrosEventos | FiltrosPerfiles) => {
+  const handleBuscar = async (query: string, filtros: FiltrosEventos | FiltrosPerfiles) => {
     console.log('=== INFORMACIÓN RECIBIDA DEL BUSCADOR ===');
     console.log('1. Query (texto buscado):', query);
     console.log('2. Tipo de búsqueda:', tipo);
     console.log('3. Filtros aplicados:', filtros);
     
-    // ═══════════════════════════════════════════════════════════════
-    // AQUÍ ES DONDE TÚ APLICARÍAS LOS FILTROS A TU DATA YA CARGADA
-    // ═══════════════════════════════════════════════════════════════
-    
-    // EJEMPLO DE LÓGICA DE FILTRADO:
-    if (tipo === 'eventos') {
-      // 1. Convertir filtros a variables tipadas
-      const filtrosEventos = filtros as FiltrosEventos;
-      if (!query.trim() && 
-        !filtrosEventos.fechaDesde && 
-        !filtrosEventos.fechaHasta && 
-        !filtrosEventos.tipoEvento && 
-        !filtrosEventos.artista) {
-      
-      // Recargar todos los eventos desde el backend o restaurar estado inicial
-            setEventosFiltrados(todosEventos)
-      return;
-    }
-      // 2. Filtrar tu array de eventosData
-       const eventosFiltrados = todosEventos.filter(evento => {
-         let cumple = true;
+     // ═══════════════════════════════════════════════════════════════
+      if (tipo === 'eventos') {
+         const filtrosEventos = filtros as FiltrosEventos;
          
-         // A. Filtrar por texto (query)
-         if (query) {
-           cumple = cumple && (
-             evento.titulo.toLowerCase().includes(query.toLowerCase()) ||
-             evento.descripcion.toLowerCase().includes(query.toLowerCase())
-           );
+         // Variable para decidir qué data filtrar (la local o la nueva de la RPC)
+         let dataParaFiltrar = todosEventos;
+   
+         // SI HAY LAT Y LON: Llamamos a la RPC con parámetros
+         if (filtrosEventos.lat && filtrosEventos.lon) {
+           try {
+             setLoading(true);
+             // Llamamos a tu acción con los parámetros de ubicación
+             const eventosCercanos = await obtenerEventosBusqueda(filtrosEventos.lat, filtrosEventos.lon,filtrosEventos.radio);
+             dataParaFiltrar = eventosCercanos;
+           } catch (err) {
+             console.error('Error filtrando por ubicación:', err);
+           } finally {
+             setLoading(false);
+           }
          }
-         
-         // B. Filtrar por fecha desde
-         if (filtrosEventos.fechaDesde) {
-           cumple = cumple && new Date(evento.inicio) >= new Date(filtrosEventos.fechaDesde);
+   
+         if (!query.trim() && 
+             !filtrosEventos.fechaDesde && 
+             !filtrosEventos.fechaHasta && 
+             !filtrosEventos.tipoEvento && 
+             !filtrosEventos.artista &&
+             !filtrosEventos.lat) { 
+           
+           setEventosFiltrados(todosEventos);
+           return;
          }
-         
-         // C. Filtrar por fecha hasta
-         if (filtrosEventos.fechaHasta) {
-           cumple = cumple && new Date(evento.fin) <= new Date(filtrosEventos.fechaHasta);
-         }
-         
-         // D. Filtrar por tipo de evento
-         if (filtrosEventos.tipoEvento) {
-           cumple = cumple && evento.nombre_categoria === filtrosEventos.tipoEvento;
-         }
-         
-         // E. Filtrar por artista
-         if (filtrosEventos.artista) {
-           cumple = cumple && evento.nombre_creador?.toLowerCase().includes(filtrosEventos.artista.toLowerCase());
-         }
-         
-         return cumple;
-       });
-      // 
-      // 3. Actualizar state con resultados filtrados
-       setEventosFiltrados(eventosFiltrados);
-       console.log('filtrados: ',eventosFiltrados)
+   
+         const eventosFiltrados = dataParaFiltrar.filter(evento => {
+           let cumple = true;
+   
+           // A. Filtrar por texto (query)
+           if (query) {
+             cumple = cumple && (
+               evento.titulo.toLowerCase().includes(query.toLowerCase()) ||
+               evento.descripcion.toLowerCase().includes(query.toLowerCase())
+             );
+           }
+           
+           // B. Filtrar por fecha desde
+           if (filtrosEventos.fechaDesde) {
+             cumple = cumple && new Date(evento.inicio) >= new Date(filtrosEventos.fechaDesde);
+           }
+           
+           // C. Filtrar por fecha hasta
+           if (filtrosEventos.fechaHasta) {
+             cumple = cumple && new Date(evento.fin) <= new Date(filtrosEventos.fechaHasta);
+           }
+           
+           // D. Filtrar por tipo de evento
+           if (filtrosEventos.tipoEvento) {
+             cumple = cumple && evento.nombre_categoria === filtrosEventos.tipoEvento;
+           }
+           
+           // E. Filtrar por artista
+           if (filtrosEventos.artista) {
+             cumple = cumple && evento.nombre_creador?.toLowerCase().includes(filtrosEventos.artista.toLowerCase());
+           }
+           
+           return cumple;
+         });
+   
+         setEventosFiltrados(eventosFiltrados);
+         console.log('filtrados: ', eventosFiltrados);
       
     } else {
-      // 1. Convertir filtros a variables tipadas
-      const filtrosPerfiles = filtros as FiltrosPerfiles;
-      
-     //  2. Filtrar tu array de perfilesData
-       const perfilesFiltrados = todosPerfiles.filter(perfil => {
-         let cumple = true;
-         
-         // A. Filtrar por texto (query)
-         if (query) {
-           cumple = cumple && perfil.nombre.toLowerCase().includes(query.toLowerCase());
-         }
-         
-         // B. Filtrar por tipos de perfil seleccionados
-         if (perfil.tipo === 'artista' && !filtrosPerfiles.artista) cumple = false;
-         if (perfil.tipo === 'banda' && !filtrosPerfiles.banda) cumple = false;
-         if (perfil.tipo === 'lugar' && !filtrosPerfiles.lugar) cumple = false;
-         
-         return cumple;
-       });
-       
-      // 3. Actualizar state con resultados filtrados
-       setPerfilesFiltrados(perfilesFiltrados);
+   const filtrosPerfiles = filtros as FiltrosPerfiles;
+  
+  const perfilesFiltrados = todosPerfiles.filter(perfil => {
+    let cumple = true;
+    
+    // A. Filtrar por texto
+    if (query) {
+      cumple = cumple && perfil.nombre.toLowerCase().includes(query.toLowerCase());
+    }
+    
+    // B. Filtrar por tipos (Solo filtra si alguno está en true)
+    // Si todos están en false o todos en true, no filtramos por tipo
+    const hayTipoFiltro = filtrosPerfiles.artista || filtrosPerfiles.banda || filtrosPerfiles.lugar;
+    if (hayTipoFiltro) {
+      if (perfil.tipo === 'artista' && !filtrosPerfiles.artista) cumple = false;
+      if (perfil.tipo === 'banda' && !filtrosPerfiles.banda) cumple = false;
+      if (perfil.tipo === 'lugar' && !filtrosPerfiles.lugar) cumple = false;
+    }
+
+    // C. NUEVO: Filtrar por categoríasIds (basado en el array que devuelve el buscador)
+    if (filtrosPerfiles.categoriasIds && filtrosPerfiles.categoriasIds.length > 0) {
+      // Verificamos si el perfil tiene la categoría seleccionada
+    
+      cumple = cumple && filtrosPerfiles.categoriasIds.includes(perfil.id_categoria as unknown as number || 0);
+    }
+    
+    return cumple;
+  });
+  
+  setPerfilesFiltrados(perfilesFiltrados);
     }
   };
 
@@ -182,6 +215,7 @@ export default function BusquedaContent({
           onBuscar={handleBuscar}      // Función que recibe los datos
           tipo={tipo}                   // Tipo actual (eventos/perfiles)
           onTipoChange={setTipo}        // Función para cambiar el tipo
+             comunas={comunas}
         />
         
         {/* ========== ÁREA DE RESULTADOS ========== */}

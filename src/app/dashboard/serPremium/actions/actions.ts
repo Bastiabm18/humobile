@@ -61,3 +61,42 @@ export async function insertMembresia(
     };
   }
 }
+
+export async function getMembbresias() {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data, error } = await supabaseAdmin
+      .from('Membership')
+      .select('*')
+      .order('precio_mensual', { ascending: true });
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error: any) {
+    console.error('Error fetching memberships:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function eliminarMembresia(userId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const { data, error } = await supabaseAdmin
+      .from('MembershipState')
+      .update({ estado: 'CANCELADO', fecha_fin: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('estado', 'ACTIVO'); // Solo actualiza la membresía activa
+    if (error) {
+      console.error('Error cancelando membresía:', error);
+      throw new Error(`Error al cancelar membresía: ${error.message}`);
+    }
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error en eliminarMembresia:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Error desconocido al cancelar la membresía' 
+    };
+  }
+}

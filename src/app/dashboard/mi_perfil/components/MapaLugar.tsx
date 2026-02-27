@@ -67,7 +67,7 @@ export default function MapaLugar({
     return hasValidCoords ? [latitud, longitud] as [number, number] : [-36.827, -73.050] as [number, number];
   }, [latitud, longitud, hasValidCoords]);
 
-  const accessToken = 'pk.eyJ1IjoiYXZlZ2FwNDEiLCJhIjoiY2tibWtpdGttMGl1NjJybjhjNTVxaGtpcyJ9.dLbDgSiWkdlq8SyzhREO7A';
+  const accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
   const mapStyleId = isDarkMode ? 'mapbox/navigation-night-v1' : 'mapbox/streets-v11';
   const tileUrl = `https://api.mapbox.com/styles/v1/${mapStyleId}/tiles/{z}/{x}/{y}?access_token=${accessToken}`;
 
