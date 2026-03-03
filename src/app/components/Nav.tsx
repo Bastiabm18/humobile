@@ -181,7 +181,7 @@ const handleLogout = async () => {
                     <Link
                       href={link.href}
                       onClick={() => setOpen(false)}
-                      className="hover:text-white transition-colors"
+                      className="hover:text-white text-neutral-300 transition-colors"
                     >
                       {link.name}
                     </Link>
@@ -192,12 +192,12 @@ const handleLogout = async () => {
                     initial={{ opacity: 0, x: -40 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 7 * 0.1 }}
-                     // O simplemente <button> si quitas motion
-                      onClick={handleLogout} // AHORA sí llamas a la función
+                   
+                      onClick={handleLogout} //
                       className="flex items-center text-md font-medium text-red-400 hover:text-red-500 transition-colors"
                       aria-label="Cerrar Sesión"
                       disabled={loading}
-                      // ... (otras props de motion) ...
+                    
                   >
                       <HiLogout className="h-5 w-5 mr-2" />
                          Cerrar sesión
