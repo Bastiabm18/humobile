@@ -4,6 +4,8 @@ import { cookies } from 'next/headers';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import AgendaContent from './components/AgendaContent';
 import { getProfiles } from './actions/actions';
+import { getAuthUser } from '@/lib/auth/auth-service';
+import { UsuarioData } from '@/types/profile';
 
 export default async function AgendaPage() {
   let userData = null;
@@ -31,6 +33,14 @@ export default async function AgendaPage() {
 //console.log('Agenda - UserData →', userData);
   const profiles = await getProfiles(userData.uid);
  //console.log('Agenda - Profiles →', profiles);
+
+ const perfilDashboard = await getAuthUser();
+
+ if (!perfilDashboard) {
+   redirect('/login');
+ }
+
+ console.log('Perfil Dashboard →', perfilDashboard);
     
   return (
     <DashboardLayout

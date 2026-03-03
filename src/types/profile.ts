@@ -247,8 +247,41 @@ export interface Profile {
   perfil_visible?:boolean;
   id_categoria?: string;
   nombre_categoria_perfil?: string;
+
 }
 
+export interface UsuarioData {
+  
+  id: string; // uuid
+  supabase_id: string; // uuid
+  email: string;
+  name: string;
+  phone: string | null;
+  role: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  current_state_id: string | null;
+  estado: string | null;
+  rut_usuario: string | null;
+
+  // Subconjuntos agregados
+  membresia: MembresiaData | null;
+  permisos: PermisoData[];
+}
+
+
+export interface PermisoData{
+
+id_permiso:string;
+id_membersip:string;
+codigo_permiso:string;
+nombre_permiso:string;
+descripcion:string;
+estado:string;
+limite:string
+
+
+}[]
 export interface ArtistaEnBanda{
   id_banda:string
   nombre_banda:string;

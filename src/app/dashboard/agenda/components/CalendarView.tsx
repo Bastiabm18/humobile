@@ -101,6 +101,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
       );
 
       setEvents(fetchedEvents);
+      console.log(fetchedEvents)
     } catch (err: any) {
       console.error('Error cargando eventos:', err);
       setError(err.message || 'Error al cargar eventos');
@@ -117,14 +118,13 @@ const handleSelectSlot = (slotInfo: { start: Date; end: Date; slots: Date[] }) =
     return;
   }
 
-  // Tu lógica original sigue aquí SIN CAMBIOS:
   const hasExistingEvent = events.some(event => {
-    const eventStart = new Date(event.inicio).getTime();
-    const eventEnd = event.fin ? new Date(event.fin).getTime() : eventStart + 3600000;
+    const eventStart = event.inicio.getTime();
+    const eventEnd = event.fin ? event.fin.getTime() : eventStart + 3600000;
     const slotStart = slotInfo.start.getTime();
     const slotEnd = slotInfo.end.getTime();
 
-    return subHours(slotStart,3) < subHours(eventEnd ,0)&& subHours(slotEnd,3) > subHours(eventStart,0);
+    return slotStart < eventEnd && slotEnd > eventStart; // Sin subHours
   });
 
   if (hasExistingEvent) {
@@ -190,30 +190,14 @@ const handleSelectEvent = (event: EventoCalendario) => {
   };
 
 const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
-  // 1. Convertimos la fecha de la celda del calendario a un string "2026-01-03"
   const targetString = format(targetDate, 'yyyy-MM-dd');
-
   return events.filter(event => {
-    // 2. Extraemos solo la parte de la fecha de los strings de la base de datos
-    // event.inicio suele ser "2026-01-03T00:00:00+00:00" -> tomamos los primeros 10 caracteres
-    const startString = event.inicio.toString().substring(0, 10);
-    const endString = (event.fin || event.inicio).toString().substring(0, 10);
-
-    // 3. Caso simple: ¿Es el mismo día de inicio o fin?
-    if (startString === targetString || endString === targetString) {
-      return true;
-    }
-
-    // 4. Caso rango: Si el evento dura varios días, verificamos si target está al medio
-    // Aquí sí usamos Date pero sin horas para que la comparación sea pura de fechas nos ahorramos el utc 
-    const dTarget = new Date(targetString);
-    const dStart = new Date(startString);
-    const dEnd = new Date(endString);
-
-    return dTarget >= dStart && dTarget <= dEnd;
+    const startString = format(event.inicio, 'yyyy-MM-dd');
+    const endString = event.fin ? format(event.fin, 'yyyy-MM-dd') : startString;
+    return startString === targetString || endString === targetString ||
+           (event.inicio < targetDate && event.fin > targetDate);
   });
 };
-
   const defaultScrollTime = new Date();
     defaultScrollTime.setHours(8, 0, 0);
 
@@ -313,17 +297,13 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
   const CustomTimeSlotWrapper = ({ children, value,resource }: any) => {
      // 'resource' indica la columna (undefined = columna de horas, 0 = Lunes, etc.)
   const esColumnaHora = resource === undefined || resource === 'timeGutter';
-   const slotDate = subHours(value, 3); // ajuste de horas para el utc de la shit!!!
-
-  const slotMs = slotDate.getTime()
+  const slotDate = value; // sin subHours
+  const slotMs = slotDate.getTime();
+  //console.log('Renderizando slot:', slotDate, 'Columna hora:', esColumnaHora);
   
   const eventsAtThisSlot = events.filter(event => {
-
-    const inicioMs = Date.parse(event.inicio as unknown as string);
-    const finMs = event.fin 
-      ? Date.parse(event.fin as unknown as string)
-      : inicioMs + 3600000;
-    
+    const inicioMs = event.inicio.getTime();
+    const finMs = event.fin ? event.fin.getTime() : inicioMs + 3600000;
     return slotMs >= inicioMs && slotMs < finMs;
   });
     const isBlockedAtThisSlot = eventsAtThisSlot.some(event => event.es_bloqueo);

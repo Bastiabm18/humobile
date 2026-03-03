@@ -6,6 +6,7 @@ import { FaCheckCircle } from 'react-icons/fa';
 import { HiCalendar, HiLockClosed } from 'react-icons/hi';
 import { EventoCalendario } from '@/types/profile';
 import { FaCalendar } from 'react-icons/fa6';
+import moment from 'moment';
 
 interface EventBadgeProps {
   events: EventoCalendario[];
@@ -32,7 +33,7 @@ export default function EventBadge({
   onBlockClick,
   esColumnaHora = false,
 }: EventBadgeProps) {
- // console.log(profile);
+  console.log(events);
  // ¡NO RENDERIZAR NADA EN LA COLUMNA DE HORAS!
   if (esColumnaHora) {
     return null;
@@ -61,13 +62,9 @@ export default function EventBadge({
 
 
   // Helper para formatear hora (sin cambios)
-const formatTime = (dateString: string | Date) => {
-  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-  const hours = date.getUTCHours().toString().padStart(2, '0');
-  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-  return `${hours}:${minutes}`;
+const formatTime = (date: Date) => {
+  return date.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
 };
-
  const getEventoClassName1 = (estado?: string, es_de_integrante:boolean = false, es_de_banda:boolean = false) => {
  
    if (es_de_integrante) {
