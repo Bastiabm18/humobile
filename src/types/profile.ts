@@ -250,6 +250,14 @@ export interface Profile {
 
 }
 
+export interface MembresiaConPermisos {
+  id_membership: string;
+  nombre: string;
+  precio_mensual: string;
+  duracion_dias: number | null;
+  permisos: PermisoData[];
+}
+
 export interface UsuarioData {
   
   id: string; // uuid
@@ -684,4 +692,5 @@ export type TipoSeccion =
   | 'reportes'
   | 'seguridad'
   | 'gestor_perfil'
+  | 'gestor_permisos'
   | 'pagos';

@@ -1,5 +1,6 @@
 "use server"
 import { getSupabaseAdmin } from "@/lib/supabase/supabase-admin";
+import { MembresiaConPermisos } from "@/types/profile";
 
 export async function insertMembresia(
   userId: string,
@@ -98,5 +99,24 @@ export async function eliminarMembresia(userId: string): Promise<{ success: bool
       success: false, 
       error: error.message || 'Error desconocido al cancelar la membresía' 
     };
+  }
+}
+
+export async function obtenerMembresiasDisponibles() {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    const { data, error } = await supabaseAdmin
+      .rpc('obtener_membresias_con_permisos');
+
+    if (error) throw error;
+
+    return { 
+      success: true, 
+      data: data as MembresiaConPermisos[] 
+    };
+  } catch (error: any) {
+    console.error('Error al obtener membresías:', error);
+    return { success: false, error: error.message };
   }
 }

@@ -20,6 +20,8 @@ import ModalGestionUsuarios from './ModalGestionUsuarios';
 import { FaUserAstronaut } from 'react-icons/fa6';
 import { TipoSeccion } from '@/types/profile';
 import ModalGestionCategorias from './ModalGestionCategorias';
+import ModalGestorPermisos from './ModalGestorPermisos';
+import { RiPassValidLine } from 'react-icons/ri';
 
 interface ConfiguracionContentProps {
   userData:UserData[];
@@ -43,6 +45,8 @@ export default function ConfiguracionContent({
   const [mostrarModalPreguntas, setMostrarModalPreguntas] = useState(false);
   const [mostrarModalGestionUsuario, setMostrarModalGestionUsuario] = useState(false);
   const [mostrarModalGestorPerfil, setMostrarModalGestorPerfil] = useState(false);
+  const [mostrarModalGestorPermisos, setMostrarModalGestorPermisos] = useState(false);
+
 
   const secciones = [
     {
@@ -54,10 +58,17 @@ export default function ConfiguracionContent({
     },
     {
       id: 'gestor_perfil' as TipoSeccion,
-      titulo: 'Gestor Perfil',
+      titulo: 'Gestor Categorias',
       icono: <FaUserAstronaut />,
       colorIcono: 'text-orange-600 hover:text-orange-700',
       colorFondo: 'hover:bg-orange-50 dark:hover:bg-orange-900/20'
+    },
+    {
+      id: 'gestor_permisos' as TipoSeccion,
+      titulo: 'Gestor Permisos',
+      icono: <RiPassValidLine />,
+      colorIcono: 'text-purple-600 hover:text-purple-700',
+      colorFondo: 'hover:bg-purple-50 dark:hover:bg-purple-900/20'
     },
     {
       id: 'tablas_configuracion' as TipoSeccion,
@@ -148,11 +159,18 @@ export default function ConfiguracionContent({
 
       setMostrarModalGestorPerfil(true);
     }
+    if (seccionId === 'gestor_permisos') {
+      setMostrarModalGestorPermisos(true);
+    }
   };
 
   const cerrarModalGestorPerfil = () => {
     setMostrarModalGestorPerfil(false);
   };
+  const cerrarModalGestorPermisos = () => {
+    setMostrarModalGestorPermisos(false);
+  };
+
 
   const cerrarModalPreguntas = () => {
     setMostrarModalPreguntas(false);
@@ -218,37 +236,7 @@ export default function ConfiguracionContent({
           ))}
         </div>
 
-        {/* Área para mostrar componente activo */}
-        <AnimatePresence>
-          {seccionActiva && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mt-8 p-6 bg-neutral-800 rounded-xl border border-neutral-700"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-white">
-                  {secciones.find(s => s.id === seccionActiva)?.titulo}
-                </h2>
-                <button
-                  onClick={() => setSeccionActiva(null)}
-                  className="text-neutral-400 hover:text-white"
-                >
-                  Cerrar
-                </button>
-              </div>
-              
-              <div className="text-neutral-300">
-                {/* Aquí se renderizarán los componentes según la sección activa */}
-                <p>Componente para: {secciones.find(s => s.id === seccionActiva)?.titulo}</p>
-                <p className="text-sm text-neutral-400 mt-2">
-                  Este componente se desarrollará en el archivo correspondiente
-                </p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
 
         {/* Instrucciones */}
         <div className="mt-8 text-center text-neutral-400 text-sm">
@@ -269,6 +257,11 @@ export default function ConfiguracionContent({
       <ModalGestionCategorias
         estaAbierto={mostrarModalGestorPerfil}
         alCerrar={cerrarModalGestorPerfil}
+      />
+
+      <ModalGestorPermisos
+        estaAbierto={mostrarModalGestorPermisos}
+        alCerrar={cerrarModalGestorPermisos}
       />
     </div>
   );

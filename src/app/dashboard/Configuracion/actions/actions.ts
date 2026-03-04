@@ -1,7 +1,7 @@
 'use server'; 
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
-import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, CalendarEvent, User, categoria_perfil } from '@/types/profile'; 
+import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, CalendarEvent, User, categoria_perfil, MembresiaConPermisos } from '@/types/profile'; 
 import { pregunta_frecuente } from '@/types/externo';
 import { create } from 'domain';
 
@@ -603,3 +603,87 @@ export async function getCategoriasPorTipo(tipo: string): Promise<categoria_perf
   }
 }
 
+// permisos
+export async function getPermisos() {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase.from('permiso').select('*').order('nombre_permiso');
+  return data;
+}
+
+export async function upsertPermiso(datos: any) {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.from('permiso').upsert({
+    id_permiso: datos.id_permiso || undefined,
+    codigo_permiso: datos.codigo_permiso,
+    nombre_permiso: datos.nombre_permiso,
+    descripcion: datos.descripcion,
+    updatedat: new Date().toISOString()
+  });
+  return { success: !error };
+}
+
+export async function eliminarPermiso(id: string) {
+  const supabase = getSupabaseAdmin();
+  await supabase.from('permiso').delete().eq('id_permiso', id);
+}
+
+// --- SECCIÓN MEMBRESÍAS & VINCULACIÓN ---
+export async function getMembresias() {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase.from('Membership').select('*').order('precio_mensual');
+  return data;
+}
+
+export async function getPermisosDeMembresia(idMembership: string) {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase
+    .from('membership_permiso')
+    .select(`
+      *,
+      permiso (id_permiso, nombre_permiso, codigo_permiso)
+    `)
+    .eq('id_membership', idMembership);
+  return data;
+}
+
+export async function actualizarLimitePermiso(idMembresia: string, idPermiso: string, nuevoLimite: number) {
+    const supabase = getSupabaseAdmin();
+  await supabase.from('membership_permiso').update({ valor_limite: nuevoLimite })
+    .match({ id_membership: idMembresia, id_permiso: idPermiso });
+}
+
+export async function asignarPermisoAMembresia(idM: string, idP: string, limite: number) {
+  const supabase = getSupabaseAdmin();
+  await supabase.from('membership_permiso').insert({
+    id_membership: idM,
+    id_permiso: idP,
+    valor_limite: limite
+  });
+}
+
+export async function quitarPermisoDeMembresia(idM: string, idP: string) {
+  const supabase = getSupabaseAdmin();
+  await supabase.from('membership_permiso')
+    .delete()
+    .match({ id_membership: idM, id_permiso: idP });
+}
+
+export async function obtenerMembresiasDisponibles() {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    const { data, error } = await supabaseAdmin
+      .rpc('obtener_membresias_con_permisos');
+
+    if (error) throw error;
+
+    return { 
+      success: true, 
+      data: data as MembresiaConPermisos[] 
+    };
+  } catch (error: any) {
+    console.error('Error al obtener membresías:', error);
+    return { success: false, error: error.message };
+  }
+}
+//fin permisos
