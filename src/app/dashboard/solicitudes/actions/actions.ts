@@ -434,8 +434,26 @@ export async function getSolicitudesByPerfil(
             return [];
         }
 
+          
+
         // Mapear la respuesta
         const solicitudes: SolicitudRespuesta[] = data.map((item: any) => {
+
+              const rawInicio = item.evento_fecha_inicio;
+              const rawFin = item.evento_fecha_fin;
+
+              // 2. EL HACHAZO PARA EL DESFASE DE 3 HORAS
+              // Convertimos el string a Date quitando el "+00" para que el navegador 
+              // NO aplique el ajuste de Chile/Argentina.
+              const parseSinDesfase = (str: string | null) => {
+                if (!str) return null;
+                // Quitamos la Z o el +00:00 del final para que sea "Hora Local Fija"
+                const limpio = str.replace(/[+-]\d{2}:?\d{2}$|Z$/, '');
+                return new Date(limpio);
+                    };
+                
+              const inicioDate = parseSinDesfase(rawInicio) || new Date();
+              const finDate = parseSinDesfase(rawFin);
             return {
                 id: item.id || '',
                 id_tipo_solicitud: item.id_tipo_solicitud || '',
@@ -456,8 +474,8 @@ export async function getSolicitudesByPerfil(
                 motivo_rechazo: item.motivo_rechazo || undefined,
                 id_evento_solicitud: item.id_evento_solicitud || undefined,
                 evento_titulo: item.evento_titulo || '',
-                evento_fecha_inicio: item.evento_fecha_inicio || undefined,
-                evento_fecha_fin: item.evento_fecha_fin || undefined,
+                evento_fecha_inicio: inicioDate,
+                evento_fecha_fin: finDate || undefined,
                 es_invitacion_banda: item.es_invitacion_banda || false,
                 nombre_banda_asociada: item.nombre_banda_asociada || ''
 
