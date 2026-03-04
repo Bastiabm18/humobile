@@ -33,7 +33,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState } from 'react';
 import MapaLugar from './MapaLugar';
-import { MdCategory } from 'react-icons/md';
+import { Md2kPlus, MdCategory } from 'react-icons/md';
 
 interface VistaPerfilProps {
   perfil: PerfilConIntegrantes;
@@ -514,6 +514,12 @@ const getYouTubeId = (url:string) => {
                     <p className="text-sm text-neutral-400">
                       {perfil.nombre_representados?.length} representado{perfil.nombre_representados?.length !== 1 ? 's' : ''}
                     </p>
+                  </div>
+
+                  <div className="text-center pt-2 w-full flex items-center justify-center">
+                    <button className="px-4 py-2 bg-blue-500/70 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors flex flex-col items-center gap-2">
+                      <Md2kPlus size={24} className="text-blue-300"/> Agregar nuevo representado
+                    </button>
                   </div>
                 </div>
               </motion.div>

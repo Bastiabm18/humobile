@@ -56,7 +56,7 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
   );
 
   const [representadoPor, setRepresentadoPor] = useState<string[]>(
-    Array.isArray(perfil.representantes_perfil)? perfil.representantes_perfil : []
+    Array.isArray(perfil.representantes_ids)? perfil.representantes_ids : []
   );
 
     // estado para categoria de perfiles 
