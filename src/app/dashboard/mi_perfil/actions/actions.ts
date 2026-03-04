@@ -3,6 +3,7 @@
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
 import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile,Perfil, PerfilConIntegrantes, categoria_perfil } from '@/types/profile'; 
 import { InvitacionData } from '@/types/profile';
+import IntegrantesEventoModal from '../../agenda/components/IntegrantesEventoModal';
 
 // ===========================================
 // 1. CARGA DE DATOS GEOGRÁFICOS (PAÍS, REGIÓN, COMUNA)
@@ -473,7 +474,7 @@ export async function updateRepresentativeProfile(profileId: string, data: any) 
 export const getProfiles = async (userId: string): Promise<PerfilConIntegrantes[]> => {
   const supabaseAdmin = getSupabaseAdmin();
   
-  const { data, error } = await supabaseAdmin.rpc('get_perfiles_con_integrantes_v2', {
+  const { data, error } = await supabaseAdmin.rpc('get_perfiles_con_integrantes_v3', {
     p_user_id: userId
   });
 
@@ -508,6 +509,10 @@ export const getProfiles = async (userId: string): Promise<PerfilConIntegrantes[
     productor_data: p.productor_data || {},
     representante_data: p.representante_data || {},
     integrantes_perfil: p.integrantes_ids || [],
+    integrantes_estado:p.integrantes_estados || [],
+    representados_estado:p.representados_estados || [],
+    representantes_estado:p.representantes_estados || [],
+    bandas_estado:p.bandas_estados || [],
     representados_perfil: p.representados_ids || [],
     nombre_integrantes: p.integrantes_nombres || [],
     nombre_representados: p.representados_nombres || [],

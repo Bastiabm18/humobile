@@ -41,7 +41,7 @@ interface EditarPerfilProps {
 
 export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: EditarPerfilProps) {
   const [formData, setFormData] = useState<Perfil>({ ...perfil });
-  //console.log(perfil)
+  console.log(perfil)
   // Estados para manejar los arrays de IDs
   const [integrantesSeleccionados, setIntegrantesSeleccionados] = useState<string[]>(
     Array.isArray(perfil.integrantes_perfil) ? perfil.integrantes_perfil : []
@@ -56,7 +56,7 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
   );
 
   const [representadoPor, setRepresentadoPor] = useState<string[]>(
-    Array.isArray(perfil.representantes_ids)? perfil.representantes_ids : []
+    Array.isArray(perfil.representantes_perfil)? perfil.representantes_perfil : []
   );
 
     // estado para categoria de perfiles 
@@ -383,6 +383,14 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
     setFormData(prev => ({ ...prev, imagen_url: '' }));
     setUploadSuccess(false);
   };
+  const eliminarRepresentanteDeEstePerfil = (id: string) => {
+  // 1. Lo quitamos del estado visual
+  setRepresentadoPor(prev => prev.filter(item => item !== id));
+  
+  // 2. Lo agregamos a la lista de eliminación para el backend
+  // IMPORTANTE: Asegúrate de que el backend use este array para borrar en la tabla 'representado'
+  setRepresentadosEliminar(prev => [...prev, id]);
+};
 
   const handleLocationSelect = (lat: number, lng: number) => {
     setFormData(prev => ({ 
@@ -637,37 +645,34 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
         <div className="space-y-4">
     
 
-          {representadoPor.length > 0 ? (
-            <div className="mt-4">
-              <h4 className="text-sm font-medium text-neutral-400 mb-2">Representados seleccionados:</h4>
-              <div className="space-y-2">
-                {representadoPor.map(id => {
-                  const perfil = perfilesDisponibles.find(p => p.id_perfil === id);
-                  return (
-                    <div key={id} className="flex items-center justify-between bg-neutral-800/50 border border-neutral-700 rounded-lg p-3">
-                      <div className="flex items-center gap-3">
-                        {perfil?.tipo_perfil === 'artista' ? 
-                          <FaUser className="text-blue-400" /> : 
-                          <FaUsers className="text-purple-400" />
-                        }
-                        <div>
-                          <span className="text-white">{perfil?.nombre || 'Perfil'}</span>
-                          <span className="text-xs text-neutral-500 ml-2">({perfil?.tipo_perfil})</span>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => eliminarRepresentado(id)}
-                        className="p-1 text-red-400 hover:text-red-300"
-                      >
-                        <FaTrash className="w-4 h-4" />
-                      </button>
-                    </div>
-                  );
-                })}
+{representadoPor.length > 0 ? (
+  <div className="mt-4">
+    <h4 className="text-sm font-medium text-neutral-400 mb-2">Representantes actuales:</h4>
+    <div className="space-y-2">
+      {representadoPor.map(id => {
+        // Buscamos en perfilesDisponibles el perfil que coincida con el ID
+        const perfilEncontrado = perfilesDisponibles.find(p => p.id_perfil === id);
+        return (
+          <div key={id} className="flex items-center justify-between bg-neutral-800/50 border border-neutral-700 rounded-lg p-3">
+            <div className="flex items-center gap-3">
+              <FaUserCheck className="text-blue-400" />
+              <div>
+                <span className="text-white">{perfilEncontrado?.nombre || 'Cargando...'}</span>
               </div>
             </div>
-          ):(<></>)}
+            <button
+              type="button"
+              onClick={() => eliminarRepresentanteDeEstePerfil(id)} // Función corregida abajo
+              className="p-1 text-red-400 hover:text-red-300"
+            >
+              <FaTrash className="w-4 h-4" />
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+) : null}
         </div>
       </div>
     );
@@ -900,15 +905,15 @@ const renderCamposcategoria = () => {
               </div>
             )}
               {/* Sección de Integrantes (solo para banda) */}
-              {renderIntegrantesSection()}
+              {/*renderIntegrantesSection()}
               {/* Sección de Integrante en banda (solo para artista) */}
-              {renderIntegranteDeBandaSection()}
+              {/*renderIntegranteDeBandaSection()}
 
 
               {/* Sección de Representados (solo para representante) */}
-              {renderRepresentadosSection()}
+              {/*renderRepresentadosSection()}
               {/* Sección de Representados (solo para representante) */}
-              {renderRepresentanteSection()}
+              {/*renderRepresentanteSection()}
 
               {/* Ubicación - País, Región, Comuna */}
               <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">

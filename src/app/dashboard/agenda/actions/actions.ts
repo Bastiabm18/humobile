@@ -253,7 +253,7 @@ export async function getEventosByPerfilParticipacion(
     }
 
     // Opcional: log para depuración
-    // console.log('📊 Primer evento recibido:', Object.keys(eventosDB[0]));
+    // console.log(' Primer evento recibido:', Object.keys(eventosDB[0]));
 
     const eventosMapeados: EventoCalendario[] = eventosDB.map((evento: any) => {
       // Participantes ya vienen en el formato que necesitamos
@@ -366,8 +366,8 @@ export async function getEventsByProfile(profileId: string, estadoEvento:string 
 
 
       // Verificar estructura del primer evento
-    console.log('📊 Estructura del primer evento:', Object.keys(eventosDB[0]));
-    console.log('📈 Estadísticas del primer evento:', {
+    console.log(' Estructura del primer evento:', Object.keys(eventosDB[0]));
+    console.log(' Estadísticas del primer evento:', {
       titulo: eventosDB[0].titulo,
       total_participantes: eventosDB[0].total_participantes,
       confirmados: eventosDB[0].confirmados,
@@ -1251,7 +1251,7 @@ async function invitarParticipanteEvento(
   
   // 1. Si es el creador mismo, solo crear participación (sin solicitud)
   if (participanteId === creadorId) {
-    console.log(`👤 Creador ${creadorId} - solo participación confirmada`);
+    console.log(` Creador ${creadorId} - solo participación confirmada`);
     await crearParticipacionEvento(eventoId, participanteId, 'confirmado');
     return;
   }
@@ -1262,14 +1262,14 @@ async function invitarParticipanteEvento(
   
   // 3. Si el participante es una banda, invitar también a sus integrantes
   if (participanteTipo === 'banda') {
-    console.log(`👥 Invitando integrantes de la banda: ${participanteId}`);
+    console.log(` Invitando integrantes de la banda: ${participanteId}`);
     await invitarIntegrantesBanda(eventoId, creadorId, participanteId);
   }
   
   // 4. Si el CREADOR es una banda, invitar también a sus propios integrantes
   // (solo la primera vez que se procesa el creador)
   if (creadorTipo === 'banda' && participanteId === creadorId) {
-    console.log(`👥 Invitando integrantes de la banda creadora: ${creadorId}`);
+    console.log(` Invitando integrantes de la banda creadora: ${creadorId}`);
     await invitarIntegrantesBanda(eventoId, creadorId, creadorId);
   }
 }
@@ -1282,7 +1282,7 @@ async function invitarIntegrantesBanda(
   try {
     const supabaseAdmin = getSupabaseAdmin();
     
-    console.log(`🔍 Buscando integrantes de la banda ${bandaId}`);
+    console.log(` Buscando integrantes de la banda ${bandaId}`);
     
     // Consulta SIMPLE: solo IDs de integrantes
     const { data: integrantes, error: errorIntegrantes } = await supabaseAdmin

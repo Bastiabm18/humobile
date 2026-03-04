@@ -367,24 +367,47 @@ const getYouTubeId = (url:string) => {
                 </h2>
                 
                 <div className="space-y-3">
-                  {perfil.representantes_nombres && perfil.representantes_nombres.map((representante, index) => (
-                    <div 
-                      key={index} 
-                      className="flex items-center gap-3 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors"
-                    >
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                        <FaUser className="w-5 h-5 text-purple-400" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-white font-medium">{representante}</p>
-                  
-                      </div>
-                      <div className="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs font-medium rounded-full">
-                        Representante
-                      </div>
-                    </div>
-                  ))}
-      
+                  <div className=' flex flex-row justify-between'>
+                  <div className="space-y-3">
+                     {perfil.representantes_nombres && perfil.representantes_nombres.map((representante, index) => (
+                          <div 
+                          key={index} 
+                          className="flex items-center gap-3 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors"
+                          >
+                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                              <FaUser className="w-5 h-5 text-purple-400" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-white font-medium">{representante}</p>
+                        
+                            </div>
+
+                          </div>
+                        ))}
+                  </div>
+                  <div className="space-y-3">
+                          {perfil.representantes_estado && perfil.representantes_estado.map((estado, index) => (
+                            <>
+                              <div key={index}  className="flex items-center pt-5 gap-3 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors">
+                               <div className="flex-1">
+                              <p className={`text-white px-3 py-1  rounded-full ${
+                                estado === 'activo' ? 'bg-green-400' : 
+                                estado === 'rechazado' ? 'bg-red-400' : 
+                                estado === 'pendiente' ? 'bg-yellow-400' : 
+                                'text-neutral-400'
+                              }`}>
+                                {estado}
+                              </p>
+                        
+                            </div>
+                              </div>
+                            
+                            </>
+                          
+                          ))}
+
+                  </div>
+                </div>
                 </div>
               </motion.div>
             )}
@@ -405,6 +428,8 @@ const getYouTubeId = (url:string) => {
                 </h2>
                 
                 <div className="space-y-3">
+                  <div className='flex flex-row justify-between'>
+                  <div className='space-y-3'>
                   {perfil.nombre_integrantes && perfil.nombre_integrantes.map((integrante, index) => (
                     <div 
                       key={index} 
@@ -417,11 +442,32 @@ const getYouTubeId = (url:string) => {
                         <p className="text-white font-medium">{integrante}</p>
                   
                       </div>
-                      <div className="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs font-medium rounded-full">
-                        Integrante
-                      </div>
+
                     </div>
                   ))}
+                  </div>
+                  <div className='space-y-3'>
+
+                  {perfil.integrantes_estado && perfil.integrantes_estado.map((estado, index) => (
+                    
+                    <>
+                      <div key={index}  className="flex items-center pt-5 gap-3 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors">
+                         <div className="flex-1">
+                           <p className={`text-white px-3 py-1  rounded-full ${
+                             estado === 'activo' ? 'bg-green-400' : 
+                             estado === 'rechazado' ? 'bg-red-400' : 
+                             estado === 'pendiente' ? 'bg-yellow-400' : 
+                             'text-neutral-400'
+                           }`}>
+                           {estado}
+                           </p>
+                         </div>
+                      </div>
+                  
+                    </>
+                  ))}
+                  </div>
+                  </div>
                   <div className="text-center pt-2">
                     <p className="text-sm text-neutral-400">
                       {perfil.nombre_integrantes?.length} integrante{perfil.nombre_integrantes?.length !== 1 ? 's' : ''}

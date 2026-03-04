@@ -21,6 +21,8 @@ import DesbloquearModal from './DesbloquearModal';
 import { getEventosByPerfilParticipacion } from '../actions/actions';
 import { EventoCalendario } from '@/types/profile';
 import IntegrantesEventoModal from './IntegrantesEventoModal';
+import ModalInformativoCalendario from './ModalInformativoCalendario';
+import { BsFillInfoSquareFill } from 'react-icons/bs';
 const localizer = dateFnsLocalizer({
   format,
   parse: (str: string) => new Date(str),
@@ -70,6 +72,8 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
 
   const [showHorasMultiplesModal, setShowHorasMultiplesModal] = useState(false);
   const [isButtonClick, setIsButtonClick] = useState(false);
+
+  const [verModalInformativo, setVerModalInformativo] = useState(false);
 
 
   useEffect(() => {
@@ -483,9 +487,16 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
       <div className="h-[750px] md:h-[1050px] lg:h-[1050px] mt-10 bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70 relative">
         
         {/* FloatingDateSelector completo */}
+        <button 
+        onClick={() => setVerModalInformativo(true)}
+        className="absolute top-2 left-[5%] md:left-4 z-40 flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded-lg border border-neutral-700 shadow-lg transition-all"
+        >
+          <BsFillInfoSquareFill size={16} />Info
+        </button>
+        
         <button
-          onClick={() => setShowDateSelectors(!showDateSelectors)}
-          className="absolute top-2 right-[30%] md:right-4 z-40 flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded-lg border border-neutral-700 shadow-lg transition-all"
+        onClick={() => setShowDateSelectors(!showDateSelectors)}
+          className="absolute top-2 right-[5%] md:right-4 z-40 flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded-lg border border-neutral-700 shadow-lg transition-all"
         >
           <HiCalendar size={16} />
           <span className="hidden sm:inline">
@@ -769,6 +780,16 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
         />
 
       )}
+
+      {verModalInformativo && (
+        <ModalInformativoCalendario
+        isOpen={verModalInformativo}
+        onClose={() => {
+          setVerModalInformativo(false);
+        }}/>
+      )
+      
+      }
     </>
   );
 }

@@ -456,12 +456,17 @@ export interface PerfilConIntegrantes {
 
   //DATOS PARA BANDA Y REPRESENTANTE
   integrantes_perfil?: string[]; // Array de IDs de integrantes del perfil
+  integrantes_estado?:string[];
+
   representados_perfil?: string[]; // Array de IDs de perfiles representados
+  representados_estado?:string[];
   nombre_integrantes?: string[]; // Nombres de los integrantes del perfil
   nombre_representados?: string[]; // Nombres de los representados del perfil
   representantes_ids?: string[]; // IDs de los representantes asociados (si aplica)
+  representantes_estado?:string[];
   representantes_nombres?: string[]; // Nombres de los representantes asociados (si aplica)
   bandas_ids?: string[]; // IDs de las bandas asociadas (si aplica)
+  bandas_estado?:string[];
   bandas_nombres?: string[]; // Nombres de las bandas asociadas (si aplica)
   id_categoria?: string; // ID de la categoría del perfil (don derek pidio apellido para el tipo de perfil)
   nombre_categoria_perfil?: string; // Nombre de la categoría del perfil (opcional, para facilitar el acceso)
