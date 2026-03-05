@@ -94,6 +94,7 @@ export default function EventModal({ event, isOpen, onRequestClose, profile, onE
     if (!resultado.success) {
       throw new Error(resultado.error);
     }
+    console.log(resultado)
     
     // Éxito - recargar datos
     fetchEventData();

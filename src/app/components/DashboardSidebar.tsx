@@ -62,7 +62,7 @@ export default function DashboardSidebar({ collapsed, onToggle, mobileOpen, setM
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [usuarioMembresia, setUsuarioMembresia] = useState<string | null>(null);
 
-  console.log(userMembresia)
+  //console.log(userMembresia)
   const router = useRouter();
     useEffect(() => {
     if (userMembresia) {

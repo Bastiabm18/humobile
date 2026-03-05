@@ -33,7 +33,7 @@ export default function EventBadge({
   onBlockClick,
   esColumnaHora = false,
 }: EventBadgeProps) {
-  console.log(events);
+ // console.log(events);
  // ¡NO RENDERIZAR NADA EN LA COLUMNA DE HORAS!
   if (esColumnaHora) {
     return null;

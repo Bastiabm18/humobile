@@ -626,7 +626,7 @@ export async function getEventsByDiaYPerfilId(
     const fechaStr = format(fecha, 'yyyy-MM-dd');
 
     const { data: eventosDB, error } = await supabaseAdmin
-      .rpc('obtener_eventos_por_dia_v2', {
+      .rpc('obtener_eventos_por_dia_v3', {
         p_fecha: fechaStr,
         p_perfil_id: perfilId
       });
@@ -641,8 +641,34 @@ export async function getEventsByDiaYPerfilId(
     }
 
     
+    const eventosMapeados: EventoCalendario[] = eventosDB.map((evento: any) => {
 
-    return eventosDB;
+      const rawInicio =  evento.inicio;
+      const rawFin =  evento.fin;
+
+  // 2. EL HACHAZO PARA EL DESFASE DE 3 HORAS
+  // Convertimos el string a Date quitando el "+00" para que el navegador 
+  // NO aplique el ajuste de Chile/Argentina.
+  const parseSinDesfase = (str: string | null) => {
+    if (!str) return null;
+    // Quitamos la Z o el +00:00 del final para que sea "Hora Local Fija"
+    const limpio = str.replace(/[+-]\d{2}:?\d{2}$|Z$/, '');
+    return new Date(limpio);
+  };
+
+  const inicioDate = parseSinDesfase(rawInicio) || new Date();
+  const finDate = parseSinDesfase(rawFin);
+
+return {
+    ...evento, // Mantiene los demás campos
+    inicio: parseSinDesfase(rawInicio) || new Date(),
+    fin: parseSinDesfase(rawFin),
+    es_evento_banda: evento.es_evento_banda ?? false,
+    es_evento_integrante: evento.es_evento_integrante ?? false
+  };
+    });
+
+    return eventosMapeados;
   } catch (error: any) {
     console.error('Error en getEventsByDiaYPerfilId:', error);
     throw error;
