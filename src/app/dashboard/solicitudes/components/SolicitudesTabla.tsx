@@ -305,7 +305,7 @@ export default function SolicitudesTabla({
                           <HiEye className="w-6 h-6 " />
                         </button>
 
-                        {s.estado === "pendiente" && !expirada  && perfil_solicitud.tipo !='banda'   && (
+                        {s.estado === "pendiente" && !expirada    && (
                           <>
                             <button
                               onClick={() => onRechazar(s.id,s.codigo_solicitud,s.id_evento_solicitud,s.invitado_id,s.creador_id)}
@@ -324,7 +324,7 @@ export default function SolicitudesTabla({
                             </button>
                           </>
                         )}
-                      {s.estado === "pendiente" && !expirada && s.tipo_solicitud !='Invitación a evento'  &&  perfil_solicitud.tipo ==='banda'   && (
+                      {/**{s.estado === "pendiente" && !expirada && s.tipo_solicitud !='Invitación a evento'  &&  perfil_solicitud.tipo ==='banda'   && (
                           <>
                             <button
                               onClick={() => onRechazar(s.id,s.codigo_solicitud,s.id_evento_solicitud,s.invitado_id,s.creador_id)}
@@ -343,6 +343,8 @@ export default function SolicitudesTabla({
                             </button>
                           </>
                         )}
+                        
+                      */}
                         
                       </div>
                     </td>

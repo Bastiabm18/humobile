@@ -72,9 +72,9 @@ export async function aceptarSolicitud({
         actualizado_en: new Date().toISOString()
       })
       .eq('id', id_solicitud)
-      .eq('estado', 'pendiente')
+      .eq('estado', 'pendiente') // Esto es bueno por seguridad, pero causa el error si ya no está pendiente
       .select()
-      .single();
+      .maybeSingle();
     
     if (errorSolicitud) {
       console.error('Error actualizando estado de solicitud:', errorSolicitud);
@@ -94,11 +94,38 @@ export async function aceptarSolicitud({
         });
 
         case 'unirse_banda':
-          return await confirmarSerIntegranteBanda({
+
+        const id_creador_tipo = await supabase.from('perfil').select('tipo_perfil').eq('id_perfil', id_creador).single();
+
+        if (id_creador_tipo.error || !id_creador_tipo.data) {
+          console.error('Error obteniendo tipo de perfil del creador:', id_creador_tipo.error);
+          return { 
+            success: false, 
+            error: id_creador_tipo.error?.message || 'Error al obtener tipo de perfil del creador' 
+          };
+        }
+
+        console.log('Tipo de perfil del creador:', id_creador_tipo.data.tipo_perfil);
+        
+        switch (id_creador_tipo.data.tipo_perfil) {
+          case 'artista':
+            
+            return await confirmarIntegranteEnBanda({
+            id_creador,
+              id_invitado
+            });
+            
+            break;
+            
+            case'banda':
+            return await confirmarSerIntegranteBanda({
             id_creador,
             id_invitado
           });
-
+            break;
+          }
+          
+        break;
 
         case 'ser_representado':
           return await confirmarSerRepresentado({
@@ -246,17 +273,55 @@ async function confirmarSerIntegranteBanda({
     .single();
 
   if (error) {
-    console.error('Error confirmando al representante:', error);
+    console.error('Error confirmando integrante de banda:', error);
     return { 
       success: false, 
-      error: error.message || 'Error al confirmar al representante' 
+      error: error.message || 'Error al confirmar integrante de banda' 
     };
   }
 
   return { 
     success: true, 
     data,
-    message: 'Representante confirmado exitosamente'
+    message: 'Integrante de banda confirmado exitosamente'
+  };
+}
+async function confirmarIntegranteEnBanda({ 
+ 
+ 
+  id_invitado,
+  id_creador
+}: {
+
+  id_invitado: string,
+  id_creador:string
+}) {
+  const supabase = getSupabaseAdmin();
+  // Buscar el registro en participacion_evento usando evento_id y perfil_id
+  const { data, error } = await supabase
+    .from('integrante')
+    .update({
+      estado: 'activo',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id_artista',id_creador)
+    .eq('id_banda',id_invitado)
+    .eq('estado', 'pendiente')
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error confirmando integrante en banda:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Error al confirmar integrante en banda' 
+    };
+  }
+
+  return { 
+    success: true, 
+    data,
+    message: 'Integrante de banda confirmado exitosamente'
   };
 }
 export async function rechazarSolicitud({ 
@@ -423,7 +488,7 @@ export async function getSolicitudesByPerfil(
             .rpc('get_solicitudes_detalladas_v2', {
                 p_id_perfil: perfilId,
                 filtro_estado: estadoSolicitud
-            });
+            }); 
 
         if (error) {
             console.error(' Error obteniendo solicitudes:', error);

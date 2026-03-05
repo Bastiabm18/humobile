@@ -284,8 +284,8 @@ export default function GridPerfiles({
 
                 {/* Botón Eliminar */}
                 <button
-                  onClick={async () => {
-                   
+                  onClick={async (e) => {
+                   e.stopPropagation(); // Evitar que el click se propague al contenedor principal
                       await onDelete(perfil.id_perfil);
                       onRefresh();
                     

@@ -40,6 +40,9 @@ export default function PerfilContent({
   const [creandoPerfil, setCreandoPerfil] = useState(false);
   const [membresiaEstado, setMembresiaEstado] = useState(membresia);
   const router = useRouter();
+
+  // BUSCADOR 
+  const [searchTerm, setSearchTerm] = useState('');
   
   // Estados para el modal
   const [showModal, setShowModal] = useState(false);
@@ -211,7 +214,10 @@ setBuscarBandasmodal(true);
       {buscarBandasModal && (
         <BuscarBandaModal 
         isOpen={buscarBandasModal}
-        onClose={() => setBuscarBandasmodal(false)}
+        onClose={() =>
+           {setBuscarBandasmodal(false)
+            window.location.reload();
+           }}
           id_perfil_artista={idPerfilBuscaBanda}
         />
       )   }
@@ -436,7 +442,13 @@ setBuscarBandasmodal(true);
       </>
     );
   }
-
+const perfilesFiltrados = perfiles.filter((perfil) => {
+  const busqueda = searchTerm.toLowerCase();
+  return (
+    perfil.nombre?.toLowerCase().includes(busqueda) ||
+    perfil.tipo_perfil?.toLowerCase().includes(busqueda)
+  );
+});
   // Si hay perfiles y no estamos viendo uno específico, mostrar el grid
   return (
     <>
@@ -480,8 +492,32 @@ setBuscarBandasmodal(true);
             </button>
           </div>
 
+          <>
+          <div className="mb-6 max-w-md mx-auto space-y-4">
+  <div className="relative">
+    <input
+      type="text"
+      placeholder="Buscar por nombre o tipo (ej: banda)..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-200 focus:outline-none focus:ring-2 focus:ring-green-600/50 transition-all"
+    />
+    {searchTerm && (
+      <button 
+        onClick={() => setSearchTerm('')}
+        className="absolute right-3 top-2.5 text-neutral-500 hover:text-white"
+      >
+        ✕
+      </button>
+    )}
+  </div>
+</div>
+
+
+          </>
+
           <GridPerfiles
-            perfiles={perfiles}
+            perfiles={perfilesFiltrados}
             onRefresh={loadPerfiles}
             onEdit={handleEdit}
             onDelete={handleConfirmarEliminar}

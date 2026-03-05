@@ -68,7 +68,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   
   try {
     // Enviar a la acción
-    const resultado = await enviarSolicitud(formData);
+    const resultado = await enviarSolicitud(formData,'unirse_banda');
     
     if (resultado.success) {
       // Si fue exitoso, pasar los datos a onEnviar

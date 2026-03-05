@@ -796,22 +796,19 @@ export const getPerfilesRepresentanteVisibles = async (): Promise<Perfil[]> => {
 };
 
 
-export async function enviarSolicitud(data: InvitacionData) {
+export async function enviarSolicitud(data: InvitacionData,tipo_solicitud_id: String) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     
     const { data: result, error } = await supabaseAdmin
       .from('solicitud') 
       .insert({
-        id_perfil: data.id_perfil,
-        id_banda: data.id_banda,
-        fecha_invitacion: data.fecha_invitacion,
-        fecha_vencimiento: data.fecha_vencimiento,
-        nombre_banda: data.nombre_banda,
-        tipo_invitacion: data.invitacion,
-        descripcion: data.descripcion,
+        id_creador: data.id_perfil,
+        id_invitado: data.id_banda,
+        fecha_expiracion: data.fecha_vencimiento,
         estado: 'pendiente', 
-        created_at: new Date().toISOString()
+        creado_en: new Date().toISOString(),
+        tipo_solicitud_id: tipo_solicitud_id
       })
       .select()
       .single();
@@ -1563,40 +1560,44 @@ export async function getBandasVisibles() {
   return data;
 }
 
-export async function enviarSolicitudUnionBanda(idArtista: string, idBanda: string) {
+export async function enviarSolicitudUnionBanda(invitacionData: InvitacionData) {
   const supabase = getSupabaseAdmin();
 
-  // 1. Obtener el ID del tipo de solicitud 'unirse_banda'
-  const { data: tipo } = await supabase
+  const tipo_solicitud = await supabase
     .from('tipo_solicitud')
     .select('id')
     .eq('codigo', 'unirse_banda')
     .single();
 
-  if (!tipo) throw new Error("Tipo de solicitud no configurado");
+    let tipo_solicitud_id: string;
 
-  // 2. Crear la solicitud oficial
-  const { error: solError } = await supabase.from('solicitud').insert({
-    tipo_solicitud_id: tipo.id,
-    id_creador: idArtista,
-    id_invitado: idBanda,
-    estado: 'pendiente'
-  });
+    if (tipo_solicitud.error || !tipo_solicitud.data) {
+      throw new Error('Error al obtener el ID del tipo de solicitud');
+    } else {
+      tipo_solicitud_id = tipo_solicitud.data.id;
+    }
 
-  if (solError) throw solError;
 
-  // 3. Crear el registro en 'integrante' con estado pendiente
-  const { error: intError } = await supabase.from('integrante').insert({
-    id_artista: idArtista,
-    id_banda: idBanda,
-    estado: 'pendiente',
-    tipo: 'miembro'
-  });
 
-  if (intError) throw intError;
+  const solicitud = enviarSolicitud(invitacionData,tipo_solicitud_id );
+ 
+  if (!solicitud) {
+    throw new Error('Error al enviar solicitud de unión a banda');
+  }
 
-  return { ok: true };
+  const integrante = crearIntegrante(invitacionData.id_perfil, invitacionData.id_banda);
+
+  if (!integrante) {
+    throw new Error('Error al crear integrante para unión a banda');
+    return { solicitud };
+  }
+  return { solicitud, integrante };
+  
+ 
 }
+ 
+
+ 
 
 export async function getBandasPaginadas(page: number = 0, limit: number = 10, search: string = '') {
   const supabase = getSupabaseAdmin();
@@ -1650,4 +1651,22 @@ export async function getBandasPaginadasInvitacion(
     count: totalCount, 
     hasMore: (page * limit) + (data?.length || 0) < totalCount 
   };
+}
+
+export async function abandonarBandaAction(idIntegrante: string) {
+  const supabase = getSupabaseAdmin(); // Tu instancia de supabase
+  const { data, error } = await supabase.rpc('abandonar_banda', { 
+    p_id_integrante: idIntegrante 
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function getMisBandasActivas(idArtista: string) {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.rpc('get_mis_bandas_activas', { 
+    p_id_artista: idArtista 
+  });
+  if (error) throw error;
+  return { data };
 }

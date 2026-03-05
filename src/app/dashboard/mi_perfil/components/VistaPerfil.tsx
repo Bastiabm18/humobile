@@ -354,7 +354,7 @@ const getYouTubeId = (url:string) => {
                     <button 
                       onClick={()=> onBuscarBandas(perfil.id_perfil)}
                     className="text-sm bg-blue-600/70  text-blue-300 hover:bg-blue-800/80 hover:text-blue-400  flex flex-row px-3 py-2 rounded-2xl">
-                        <MdSearch size={16}/>  Buscar Bandas
+                        <MdSearch size={16}/>  Gestionar Bandas
                     </button>
                   </div>
                 </div>
@@ -396,8 +396,8 @@ const getYouTubeId = (url:string) => {
                   </div>
                   <div className="space-y-3">
                           {perfil.representantes_estado && perfil.representantes_estado.map((estado, index) => (
-                            <>
-                              <div key={index}  className="flex items-center pt-5 gap-3 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors">
+                            <div key={index} >
+                              <div  className="flex items-center pt-5 gap-3 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors">
                                <div className="flex-1">
                               <p className={`text-white px-3 py-1  rounded-full ${
                                 estado === 'activo' ? 'bg-green-400' : 
@@ -411,7 +411,7 @@ const getYouTubeId = (url:string) => {
                             </div>
                               </div>
                             
-                            </>
+                            </div>
                           
                           ))}
 

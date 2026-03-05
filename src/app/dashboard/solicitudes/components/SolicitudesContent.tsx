@@ -72,7 +72,7 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
   const handleAceptar = async (id: string,codigo_solicitud:string,id_evento_solicitud:string,invitado_id:string,creador_id:string) => {
     const solicitud = solicitudes.find(s => s.id === id);
     if (!solicitud) return;
-    
+      
     const resultado = await aceptarSolicitud({ 
       id_solicitud: id,
       codigo_solicitud:codigo_solicitud,
@@ -81,12 +81,12 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
       id_creador:creador_id
     });
     
-    if (resultado.success) {
+    if (resultado && resultado.success) {
       setSolicitudes(prev => prev.map(s => 
         s.id === id ? { ...s, estado: "aceptada" } : s
       ));
     } else {
-      alert(`Error: ${resultado.error}`);
+      alert(`Error: ${resultado?.error || 'Error desconocido'}`);
     }
   };
 
@@ -103,10 +103,10 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
         id_creador:creador_id
     });
 
-    if (resultado.success) {
+    if (resultado && resultado.success) {
       setSolicitudes((prev) => prev.map((s) => (s.id === id ? { ...s, estado: "rechazada" } : s)));
     } else {
-      alert(`Error: ${resultado.error}`);
+      alert(`Error: ${resultado?.error || 'Error desconocido'}`);
     }
   };
 
