@@ -38,9 +38,10 @@ import { Md2kPlus, MdCategory, MdSearch } from 'react-icons/md';
 interface VistaPerfilProps {
   perfil: PerfilConIntegrantes;
   onBuscarBandas: (id_perfil: string) => void;
+  onBuscarIntegrantes: (id_perfil: string, nombre_banda: string) => void;
 }
 
-export default function VistaPerfil({ perfil, onBuscarBandas }: VistaPerfilProps) {
+export default function VistaPerfil({ perfil, onBuscarBandas, onBuscarIntegrantes}: VistaPerfilProps) {
   const [showFullMap, setShowFullMap] = useState(false);
  
   console.log('Perfil en VistaPerfil:', perfil);
@@ -313,7 +314,8 @@ const getYouTubeId = (url:string) => {
             </motion.div>
 
                        {/* Es intengrante */}
-            {esIntegrante && (
+           
+             {  perfil.tipo_perfil==='artista' &&(
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -354,12 +356,14 @@ const getYouTubeId = (url:string) => {
                     <button 
                       onClick={()=> onBuscarBandas(perfil.id_perfil)}
                     className="text-sm bg-blue-600/70  text-blue-300 hover:bg-blue-800/80 hover:text-blue-400  flex flex-row px-3 py-2 rounded-2xl">
-                        <MdSearch size={16}/>  Gestionar Bandas
+                        <MdSearch size={16}/> {esIntegrante ? 'Gestionar' : 'Buscar'} Bandas
                     </button>
                   </div>
                 </div>
-              </motion.div>
-            )}
+              </motion.div> 
+              )
+              }
+            
                        {/*  tiene representante */}
             {tieneRepresentantes && (
               <motion.div
@@ -422,7 +426,7 @@ const getYouTubeId = (url:string) => {
             )}
 
             {/* Integrantes (solo para bandas) */}
-            {tieneIntegrantes && (
+            { perfil.tipo_perfil==='banda' && (
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -459,8 +463,8 @@ const getYouTubeId = (url:string) => {
 
                   {perfil.integrantes_estado && perfil.integrantes_estado.map((estado, index) => (
                     
-                    <>
-                      <div key={index}  className="flex items-center pt-5 gap-3 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors">
+                    <div key={index}>
+                      <div   className="flex items-center pt-5 gap-3 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors">
                          <div className="flex-1">
                            <p className={`text-white px-3 py-1  rounded-full ${
                              estado === 'activo' ? 'bg-green-400' : 
@@ -473,7 +477,7 @@ const getYouTubeId = (url:string) => {
                          </div>
                       </div>
                   
-                    </>
+                    </div>
                   ))}
                   </div>
                   </div>
@@ -481,6 +485,14 @@ const getYouTubeId = (url:string) => {
                     <p className="text-sm text-neutral-400">
                       {perfil.nombre_integrantes?.length} integrante{perfil.nombre_integrantes?.length !== 1 ? 's' : ''}
                     </p>
+                  </div>
+
+                                    <div className="text-center flex items-center justify-center pt-2">
+                    <button 
+                      onClick={()=> onBuscarIntegrantes(perfil.id_perfil, perfil.nombre)}
+                    className="text-sm bg-blue-600/70  text-blue-300 hover:bg-blue-800/80 hover:text-blue-400  flex flex-row px-3 py-2 rounded-2xl">
+                        <MdSearch size={16}/> {esIntegrante ? 'Gestionar' : 'Buscar'} integrantes
+                    </button>
                   </div>
                 </div>
               </motion.div>

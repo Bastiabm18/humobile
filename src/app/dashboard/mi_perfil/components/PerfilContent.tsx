@@ -16,6 +16,7 @@ import ModalConfirmacion from './ModalConfirmacion';
 import CrearPerfil from './CrearPerfil';
 import { useRouter } from 'next/navigation';
 import BuscarBandaModal from './BuscarBandaModal';
+import BuscarIntegrantesBandaModal from './BuscarIntegrantesBandaModal';
 
 interface PerfilContentProps {
   initialProfiles: Perfil[];
@@ -57,6 +58,11 @@ export default function PerfilContent({
  
   const [buscarBandasModal, setBuscarBandasmodal] = useState(false);
   const [idPerfilBuscaBanda, setIdPerfilBuscaBanda] = useState<string>('');
+
+  // modal buscar integrantes
+  const [buscarIntegrantesModal, setBuscarIntegrantesModal] = useState(false);
+  const [idPerfilBuscaIntegrante, setIdPerfilBuscaIntegrante] = useState<string>('');
+  const [nombrebandaBuscaIntegrante, setNombrebandaBuscaIntegrante] = useState<string>('');
 
   // Función para mostrar modal
   const mostrarMensaje = (mensaje: string, tipo: 'exito' | 'error' | 'info' = 'info') => {
@@ -187,6 +193,14 @@ setBuscarBandasmodal(true);
 
 }
 
+const handleBuscarIntegrantes = async (id_perfil: string, nombre_banda: string) => {
+
+  setIdPerfilBuscaIntegrante(id_perfil);
+  setNombrebandaBuscaIntegrante(nombre_banda);
+  setBuscarIntegrantesModal(true);
+
+}
+
   // Función para renderizar ambos modales en todos los estados
   const renderModales = () => (
     <>
@@ -216,9 +230,22 @@ setBuscarBandasmodal(true);
         isOpen={buscarBandasModal}
         onClose={() =>
            {setBuscarBandasmodal(false)
-            window.location.reload();
+           
            }}
           id_perfil_artista={idPerfilBuscaBanda}
+        />
+      )   }
+
+      {buscarIntegrantesModal && (
+        <BuscarIntegrantesBandaModal 
+        isOpen={buscarIntegrantesModal}
+        onClose={() =>
+           {setBuscarIntegrantesModal(false)
+          
+           
+           }}
+          id_perfil_banda={idPerfilBuscaIntegrante}
+          nombre_banda={nombrebandaBuscaIntegrante}
         />
       )   }
     </>
@@ -327,7 +354,8 @@ setBuscarBandasmodal(true);
 
             <VistaPerfil perfil={perfilVista} 
             
-            onBuscarBandas={handleBuscarBandas} />
+            onBuscarBandas={handleBuscarBandas}
+            onBuscarIntegrantes={handleBuscarIntegrantes} />
           </div>
         </div>
       </>

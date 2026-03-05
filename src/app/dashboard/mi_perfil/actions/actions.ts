@@ -1670,3 +1670,68 @@ export async function getMisBandasActivas(idArtista: string) {
   if (error) throw error;
   return { data };
 }
+
+export async function getArtistasPaginados(
+  id_banda: string,
+  page: number = 0,
+  pageSize: number = 10,
+  busqueda: string = ''
+) {
+  const supabase = getSupabaseAdmin();
+
+  const { data, error } = await supabase.rpc('get_artistas_para_invitar', {
+    p_id_banda: id_banda,
+    p_page: page,
+    p_page_size: pageSize,
+    p_busqueda: busqueda
+  });
+
+  if (error) {
+    console.error('Error fetching artistas:', error);
+    return { data: [], hasMore: false };
+  }
+
+  // Si la cantidad de datos devueltos es igual al pageSize, 
+  // asumimos que podría haber más en la siguiente página.
+  const hasMore = data && data.length === pageSize;
+
+  return { data, hasMore };
+}
+
+/**
+ * Obtiene la lista de integrantes actuales de una banda específica
+ */
+export async function getIntegrantesBanda(id_banda: string) {
+  const supabase = getSupabaseAdmin();
+
+  const { data, error } = await supabase.rpc('get_integrantes_banda', {
+    p_id_banda: id_banda
+  });
+
+  if (error) {
+    console.error('Error fetching integrantes:', error);
+    return { data: [], error };
+  }
+
+  return { data };
+}
+
+/**
+ * Elimina a un integrante de la banda (Desvincular)
+ */
+export async function eliminarIntegranteAction(id_integrante: string) {
+  const supabase = getSupabaseAdmin();
+
+  // Aquí usamos un delete directo a la tabla integrante
+  const { error } = await supabase
+    .from('integrante')
+    .delete()
+    .eq('id', id_integrante);
+
+  if (error) {
+    console.error('Error eliminando integrante:', error);
+    throw new Error('No se pudo eliminar al integrante');
+  }
+
+  return { success: true };
+}
