@@ -102,7 +102,8 @@ export default function GridPerfiles({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: index * 0.05 }}
-          className="group relative"
+          className="group relative cursor-pointer"
+             onClick={() => onVer(perfil)}
         >
           {/* Tarjeta principal */}
           <div className="

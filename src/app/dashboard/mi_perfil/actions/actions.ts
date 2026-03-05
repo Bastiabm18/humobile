@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
 import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile,Perfil, PerfilConIntegrantes, categoria_perfil } from '@/types/profile'; 
 import { InvitacionData } from '@/types/profile';
 import IntegrantesEventoModal from '../../agenda/components/IntegrantesEventoModal';
+import { getSupabaseBrowser } from '@/lib/supabase/supabase-client';
 
 // ===========================================
 // 1. CARGA DE DATOS GEOGRÁFICOS (PAÍS, REGIÓN, COMUNA)
@@ -1547,4 +1548,106 @@ export async function crearPerfil(perfilData: any) {
     console.error('Error crearPerfil:', error);
     return { exito: false, error: error.message };
   }
+}
+
+
+export async function getBandasVisibles() {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('perfil')
+    .select('id_perfil, nombre, imagen_url, banda_data, id_comuna, Comuna(nombre_comuna)')
+    .eq('tipo_perfil', 'banda')
+    .eq('perfil_visible', true);
+
+  if (error) throw error;
+  return data;
+}
+
+export async function enviarSolicitudUnionBanda(idArtista: string, idBanda: string) {
+  const supabase = getSupabaseAdmin();
+
+  // 1. Obtener el ID del tipo de solicitud 'unirse_banda'
+  const { data: tipo } = await supabase
+    .from('tipo_solicitud')
+    .select('id')
+    .eq('codigo', 'unirse_banda')
+    .single();
+
+  if (!tipo) throw new Error("Tipo de solicitud no configurado");
+
+  // 2. Crear la solicitud oficial
+  const { error: solError } = await supabase.from('solicitud').insert({
+    tipo_solicitud_id: tipo.id,
+    id_creador: idArtista,
+    id_invitado: idBanda,
+    estado: 'pendiente'
+  });
+
+  if (solError) throw solError;
+
+  // 3. Crear el registro en 'integrante' con estado pendiente
+  const { error: intError } = await supabase.from('integrante').insert({
+    id_artista: idArtista,
+    id_banda: idBanda,
+    estado: 'pendiente',
+    tipo: 'miembro'
+  });
+
+  if (intError) throw intError;
+
+  return { ok: true };
+}
+
+export async function getBandasPaginadas(page: number = 0, limit: number = 10, search: string = '') {
+  const supabase = getSupabaseAdmin();
+  
+  const from = page * limit;
+  const to = from + limit - 1;
+
+  let query = supabase
+    .from('perfil')
+    .select('id_perfil, nombre, imagen_url, banda_data, id_comuna, Comuna(nombre_comuna)', { count: 'exact' })
+    .eq('tipo_perfil', 'banda')
+    .eq('perfil_visible', true)
+    .order('nombre', { ascending: true })
+    .range(from, to);
+
+  if (search) {
+    query = query.ilike('nombre', `%${search}%`);
+  }
+
+  const { data, error, count } = await query;
+
+  if (error) throw error;
+  return { data, count, hasMore: (data?.length || 0) + from < (count || 0) };
+}
+
+export async function getBandasPaginadasInvitacion(
+  idArtista: string, 
+  page: number = 0, 
+  limit: number = 10, 
+  search: string = ''
+) {
+  const supabase = getSupabaseAdmin(); 
+  
+  const { data, error } = await supabase.rpc('buscar_bandas_para_invitacion', {
+    p_id_artista: idArtista,
+    p_search: search,
+    p_limit: limit,
+    p_offset: page * limit
+  });
+
+  if (error) {
+    console.error("Error cargando bandas para invitación:", error);
+    throw error;
+  }
+
+  // Obtenemos el total de la primera fila (si existe)
+  const totalCount = data && data.length > 0 ? Number(data[0].total_count) : 0;
+  
+  return { 
+    data: data || [], 
+    count: totalCount, 
+    hasMore: (page * limit) + (data?.length || 0) < totalCount 
+  };
 }

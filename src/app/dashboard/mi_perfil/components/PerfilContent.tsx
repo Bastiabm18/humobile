@@ -15,6 +15,7 @@ import ModalMensaje from './Modalmensaje';
 import ModalConfirmacion from './ModalConfirmacion';
 import CrearPerfil from './CrearPerfil';
 import { useRouter } from 'next/navigation';
+import BuscarBandaModal from './BuscarBandaModal';
 
 interface PerfilContentProps {
   initialProfiles: Perfil[];
@@ -47,6 +48,12 @@ export default function PerfilContent({
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [perfilAEliminar, setPerfilAEliminar] = useState<string | null>(null);
+
+
+  // modal buscar banda
+ 
+  const [buscarBandasModal, setBuscarBandasmodal] = useState(false);
+  const [idPerfilBuscaBanda, setIdPerfilBuscaBanda] = useState<string>('');
 
   // Función para mostrar modal
   const mostrarMensaje = (mensaje: string, tipo: 'exito' | 'error' | 'info' = 'info') => {
@@ -170,6 +177,12 @@ const handleCrearPerfil = async (nuevoPerfilData: Omit<Perfil, 'id_perfil' | 'cr
   }
 };
 
+const handleBuscarBandas = async (id_perfil: string) => {
+
+setIdPerfilBuscaBanda(id_perfil);
+setBuscarBandasmodal(true);
+
+}
 
   // Función para renderizar ambos modales en todos los estados
   const renderModales = () => (
@@ -193,6 +206,15 @@ const handleCrearPerfil = async (nuevoPerfilData: Omit<Perfil, 'id_perfil' | 'cr
         textoConfirmar="Eliminar"
         textoCancelar="Cancelar"
       />
+
+      
+      {buscarBandasModal && (
+        <BuscarBandaModal 
+        isOpen={buscarBandasModal}
+        onClose={() => setBuscarBandasmodal(false)}
+          id_perfil_artista={idPerfilBuscaBanda}
+        />
+      )   }
     </>
   );
 
@@ -297,7 +319,9 @@ const handleCrearPerfil = async (nuevoPerfilData: Omit<Perfil, 'id_perfil' | 'cr
               </button>
             </div>
 
-            <VistaPerfil perfil={perfilVista} />
+            <VistaPerfil perfil={perfilVista} 
+            
+            onBuscarBandas={handleBuscarBandas} />
           </div>
         </div>
       </>
@@ -465,6 +489,8 @@ const handleCrearPerfil = async (nuevoPerfilData: Omit<Perfil, 'id_perfil' | 'cr
           />
         </div>
       </div>
+
+
     </>
   );
 }

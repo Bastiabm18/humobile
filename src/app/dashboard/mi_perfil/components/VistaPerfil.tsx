@@ -27,20 +27,22 @@ import {
   FaUsers,
   FaUserFriends
 } from 'react-icons/fa';
-import { FaUser, FaLocationDot, FaClock, FaIdCardClip, FaFilm } from 'react-icons/fa6';
+import { FaUser, FaLocationDot, FaClock, FaIdCardClip, FaFilm, FaPlus } from 'react-icons/fa6';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState } from 'react';
 import MapaLugar from './MapaLugar';
-import { Md2kPlus, MdCategory } from 'react-icons/md';
+import { Md2kPlus, MdCategory, MdSearch } from 'react-icons/md';
 
 interface VistaPerfilProps {
   perfil: PerfilConIntegrantes;
+  onBuscarBandas: (id_perfil: string) => void;
 }
 
-export default function VistaPerfil({ perfil }: VistaPerfilProps) {
+export default function VistaPerfil({ perfil, onBuscarBandas }: VistaPerfilProps) {
   const [showFullMap, setShowFullMap] = useState(false);
+ 
   console.log('Perfil en VistaPerfil:', perfil);
   const getTipoIcono = () => {
     switch (perfil.tipo_perfil) {
@@ -348,6 +350,13 @@ const getYouTubeId = (url:string) => {
                      Miembro de  {perfil.bandas_nombres?.length} Grupos
                     </p>
                   </div>
+                  <div className="text-center flex items-center justify-center pt-2">
+                    <button 
+                      onClick={()=> onBuscarBandas(perfil.id_perfil)}
+                    className="text-sm bg-blue-600/70  text-blue-300 hover:bg-blue-800/80 hover:text-blue-400  flex flex-row px-3 py-2 rounded-2xl">
+                        <MdSearch size={16}/>  Buscar Bandas
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -517,8 +526,8 @@ const getYouTubeId = (url:string) => {
                   </div>
 
                   <div className="text-center pt-2 w-full flex items-center justify-center">
-                    <button className="px-4 py-2 bg-blue-500/70 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors flex flex-col items-center gap-2">
-                      <Md2kPlus size={24} className="text-blue-300"/> Agregar nuevo representado
+                    <button className="px-4 py-2 bg-blue-500/70 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors flex flex-row items-center gap-2">
+                      <FaPlus size={24} className="text-blue-300"/> Buscar nuevo representado
                     </button>
                   </div>
                 </div>
