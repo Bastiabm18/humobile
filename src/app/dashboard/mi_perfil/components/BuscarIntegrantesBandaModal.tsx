@@ -11,6 +11,7 @@ import {
 } from '../actions/actions';
 import { InvitacionData } from '@/types/profile';
 import { format, setDate } from 'date-fns';
+import { FaXmark } from 'react-icons/fa6';
 
 interface Props {
   id_perfil_banda: string;
@@ -36,11 +37,25 @@ export default function BuscarIntegrantesBandaModal({ id_perfil_banda, nombre_ba
   const observer = useRef<IntersectionObserver | null>(null);
 
   // --- Lógica de Invitación ---
+
+  const handleEliminar = async (idIntegrante: string) => {
+  setEnviandoId(idIntegrante); // Feedback visual de carga
+  try {
+    await eliminarIntegranteAction(idIntegrante); // Llama al server action
+    setIntegrantes(prev => prev.filter(i => i.id_integrante !== idIntegrante)); // Borra del estado local
+    setStatus({ type: 'success', msg: 'Integrante eliminado.' });
+    setConfirmarId(null);
+  } catch (e) {
+    setStatus({ type: 'error', msg: 'Error al eliminar.' });
+  } finally {
+    setEnviandoId(null);
+  }
+};
   const handleInvitar = async (artista: any) => {
     setEnviandoId(artista.id_perfil);
     try {
       const invitacion: InvitacionData = {
-        id_perfil: id_perfil_banda, // La banda es la que invita
+        id_perfil: artista.id_perfil, // La banda es la que invita
         id_banda: id_perfil_banda,
         fecha_invitacion: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
         fecha_vencimiento: format(setDate(new Date(), 14), "yyyy-MM-dd'T'HH:mm"),
@@ -138,7 +153,7 @@ export default function BuscarIntegrantesBandaModal({ id_perfil_banda, nombre_ba
           </div>
 
           <div className="flex p-1 bg-neutral-950 rounded-2xl border border-neutral-800">
-            <button onClick={() => setView('buscar')} className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${view === 'buscar' ? 'bg-blue-600 text-white shadow-lg' : 'text-neutral-500'}`}>Buscar Talentos</button>
+            <button onClick={() => setView('buscar')} className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${view === 'buscar' ? 'bg-blue-600 text-white shadow-lg' : 'text-neutral-500'}`}>Buscar Artistas</button>
             <button onClick={() => setView('actuales')} className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${view === 'actuales' ? 'bg-blue-600 text-white shadow-lg' : 'text-neutral-500'}`}>Integrantes</button>
           </div>
         </div>
@@ -165,7 +180,7 @@ export default function BuscarIntegrantesBandaModal({ id_perfil_banda, nombre_ba
                     className="flex items-center justify-between p-4 bg-neutral-800/40 border border-neutral-800/60 rounded-2xl"
                   >
                     <div className="flex items-center gap-4">
-                      <img src={artista.imagen_url || '/default-avatar.png'} className="w-12 h-12 rounded-xl object-cover" />
+                      <img src={artista.imagen_url || '/Gemini_Generated_Image_cqos2tcqos2tcqos-removebg-preview.png'} className="w-12 h-12 rounded-xl object-cover" />
                       <div>
                         <h4 className="font-bold text-white">{artista.nombre}</h4>
                         <p className="text-[10px] text-blue-400 font-bold uppercase">{artista.categoria}</p>
@@ -202,7 +217,7 @@ export default function BuscarIntegrantesBandaModal({ id_perfil_banda, nombre_ba
                       <p className="text-[10px] text-neutral-500">{miembro.rol}</p>
                     </div>
                   </div>
-                  <button className="text-neutral-500 hover:text-red-400 p-2 transition-colors"><FaUserMinus /></button>
+                  <button className="text-red-300/70 bg-red-600/70 hover:text-red-400 py-2 px-3 rounded-2xl flex flex-row gap-2 transition-colors"><FaXmark size={16} /> Eliminar Integrante</button>
                 </div>
               ))}
               {integrantes.length === 0 && <p className="text-center py-10 text-neutral-600 italic">La banda no tiene integrantes registrados.</p>}

@@ -26,7 +26,7 @@ const mobileSlides = [
 const razones = [
   {
     title: "DESCUBRE TALENTO",
-    description: "Explora artistas emergentes asi como artistas globales, sus agendas exclusivas en Humobile, la plataforma que conecta fans con el futuro de la música.",
+    description: "Explora artistas, gestores culturales, espacios creativos, y accede a sus agendas exclusivas en Humobile, la plataforma que te conecta con la cultura las artes y el espectáculo.",
   },
   {
     title: "AGENDA EN VIVO",
@@ -34,11 +34,11 @@ const razones = [
   },
   {
     title: "LUGARES ICÓNICOS",
-    description: "Descubre lugares legendarios y nuevos spots para música en vivo, con mapas interactivos y recomendaciones basadas en tus gustos.",
+    description: "Descubre escenarios emblemáticos y nuevos espacios para disfrutar eventos culturales. Explora mapas interactivos y recibe recomendaciones personalizadas según tus gustos, para que siempre encuentres el lugar perfecto donde vivir la mejor experiencia cultural.",
   },
   {
     title: "COMUNIDAD MUSICAL",
-    description: "Únete a fans apasionados, comparte experiencias y crea conexiones en la red definitiva para amantes de la música.",
+    description: "Forma parte de una red que conecta, descubre nuevos talentos y crea conexiones en la comunidad digital que impulsa la música, la cultura y las conexiones se transforman en cultura viva.",
   },
 ];
 
