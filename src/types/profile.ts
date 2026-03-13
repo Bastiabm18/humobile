@@ -470,6 +470,9 @@ export interface PerfilConIntegrantes {
   bandas_nombres?: string[]; // Nombres de las bandas asociadas (si aplica)
   id_categoria?: string; // ID de la categoría del perfil (don derek pidio apellido para el tipo de perfil)
   nombre_categoria_perfil?: string; // Nombre de la categoría del perfil (opcional, para facilitar el acceso)
+   admin_externo_ids?: string[];
+  admin_externo_nombres?: string[];
+  admin_externo_emails?: string[];
 }
 
 // Interfaz para perfil básico

@@ -184,7 +184,7 @@ export default function BuscarIntegrantesBandaModal({ id_perfil_banda, nombre_ba
                       <div>
                         <h4 className="font-bold text-white">{artista.nombre}</h4>
                         <p className="text-[10px] text-blue-400 font-bold uppercase">{artista.categoria}</p>
-                        <p className="text-[10px] text-neutral-500 flex items-center gap-1"><FaMapMarkerAlt /> {artista.nombre_comuna}</p>
+                        <p className="text-[10px] text-neutral-500 flex items-center gap-1"><FaMapMarkerAlt /></p>
                       </div>
                     </div>
 

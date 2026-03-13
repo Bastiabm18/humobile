@@ -17,6 +17,10 @@ import CrearPerfil from './CrearPerfil';
 import { useRouter } from 'next/navigation';
 import BuscarBandaModal from './BuscarBandaModal';
 import BuscarIntegrantesBandaModal from './BuscarIntegrantesBandaModal';
+import BuscarRepresentanteModal from './BuscarRepresentanteModal';
+import BuscarRepresentadosModal from './BuscarRepresentadosModal';
+import GestionarAdministradoresModal from './GestionarAdministradoresModal';
+
 
 interface PerfilContentProps {
   initialProfiles: Perfil[];
@@ -63,6 +67,23 @@ export default function PerfilContent({
   const [buscarIntegrantesModal, setBuscarIntegrantesModal] = useState(false);
   const [idPerfilBuscaIntegrante, setIdPerfilBuscaIntegrante] = useState<string>('');
   const [nombrebandaBuscaIntegrante, setNombrebandaBuscaIntegrante] = useState<string>('');
+
+  // modal buscar representante
+
+  const [verBuscarRepresentanteModal, setverBuscarRepresentanteModal] = useState(false);
+  const [idPerfilBuscaRepresentante, setIdPerfilBuscaRepresentante] = useState<string>('');
+
+
+  // modal buscar representado 
+
+  const [idPerfilBuscaRepresentado, setIdPerfilBuscaRepresentado] = useState<string>('');
+  const [verBuscarRepresentadoModal, setverBuscarRepresentadoModal] = useState(false);
+// modal buscar admins para la banda
+
+
+  const [idPerfilBuscaAdminBanda, setIdPerfilBuscaAdminBanda] = useState<string>('');
+  const [GestionarAdministradoresBandaModal, setGestionarAdministradoresBandaModal] = useState(false);
+
 
   // Función para mostrar modal
   const mostrarMensaje = (mensaje: string, tipo: 'exito' | 'error' | 'info' = 'info') => {
@@ -201,6 +222,28 @@ const handleBuscarIntegrantes = async (id_perfil: string, nombre_banda: string) 
 
 }
 
+const handleBuscarRepresentante = async (id_perfil: string) => {
+
+  setIdPerfilBuscaRepresentante(id_perfil);
+  setverBuscarRepresentanteModal(true);
+
+
+}
+
+const handleBuscarRepresentados = async (id_perfil: string) => {
+
+    setIdPerfilBuscaRepresentado(id_perfil);
+    console.log(id_perfil)
+    setverBuscarRepresentadoModal(true);
+} 
+
+const handleGestionarAdministradoresbanda = async (id_perfil: string) => {
+
+  setIdPerfilBuscaAdminBanda(id_perfil);
+  setGestionarAdministradoresBandaModal(true);
+
+}
+
   // Función para renderizar ambos modales en todos los estados
   const renderModales = () => (
     <>
@@ -248,6 +291,46 @@ const handleBuscarIntegrantes = async (id_perfil: string, nombre_banda: string) 
           nombre_banda={nombrebandaBuscaIntegrante}
         />
       )   }
+
+      {verBuscarRepresentanteModal && (
+        <BuscarRepresentanteModal
+          id_perfil={idPerfilBuscaRepresentante}
+          isOpen={verBuscarRepresentanteModal}
+        onClose={() =>
+           {setverBuscarRepresentanteModal(false)
+           
+           }}
+           />
+
+          )   }
+
+          {verBuscarRepresentadoModal && (
+            <BuscarRepresentadosModal
+              id_representante={idPerfilBuscaRepresentado}
+              isOpen={verBuscarRepresentadoModal}
+            onClose={() =>
+               {setverBuscarRepresentadoModal(false)
+               
+               }}
+               />
+    
+              )}
+
+              {GestionarAdministradoresBandaModal && (
+                <GestionarAdministradoresModal
+                  id_banda={idPerfilBuscaAdminBanda}
+                  isOpen={GestionarAdministradoresBandaModal}
+                onClose={() =>
+                   {setGestionarAdministradoresBandaModal(false)
+                   
+                   }}
+                  
+                
+                  />
+                )
+                }
+
+
     </>
   );
 
@@ -355,7 +438,12 @@ const handleBuscarIntegrantes = async (id_perfil: string, nombre_banda: string) 
             <VistaPerfil perfil={perfilVista} 
             
             onBuscarBandas={handleBuscarBandas}
-            onBuscarIntegrantes={handleBuscarIntegrantes} />
+            onBuscarIntegrantes={handleBuscarIntegrantes}
+            onBuscarRepresentante={handleBuscarRepresentante}
+            onBuscarRepresentados={handleBuscarRepresentados}
+            onGestionarAdministradores={handleGestionarAdministradoresbanda}
+             />
+
           </div>
         </div>
       </>

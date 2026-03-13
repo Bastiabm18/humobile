@@ -83,7 +83,8 @@ export async function aceptarSolicitud({
         error: errorSolicitud.message || 'Error al aceptar la solicitud' 
       };
     }
-    
+       const id_creador_tipo = await supabase.from('perfil').select('tipo_perfil').eq('id_perfil', id_creador).single();
+
     // Luego manejar según el código de solicitud
     switch (codigo_solicitud) {
       case 'invitacion_evento':
@@ -95,8 +96,7 @@ export async function aceptarSolicitud({
 
         case 'unirse_banda':
 
-        const id_creador_tipo = await supabase.from('perfil').select('tipo_perfil').eq('id_perfil', id_creador).single();
-
+     
         if (id_creador_tipo.error || !id_creador_tipo.data) {
           console.error('Error obteniendo tipo de perfil del creador:', id_creador_tipo.error);
           return { 
@@ -128,10 +128,37 @@ export async function aceptarSolicitud({
         break;
 
         case 'ser_representado':
-          return await confirmarSerRepresentado({
-            id_creador,
-            id_invitado
-          });
+
+             if (id_creador_tipo.error || !id_creador_tipo.data) {
+              console.error('Error obteniendo tipo de perfil del creador:', id_creador_tipo.error);
+              return { 
+                success: false, 
+                error: id_creador_tipo.error?.message || 'Error al obtener tipo de perfil del creador' 
+              };
+            }
+
+        console.log('Tipo de perfil del creador:', id_creador_tipo.data.tipo_perfil);
+          switch (id_creador_tipo.data.tipo_perfil) {
+
+            case 'representante':
+              return await confirmarSerRepresentado({
+                id_creador,
+                id_invitado
+              });
+              
+            break;
+
+            case'productor':
+            return;
+            break;
+            default:
+            return await confirmarNuevoRepresentado({
+                id_creador,
+                id_invitado
+              });
+              
+
+          }
         
       default:
         return { 
@@ -246,6 +273,44 @@ async function confirmarSerRepresentado({
     success: true, 
     data,
     message: 'Representante confirmado exitosamente'
+  };
+}
+async function confirmarNuevoRepresentado({ 
+ 
+ 
+  id_invitado,
+  id_creador
+}: {
+
+  id_invitado: string,
+  id_creador:string
+}) {
+  const supabase = getSupabaseAdmin();
+  // Buscar el registro en participacion_evento usando evento_id y perfil_id
+  const { data, error } = await supabase
+    .from('representado')
+    .update({
+      estado_representacion: 'activo',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id_representante',id_invitado)
+    .eq('id_representado',id_creador)
+    .eq('estado_representacion', 'pendiente')
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error confirmando al representado:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Error al confirmar al representado' 
+    };
+  }
+
+  return { 
+    success: true, 
+    data,
+    message: 'representado confirmado exitosamente'
   };
 }
 async function confirmarSerIntegranteBanda({ 
@@ -565,3 +630,5 @@ export async function getSolicitudesByPerfil(
         throw error;
     }
 }
+
+

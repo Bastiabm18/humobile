@@ -25,7 +25,8 @@ import {
   FaHome,
   FaUserTag,
   FaUsers,
-  FaUserFriends
+  FaUserFriends,
+  FaUserShield
 } from 'react-icons/fa';
 import { FaUser, FaLocationDot, FaClock, FaIdCardClip, FaFilm, FaPlus } from 'react-icons/fa6';
 import { motion } from 'framer-motion';
@@ -39,9 +40,12 @@ interface VistaPerfilProps {
   perfil: PerfilConIntegrantes;
   onBuscarBandas: (id_perfil: string) => void;
   onBuscarIntegrantes: (id_perfil: string, nombre_banda: string) => void;
+  onBuscarRepresentante: (id_perfil: string) => void;
+  onBuscarRepresentados: (id_perfil: string) => void;
+  onGestionarAdministradores: (id_perfil: string)=> void;
 }
 
-export default function VistaPerfil({ perfil, onBuscarBandas, onBuscarIntegrantes}: VistaPerfilProps) {
+export default function VistaPerfil({ perfil, onBuscarBandas, onBuscarIntegrantes, onBuscarRepresentante,onBuscarRepresentados,onGestionarAdministradores}: VistaPerfilProps) {
   const [showFullMap, setShowFullMap] = useState(false);
  
   console.log('Perfil en VistaPerfil:', perfil);
@@ -364,8 +368,8 @@ const getYouTubeId = (url:string) => {
               )
               }
             
-                       {/*  tiene representante */}
-            {tieneRepresentantes && (
+          {/*  tiene representante */}
+            { perfil.tipo_perfil!=='productor' && perfil.tipo_perfil!=='representante' && (
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -422,6 +426,14 @@ const getYouTubeId = (url:string) => {
                   </div>
                 </div>
                 </div>
+
+                 <div className="text-center flex items-center justify-center pt-2">
+                    <button 
+                      onClick={()=> onBuscarRepresentante(perfil.id_perfil)}
+                    className="text-sm bg-blue-600/70  text-blue-300 hover:bg-blue-800/80 hover:text-blue-400  flex flex-row px-3 py-2 rounded-2xl">
+                        <MdSearch size={16}/> {esIntegrante ? 'Gestionar' : 'Buscar'} Representante
+                    </button>
+                  </div>
               </motion.div>
             )}
 
@@ -499,7 +511,7 @@ const getYouTubeId = (url:string) => {
             )}
 
             {/* Representados (solo para representantes) */}
-            {tieneRepresentados && (
+            {perfil.tipo_perfil=='representante' && (
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -538,7 +550,9 @@ const getYouTubeId = (url:string) => {
                   </div>
 
                   <div className="text-center pt-2 w-full flex items-center justify-center">
-                    <button className="px-4 py-2 bg-blue-500/70 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors flex flex-row items-center gap-2">
+                    <button
+                        onClick={()=> {onBuscarRepresentados(perfil.id_perfil); console.log(perfil.id_perfil)}}
+                     className="px-4 py-2 bg-blue-500/70 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors flex flex-row items-center gap-2">
                       <FaPlus size={24} className="text-blue-300"/> Buscar nuevo representado
                     </button>
                   </div>
@@ -681,6 +695,78 @@ const getYouTubeId = (url:string) => {
         
               </div>
             </motion.div>
+
+            {perfil.tipo_perfil === 'banda'  && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
+              >
+                <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+                  <div className="p-2 bg-purple-500/10 rounded-lg">
+                    <FaUserShield className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <span>Administradores externos</span>
+                </h2>
+
+                <div className="space-y-3">
+{perfil.tipo_perfil === 'banda' && (
+  <motion.div
+    initial={{ opacity: 0, x: -20 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ delay: 0.3 }}
+    className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5"
+  >
+    <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
+      <div className="p-2 bg-purple-500/10 rounded-lg">
+        <FaUserShield className="w-5 h-5 text-purple-400" />
+      </div>
+      <span>Administradores externos</span>
+    </h2>
+
+    <div className="space-y-3">
+      {Array.isArray(perfil.admin_externo_nombres) && perfil.admin_externo_nombres.length > 0 ? (
+        perfil.admin_externo_nombres.map((nombre, index) => (
+          <div
+            key={perfil.admin_externo_ids?.[index] || index}
+            className="flex items-center gap-3 p-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors"
+          >
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+              <FaUserShield className="w-5 h-5 text-purple-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-white font-medium">{nombre}</p>
+              {perfil.admin_externo_emails?.[index] && (
+                <p className="text-xs text-neutral-400">{perfil.admin_externo_emails[index]}</p>
+              )}
+            </div>
+            <div className="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs font-medium rounded-full">
+              Administrador
+            </div>
+          </div>
+        ))
+      ) : (
+        <p className="text-sm text-neutral-400 italic text-center py-2">
+          No hay administradores externos asignados
+        </p>
+      )}
+    </div>
+
+    {/* Botón para gestionar administradores */}
+    <div className="text-center pt-4 w-full flex items-center justify-center">
+      <button
+        onClick={() => onGestionarAdministradores(perfil.id_perfil)}
+        className="px-4 py-2 bg-blue-500/70 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors flex flex-row items-center gap-2"
+      >
+        <FaUserShield size={16} /> Gestionar administradores
+      </button>
+    </div>
+  </motion.div>
+)}
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {/* Columna derecha - IDs y coordenadas si no están en el mapa */}

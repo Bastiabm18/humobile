@@ -475,7 +475,7 @@ export async function updateRepresentativeProfile(profileId: string, data: any) 
 export const getProfiles = async (userId: string): Promise<PerfilConIntegrantes[]> => {
   const supabaseAdmin = getSupabaseAdmin();
   
-  const { data, error } = await supabaseAdmin.rpc('get_perfiles_con_integrantes_v3', {
+  const { data, error } = await supabaseAdmin.rpc('get_perfiles_con_integrantes_v4', {
     p_user_id: userId
   });
 
@@ -1731,6 +1731,332 @@ export async function eliminarIntegranteAction(id_integrante: string) {
   if (error) {
     console.error('Error eliminando integrante:', error);
     throw new Error('No se pudo eliminar al integrante');
+  }
+
+  return { success: true };
+}
+
+
+
+
+// ========== REPRESENTANTES ==========
+
+/**
+ * Obtiene representantes disponibles para que un perfil (artista/banda) pueda solicitar representación.
+ * Excluye aquellos con los que ya existe una relación (cualquier estado) en la tabla representado.
+ */
+export async function getRepresentantesPaginadosInvitacion(
+  idPerfil: string,
+  page: number = 0,
+  limit: number = 10,
+  search: string = ''
+) {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.rpc('buscar_representantes_para_invitacion', {
+    p_id_perfil: idPerfil,
+    p_search: search,
+    p_limit: limit,
+    p_offset: page * limit
+  });
+  if (error) {
+    console.error('Error cargando representantes para invitación:', error);
+    throw error;
+  }
+  const totalCount = data && data.length > 0 ? Number(data[0].total_count) : 0;
+  return {
+    data: data || [],
+    count: totalCount,
+    hasMore: (page * limit) + (data?.length || 0) < totalCount
+  };
+}
+
+/**
+ * Envía una solicitud de representación.
+ * Crea un registro en solicitud y otro en representado con estado 'pendiente'.
+ */
+export async function enviarSolicitudRepresentante(data: {
+  id_perfil: string;          // el perfil que solicita (artista/banda)
+  id_representante: string;
+  mensaje?: string;
+}) {
+  const supabase = getSupabaseAdmin();
+
+  // 1. Obtener el ID del tipo de solicitud 'representar' (debes tenerlo en tu DB)
+  const { data: tipoSolicitud, error: errTipo } = await supabase
+    .from('tipo_solicitud')
+    .select('id')
+    .eq('codigo', 'ser_representado')
+    .single();
+  if (errTipo || !tipoSolicitud) {
+    throw new Error('No se encontró el tipo de solicitud "representar"');
+  }
+
+  // 2. Crear la solicitud
+  const { data: solicitud, error: errSolicitud } = await supabase
+    .from('solicitud')
+    .insert({
+      tipo_solicitud_id: tipoSolicitud.id,
+      id_creador: data.id_perfil,
+      id_invitado: data.id_representante,
+      estado: 'pendiente',
+      fecha_expiracion: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), // 14 días
+      motivo_rechazo: null
+    })
+    .select()
+    .single();
+  if (errSolicitud) {
+    throw new Error('Error al crear la solicitud');
+  }
+
+  // 3. Crear el registro en representado con estado pendiente
+  const { error: errRepresentado } = await supabase
+    .from('representado')
+    .insert({
+      id_representante: data.id_representante,
+      id_representado: data.id_perfil,
+      estado_representacion: 'pendiente'
+    });
+  if (errRepresentado) {
+    throw new Error('Error al crear la relación de representado');
+  }
+
+  return { solicitud };
+}
+
+/**
+ * Obtiene los representantes activos (o pendientes) de un perfil.
+ */
+export async function getMisRepresentantesActivos(idPerfil: string) {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.rpc('get_mis_representantes_activos', {
+    p_id_perfil: idPerfil
+  });
+  if (error) throw error;
+  return { data: data || [] };
+}
+
+/**
+ * Elimina la relación de representado (abandonar representante).
+ * Recibe el ID de la fila en la tabla representado.
+ */
+export async function abandonarRepresentanteAction(idRepresentado: string) {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.rpc('abandonar_representante', {
+    p_id_representado: idRepresentado
+  });
+  if (error) throw error;
+  return { success: true };
+}
+
+
+// ========== REPRESENTADOS (para representantes) ==========
+
+export async function getPerfilesParaRepresentarPaginados(
+  idRepresentante: string,
+  page: number = 0,
+  limit: number = 10,
+  search: string = ''
+) {
+  if (!idRepresentante) {
+    throw new Error('ID de representante requerido');
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.rpc('buscar_perfiles_para_representar', {
+    p_id_representante: idRepresentante,
+    p_search: search,
+    p_limit: limit,
+    p_offset: page * limit
+  });
+
+  if (error) {
+    console.error('Error en buscar_perfiles_para_representar:', error);
+    throw new Error('Error al cargar perfiles: ' + error.message);
+  }
+
+  const totalCount = data && data.length > 0 ? Number(data[0].total_count) : 0;
+  
+  return {
+    data: data || [],
+    count: totalCount,
+    hasMore: (page * limit) + (data?.length || 0) < totalCount
+  };
+}
+
+export async function enviarSolicitudRepresentado(params: {
+  id_representante: string;
+  id_perfil: string;
+}) {
+  if (!params.id_representante || !params.id_perfil) {
+    throw new Error('Faltan datos requeridos');
+  }
+
+  const supabase = getSupabaseAdmin();
+
+  // 1. Obtener tipo de solicitud
+  const { data: tipoSolicitud, error: errTipo } = await supabase
+    .from('tipo_solicitud')
+    .select('id')
+    .eq('codigo', 'ser_representado')
+    .single();
+
+  if (errTipo || !tipoSolicitud) {
+    console.error('Error obteniendo tipo_solicitud:', errTipo);
+    throw new Error('No se encontró el tipo de solicitud "representar"');
+  }
+
+  // 2. Crear solicitud
+  const { data: solicitud, error: errSolicitud } = await supabase
+    .from('solicitud')
+    .insert({
+      tipo_solicitud_id: tipoSolicitud.id,
+      id_creador: params.id_representante,
+      id_invitado: params.id_perfil,
+      estado: 'pendiente',
+      fecha_expiracion: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+    })
+    .select()
+    .single();
+
+  if (errSolicitud) {
+    console.error('Error creando solicitud:', errSolicitud);
+    throw new Error('Error al crear la solicitud');
+  }
+
+  // 3. Crear relación en representado
+  const { error: errRepresentado } = await supabase
+    .from('representado')
+    .insert({
+      id_representante: params.id_representante,
+      id_representado: params.id_perfil,
+      estado_representacion: 'pendiente'
+    });
+
+  if (errRepresentado) {
+    console.error('Error creando representado:', errRepresentado);
+    throw new Error('Error al crear la relación de representado');
+  }
+
+  return { solicitud };
+}
+
+export async function getMisRepresentadosActivos(idRepresentante: string) {
+  if (!idRepresentante) {
+    throw new Error('ID de representante requerido');
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.rpc('get_mis_representados_activos', {
+    p_id_representante: idRepresentante
+  });
+
+  if (error) {
+    console.error('Error en get_mis_representados_activos:', error);
+    throw new Error('Error al cargar representados');
+  }
+
+  return { data: data || [] };
+}
+
+export async function abandonarRepresentadoAction(idRepresentado: string) {
+  if (!idRepresentado) {
+    throw new Error('ID de relación requerido');
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.rpc('abandonar_representado', {
+    p_id_representado: idRepresentado
+  });
+
+  if (error) {
+    console.error('Error en abandonar_representado:', error);
+    throw new Error('Error al abandonar representado');
+  }
+
+  return { success: true };
+}
+
+
+// ========== ADMINISTRADORES EXTERNOS DE BANDA ==========
+
+export async function getIntegrantesParaAdmin(
+  idBanda: string,
+  page: number = 0,
+  limit: number = 10,
+  search: string = ''
+) {
+  if (!idBanda) return { data: [], count: 0, hasMore: false };
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.rpc('obtener_integrantes_para_admin', {
+    p_id_banda: idBanda,
+    p_search: search,
+    p_limit: limit,
+    p_offset: page * limit
+  });
+
+  if (error) {
+    console.error('Error en obtener_integrantes_para_admin:', error);
+    throw new Error('Error al cargar integrantes');
+  }
+
+  const totalCount = data && data.length > 0 ? Number(data[0].total_count) : 0;
+  return {
+    data: data || [],
+    count: totalCount,
+    hasMore: (page * limit) + (data?.length || 0) < totalCount
+  };
+}
+
+export async function getAdministradoresBanda(idBanda: string) {
+  if (!idBanda) return { data: [] };
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.rpc('obtener_administradores_banda', {
+    p_id_banda: idBanda
+  });
+
+  if (error) {
+    console.error('Error en obtener_administradores_banda:', error);
+    throw new Error('Error al cargar administradores');
+  }
+
+  return { data: data || [] };
+}
+
+export async function agregarAdminExterno(params: {
+  usuario_id: string;
+  id_perfil_banda: string;
+}) {
+  if (!params.usuario_id || !params.id_perfil_banda) {
+    throw new Error('Faltan datos requeridos');
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.rpc('agregar_admin_externo', {
+    p_usuario_id: params.usuario_id,
+    p_id_perfil_banda: params.id_perfil_banda,
+    p_creado_por: null // o eliminar este parámetro de la RPC
+  });
+
+  if (error) {
+    console.error('Error en agregar_admin_externo:', error);
+    throw new Error('No se pudo agregar el administrador');
+  }
+
+  return { id: data };
+}
+export async function eliminarAdminExterno(idAdmin: string) {
+  if (!idAdmin) throw new Error('ID requerido');
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.rpc('eliminar_admin_externo', {
+    p_id_admin: idAdmin
+  });
+
+  if (error) {
+    console.error('Error en eliminar_admin_externo:', error);
+    throw new Error('No se pudo eliminar el administrador');
   }
 
   return { success: true };

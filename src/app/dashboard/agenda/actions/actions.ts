@@ -2245,3 +2245,7 @@ const supabaseAdmin = getSupabaseAdmin();
     throw new Error(error.message || 'Error al cargar integrantes del evento');
   }
 }
+
+
+
+
