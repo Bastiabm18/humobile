@@ -522,7 +522,11 @@ export const getProfiles = async (userId: string): Promise<PerfilConIntegrantes[
     bandas_ids:p.bandas_ids || [],
     bandas_nombres:p.bandas_nombres || [],
     id_categoria: p.id_categoria_perfil || null,
-    nombre_categoria_perfil: p.nombre_categoria_perfil || null
+    nombre_categoria_perfil: p.nombre_categoria_perfil || null,
+    admin_externo_ids:p.admin_externo_ids || [],
+    admin_externo_nombres:p.admin_externo_nombres || [],
+    admin_externo_emails:p.admin_externo_emails || [],
+
   }));
 
   return perfiles;

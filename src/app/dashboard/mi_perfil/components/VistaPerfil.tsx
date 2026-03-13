@@ -48,7 +48,7 @@ interface VistaPerfilProps {
 export default function VistaPerfil({ perfil, onBuscarBandas, onBuscarIntegrantes, onBuscarRepresentante,onBuscarRepresentados,onGestionarAdministradores}: VistaPerfilProps) {
   const [showFullMap, setShowFullMap] = useState(false);
  
-  console.log('Perfil en VistaPerfil:', perfil);
+  //console.log('Perfil en VistaPerfil:', perfil);
   const getTipoIcono = () => {
     switch (perfil.tipo_perfil) {
       case 'artista': return <FaUser className="w-6 h-6" />;
@@ -741,9 +741,7 @@ const getYouTubeId = (url:string) => {
                 <p className="text-xs text-neutral-400">{perfil.admin_externo_emails[index]}</p>
               )}
             </div>
-            <div className="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs font-medium rounded-full">
-              Administrador
-            </div>
+  
           </div>
         ))
       ) : (

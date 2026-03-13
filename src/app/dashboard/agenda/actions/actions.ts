@@ -1533,48 +1533,30 @@ export const getPerfilRepresentante = async (userId: string): Promise<Profile[]>
 
 export const getProfiles = async (userId: string): Promise<Profile[]> => {
   const supabaseAdmin = getSupabaseAdmin();
-  
-  // 1. Consulta única a la tabla perfil
-  const { data, error } = await supabaseAdmin
-    .from('perfil')
-    .select(`
-      *,
-      Pais(nombre_pais),
-      Region(nombre_region),
-      Comuna(nombre_comuna)
-    `)
-    .eq('usuario_id', userId)
-    .order('creado_en', { ascending: false });
 
-  // 2. Manejo de errores
-  if (error) {
-    console.error("Error fetching profiles:", error);
-    throw new Error(`Fallo al obtener perfiles: ${error.message}`);
-  }
+  const { data, error } = await supabaseAdmin.rpc('get_profiles_with_admin_bands', { p_user_id: userId });
 
-  if (!data) return [];
 
-  // 3. Mapear cada perfil según su tipo
-  const allProfiles: Profile[] = data.map((p: any) => {
-    // Datos base comunes
-    return {
-      id: p.id_perfil, 
-      tipo: p.tipo_perfil,
-      nombre: p.nombre,
-      email: p.email,
-      imagen_url: p.imagen_url,
-      video_url: p.video_url,
-      created_at: p.creado_en,
-      region_id: p.Region?.nombre_region,
-      pais_id: p.Pais?.nombre_pais,
-      ciudad_id: p.Comuna?.nombre_comuna,
-      perfil_visible: p.perfil_visible,
-    };
-  });
+    if (error) throw error;
+    if (!data) return [];
+
+  // 3. Mapear al tipo Profile
+  const allProfiles: Profile[] = data.map((p: any) => ({
+    id: p.id_perfil,
+    tipo: p.tipo_perfil,
+    nombre: p.nombre,
+    email: p.email,
+    imagen_url: p.imagen_url,
+    video_url: p.video_url,
+    created_at: p.creado_en,
+    region_id: p.Region?.nombre_region,
+    pais_id: p.Pais?.nombre_pais,
+    ciudad_id: p.Comuna?.nombre_comuna,
+    perfil_visible: p.perfil_visible,
+  }));
 
   return allProfiles;
 };
-
 export async function actualizarperfilVisible (id_perfil:string, perfil_visible:boolean){
 
   const supabase = getSupabaseAdmin();
