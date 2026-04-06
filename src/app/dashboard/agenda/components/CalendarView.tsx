@@ -9,7 +9,7 @@ import { HiChevronDown, HiCalendar, HiPlus, HiLockClosed, HiCog } from 'react-ic
 import { es } from 'date-fns/locale';
 import { FiCalendar, FiCheckCircle, FiClock, FiXCircle } from 'react-icons/fi';
 import { addHours } from 'date-fns';
-
+import { useRouter } from 'next/navigation';
 import BlockDateModal from './BlockDateModal';
 import CrearEventoModal from './CrearEventoModal';
 import { Profile } from '@/types/profile'; 
@@ -77,7 +77,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
   const [isButtonClick, setIsButtonClick] = useState(false);
 
   const [verModalInformativo, setVerModalInformativo] = useState(false);
-
+  const router = useRouter();
   
    const eventosRealesCount = events.filter(e => !e.es_bloqueo).length;
 const { activo } = usePermisos({});
@@ -266,50 +266,58 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
 
               {view == Views.MONTH && (
             <>
-                            <div className={`hidden md:flex gap-2 z-40 relative ${!puedeCrearEvento ? 'opacity-50 pointer-events-none' : ''}`}>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                 setIsButtonClick(true); 
-                                setSelectedEventDate(value);
-                                setCreateEventModalOpen(true);
-                              }}
-                              className="bg-green-600/70  hover:bg-green-700/80 text-green-100/80 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
-                              title="Agregar evento"
-                            >
-                              <HiPlus size={18} />
-                            </button>
-                            
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                 setIsButtonClick(true); 
-                                setBlockModalOpen(true);
-                                setBlockInitialDate(value);
-                              }}
-                              className="bg-red-600/70 hover:bg-red-800/80 text-red-100 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
-                              title="Bloquear día"
-                            >
-                              <HiLockClosed size={18} />
-                            </button>
+              <div className={`hidden md:flex gap-2 z-40 relative`}>
+                {/* Contenedor de botones (este se apaga) */}
+                <div className={`flex gap-2 ${!puedeCrearEvento ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setIsButtonClick(true); 
+                      setSelectedEventDate(value);
+                      setCreateEventModalOpen(true);
+                    }}
+                    className="bg-green-600/70 hover:bg-green-700/80 text-green-100/80 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
+                    title="Agregar evento"
+                  >
+                    <HiPlus size={18} />
+                  </button>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setIsButtonClick(true); 
+                      setBlockModalOpen(true);
+                      setBlockInitialDate(value);
+                    }}
+                    className="bg-red-600/70 hover:bg-red-800/80 text-red-100 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
+                    title="Bloquear día"
+                  >
+                    <HiLockClosed size={18} />
+                  </button>
+                </div>
 
-                            {/* Mensaje si no tiene permiso */}
-                            {!puedeCrearEvento && (
-                              <div className="absolute -bottom-1/2 left-1/2 transform -translate-x-1/2 z-50 bg-neutral-900/60 border border-neutral-700 rounded-lg p-3 shadow-xl whitespace-nowrap hover:bg-neutral-900/90 hover:transition-all hover:duration-200 hover:scale-105 cursor-pointer">
-                                <div className="flex items-center gap-2 text-yellow-400 font-medium text-xs flex-col">
-                             
-                                  <span className='text-center flex '>Mejora tu plan <br /> para gestionar Agenda</span>
-                                  <a href="/SerPremium" className="text-green-400 hover:text-green-300 text-sm font-medium flex-col items-center justify-center mt-2 inline-flex gap-1">
-                                  <FaCrown className='text-yellow-400'/>
-                                  </a>
-
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                </>
+                {/* Tooltip FUERA del contenedor apagado (este SI responde al clic) */}
+                {!puedeCrearEvento && (
+                  <div 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push('/SerPremium');
+                    }}
+                    className="absolute -bottom-1/2 left-1/2 transform -translate-x-1/2 z-[9999] bg-neutral-900/60 border border-neutral-700 rounded-lg p-3 shadow-xl whitespace-nowrap hover:bg-red-900/90 hover:scale-105 transition-all duration-200 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 text-yellow-400 font-medium text-xs flex-col">
+                      <span className='text-center flex '>Mejora tu plan <br /> para gestionar Agenda</span>
+                      <div className="flex items-center gap-1 mt-2">
+                        <FaCrown className='text-yellow-400'/>
+                        <span className="text-green-400 hover:text-green-300 text-sm font-medium">Mejoorar Plan</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
               )}
               
           </div>
