@@ -4,13 +4,14 @@
 import { useState, useEffect } from 'react';
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { FaCheckCircle, FaLock, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUser, FaEnvelope, FaLink, FaImage, FaChevronRight } from 'react-icons/fa';
+import { FaCheckCircle, FaLock, FaCalendarAlt,FaCrown, FaClock, FaMapMarkerAlt, FaUser, FaEnvelope, FaLink, FaImage, FaChevronRight } from 'react-icons/fa';
 import { HiCalendar, HiChevronRight, HiX } from 'react-icons/hi';
 import EventModal from './EventModal';
 import CrearEventoModal from './CrearEventoModal';
 import BlockDateModal from './BlockDateModal';
 import { getEventsByDiaYPerfilId } from '../actions/actions';
 import { EventoCalendario } from '@/types/profile';
+import { usePermisos } from '@/app/hooks/usePermisos';
 
 interface DayTimelineModalProps {
   profile: any;
@@ -31,7 +32,8 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
   const [showCrearEventoModal, setShowCrearEventoModal] = useState(false);
   const [showBloquearPeriodoModal, setShowBloquearPeriodoModal] = useState(false);
   const [newEventDate, setNewEventDate] = useState<Date | null>(null);
-
+  const { activo } = usePermisos({});
+  const puedeCrearEvento = activo('CREAR_EVENTO');
   useEffect(() => {
     if (isOpen && profile?.id) {
       fetchEventosParaElDia();
@@ -387,40 +389,54 @@ const formatTime = (dateInput: string | Date) => {
 
           {/* Footer */}
           <div className="sticky bottom-0 p-4 border-t border-neutral-700 bg-neutral-900">
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-400">
-                <span className="text-gray-300">
-                  {sortedEvents.filter(e => e.es_bloqueo).length > 0 && 
-                    `${sortedEvents.filter(e => e.es_bloqueo).length} bloqueos • `}
-                  {sortedEvents.filter(e => !e.es_bloqueo).length} eventos activos
-                </span>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={onClose}
-                  className="px-5 py-2.5 text-gray-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors font-medium"
-                >
-                  Cerrar
-                </button>
-                <button
-                  onClick={() => {
-                    setNewEventDate(date);
-                    console.log(date);
-                    setShowCrearEventoModal(true);
-                  }}
-                  className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
-                >
-                  Agregar Evento
-                </button>
-                <button
-                  onClick={() => {
-                    setNewEventDate(date);
-                    setShowBloquearPeriodoModal(true);
-                  }}
-                  className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
-                >
-                  Bloquear Periodo
-                </button>
+            <div className="flex flex-col gap-2">
+              {/* Mensaje si no tiene permiso */}
+              {!puedeCrearEvento && (
+                <div className="text-right text-xs text-yellow-400 flex items-center justify-end gap-1.5 pr-1">
+                  <FaCrown className="w-3 h-3" />
+                  <span>Mejora tu plan para gestionar agenda</span>
+                </div>
+              )}
+              
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-gray-400">
+                  <span className="text-gray-300">
+                    {sortedEvents.filter(e => e.es_bloqueo).length > 0 && 
+                      `${sortedEvents.filter(e => e.es_bloqueo).length} bloqueos • `}
+                    {sortedEvents.filter(e => !e.es_bloqueo).length} eventos activo (s)
+                  </span>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={onClose}
+                    className="px-5 py-2.5 text-gray-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors font-medium"
+                  >
+                    Cerrar
+                  </button>
+                  
+                  {/* Contenedor de botones que se bloquea */}
+                  <div className={`flex gap-3 ${!puedeCrearEvento ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <button
+                      onClick={() => {
+                        setNewEventDate(date);
+                        console.log(date);
+                        setShowCrearEventoModal(true);
+                      }}
+                      className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+                    >
+                      Agregar Evento
+                    </button>
+                    <button
+                      onClick={() => {
+                        setNewEventDate(date);
+                        setShowBloquearPeriodoModal(true);
+                      }}
+                      className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+                    >
+                      Bloquear Periodo
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { 
   FaCheck, FaEye, FaPlus, FaLock, FaSort, 
   FaSortUp, FaSortDown, FaMapMarkerAlt,
-  FaChevronLeft, FaChevronRight
+  FaChevronLeft, FaChevronRight,
+  FaCrown
 } from 'react-icons/fa';
 import { FaTrashCan } from 'react-icons/fa6';
 import { MdOutlineBlock } from 'react-icons/md';
@@ -16,6 +17,7 @@ import { EventoCalendario, Profile } from '@/types/profile';
 import { getEventosByPerfilParticipacion, aceptarSolicitud, rechazarSolicitud, eliminarEvento } from '../actions/actions';
 import EventModal from '../../agenda/components/EventModal';
 import RespuestaModal from './RespuestaModal';
+import { usePermisos } from '@/app/hooks/usePermisos';
 
 export default function EventosTable({ profile, onCreateEvent, onBlockDate }: { profile: Profile, onCreateEvent: () => void, onBlockDate: () => void }) {
   const [events, setEvents] = useState<any[]>([]);
@@ -30,6 +32,9 @@ export default function EventosTable({ profile, onCreateEvent, onBlockDate }: { 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [confirmState, setConfirmState] = useState<{type: 'accept'|'delete'|'reject'|null, event: any | null}>({ type: null, event: null });
   const [resModal, setResModal] = useState({ open: false, type: 'success' as 'success'|'error', title: '', msg: '' });
+
+  const { activo } = usePermisos({});
+  const puedeCrearEvento = activo('CREAR_EVENTO');
 
   useEffect(() => { 
     loadEvents(); 
@@ -92,10 +97,22 @@ export default function EventosTable({ profile, onCreateEvent, onBlockDate }: { 
             <h1 className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter italic">Mis eventos</h1>
             <p className="text-[10px] text-neutral-500 font-bold tracking-[0.3em] uppercase">{processed.total} Eventos Totales</p>
           </div>
-          <div className="flex w-full sm:w-auto gap-2">
-            <button onClick={onBlockDate} className="flex-1 sm:flex-none px-4 py-2 bg-neutral-900 border border-neutral-800 text-[10px] font-black rounded uppercase hover:border-red-500">Bloquear</button>
-            <button onClick={onCreateEvent} className="flex-1 sm:flex-none px-4 py-2 bg-sky-600 text-white text-[10px] font-black rounded uppercase">Nuevo Evento</button>
-          </div>
+          <div className="w-full sm:w-auto">
+            {/* Mensaje si no tiene permiso */}
+            {!puedeCrearEvento && (
+              <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-2 text-center mb-2">
+                <div className="flex items-center justify-center gap-2 text-yellow-400 font-medium text-[10px]">
+                  <FaCrown className="w-3 h-3" />
+                  <span>Tu plan no permite gestionar eventos</span>
+                </div>
+              </div>
+            )}
+  
+  <div className={`flex gap-2 ${!puedeCrearEvento ? 'opacity-50 pointer-events-none' : ''}`}>
+    <button onClick={onBlockDate} className="flex-1 sm:flex-none px-4 py-2 bg-neutral-900 border border-neutral-800 text-[10px] font-black rounded uppercase hover:border-red-500">Bloquear</button>
+    <button onClick={onCreateEvent} className="flex-1 sm:flex-none px-4 py-2 bg-sky-600 text-white text-[10px] font-black rounded uppercase">Nuevo Evento</button>
+  </div>
+</div>
         </header>
 
         {/* FILTROS */}

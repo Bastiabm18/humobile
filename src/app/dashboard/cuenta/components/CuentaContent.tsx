@@ -1,7 +1,7 @@
 // components/CuentaContent.tsx
 'use client';
 
-import { UserData } from '@/types/profile';
+import { PermisoUsuario, UserData } from '@/types/profile';
 import { motion } from 'framer-motion';
 import { get } from 'http';
 import { useEffect, useState } from 'react';
@@ -17,14 +17,15 @@ import Link from 'next/link';
 
 interface CuentaContentProps {
   userData: UserData;
+  usuarioPermisos: PermisoUsuario[] | null;
 }
 
-export default function CuentaContent({ userData }: CuentaContentProps) {
+export default function CuentaContent({ userData, usuarioPermisos }: CuentaContentProps) {
 
   const [userDataState, setUserDataState]= useState<UserData>(userData);
   const [esPremium, setEsPremium] = useState(false);
   const [modalRutAbierto, setModalRutAbierto] = useState(false);
-
+  //console.log('Permisos recibidos en CuentaContent:', usuarioPermisos);
   const abrirModalVerificarRut = () => {
     setModalRutAbierto(true);
   };
@@ -75,7 +76,7 @@ const handleGuardarRut = async (rut: string) => {
   cargarUserData();
   }, [userData]);
 
-  console.log("DEBUG CuentaContent userDataState:", userDataState);
+  //console.log("DEBUG CuentaContent userDataState:", userDataState);
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CL', {
       style: 'currency',

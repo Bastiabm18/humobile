@@ -1,7 +1,7 @@
 'use server'; 
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
-import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, CalendarEvent, EventoCalendario, ArtistaEnBanda, IntegranteBandaEvento } from '@/types/profile'; 
+import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, CalendarEvent, EventoCalendario, ArtistaEnBanda, IntegranteBandaEvento, PermisoUsuario } from '@/types/profile'; 
 import { pregunta_frecuente } from '@/types/externo';
 import { lugarMapa } from '@/types/mapa';
 // ===========================================
@@ -176,7 +176,7 @@ export async function getEventsByProfile(profileId: string, profileType: 'artist
         p_id_perfil: profileId,
       });
        if (error) {
-      console.error('❌ Error en la función PostgreSQL:', error);
+      console.error(' Error en la función PostgreSQL:', error);
       console.error('Detalles del error:', {
         code: error.code,
         message: error.message,
@@ -282,7 +282,7 @@ export async function getEventosMostrarPerfil(profileId: string, profileType: Pr
       });
 
     if (error) {
-      console.error('❌ Error en RPC obtener_eventos_calendario_confirmados:', error);
+      console.error(' Error en RPC obtener_eventos_calendario_confirmados:', error);
       throw new Error(`Error al obtener eventos: ${error.message}`);
     }
 
@@ -315,7 +315,7 @@ export async function getEventsPorEstado():Promise<CalendarEvent[]>{
     const { data:eventosDB, error } = await supabaseAdmin
       .rpc('obtener_eventos_confirmados');
        if (error) {
-      console.error('❌ Error en la función PostgreSQL:', error);
+      console.error(' Error en la función PostgreSQL:', error);
       console.error('Detalles del error:', {
         code: error.code,
         message: error.message,
@@ -576,6 +576,32 @@ export async function obtenerLugaresCercanos( latitud:number, longitud:number , 
       console.error('Error obteniendo lugares cercanos:', error);
     throw new Error('No se pudieron obtener los lugares cercanos');
   }
+
+
+}
+
+
+export async function getPermisosUser(id_membresia:number):Promise<PermisoUsuario[]>{
+
+const supabaseAdmin = getSupabaseAdmin();
+try {
+     const { data: permisos, error } = await supabaseAdmin
+    .rpc('get_permisos_usuario', {
+      p_id_membership: id_membresia
+    });
+  
+  if (error) {
+    console.error('Error en RPC get_permisos_usuario:', error);
+    throw error;
+  }
+
+  return permisos || [];
+
+  } catch (error) {
+    console.error('Error obteniendo permisos de usuario:', error);
+    throw new Error('No se pudieron obtener los permisos del usuario');
+  }
+
 
 
 }

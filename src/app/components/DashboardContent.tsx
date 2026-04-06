@@ -39,6 +39,7 @@ import { DiSpark } from 'react-icons/di';
 import { CgNotifications } from 'react-icons/cg';
 import { useRouter } from 'next/navigation';
 import { GrUserManager } from 'react-icons/gr';
+import { PermisoUsuario } from '@/types/profile';
 
 interface MenuItem {
   name: string;
@@ -61,6 +62,8 @@ interface DashboardContentProps {
 
     }
   
+   usuario_permisos?: PermisoUsuario[] | null; 
+  
 }
 
 // Iconos adicionales para cada item del menú
@@ -74,11 +77,11 @@ const additionalIcons = [
   <BiCubeAlt className="text-blue-400" key="cube4" />
 ];
 
-export default function DashboardContent({ userName, userRole, userMembresia }: DashboardContentProps) {
+export default function DashboardContent({ userName, userRole, userMembresia, usuario_permisos }: DashboardContentProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [activeItem, setActiveItem] = useState<string | null>(null);
   const [usuarioMembresia, setUsuarioMembresia] = useState<string | null>(null);
-
+  //console.log('Permisos en DashboardContent:', usuario_permisos);
   useEffect(() => {
     if (userMembresia) {
       setUsuarioMembresia(userMembresia.nombre_membresia);
@@ -133,7 +136,7 @@ const menuItems = MENU_ITEMS.filter(item => {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br  from-neutral-900 via-neutral-800 to-neutral-900 p-6 md:p-8">
-      {/* Background decorative elements */}
+      {/* Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-500/10 to-sky-500/10 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-cyan-500/10 to-blue-400/10 rounded-full blur-3xl"></div>
@@ -347,44 +350,7 @@ const menuItems = MENU_ITEMS.filter(item => {
           ))}
         </div>
 
-        {/* System Status Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-12 p-8 bg-gradient-to-r from-neutral-800/60 to-neutral-800/40 backdrop-blur-sm rounded-2xl border border-neutral-700/50"
-        >
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-500/20 to-sky-500/20 flex items-center justify-center"
-              >
-                <BsLightningFill className="text-2xl text-blue-500" />
-              </motion.div>
-              <div>
-                <h3 className="text-xl font-semibold text-white">
-                  Sistema en Tiempo Real
-                </h3>
-                <p className="text-neutral-400">
-                  Todas las funcionalidades operativas
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <div className="text-2xl font-bold text-white">100%</div>
-                <div className="text-sm text-neutral-400">Performance</div>
-              </div>
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500"
-              />
-            </div>
-          </div>
-        </motion.div>
+
 
         {/* Footer */}
         <motion.div

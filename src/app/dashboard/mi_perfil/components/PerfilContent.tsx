@@ -7,7 +7,7 @@ import { HiPlus, HiArrowLeft } from 'react-icons/hi';
 import GridPerfiles from './GridPerfiles';
 import VistaPerfil from './VistaPerfil';
 import { actualizarPerfil, crearPerfil, eliminarPerfil, getProfiles } from '../actions/actions';
-import { GeoData, Perfil } from '@/types/profile';
+import { GeoData, Perfil, PermisoUsuario } from '@/types/profile';
 import { FaUserPlus, FaGuitar, FaBuilding, FaMusic, FaBriefcase, FaPlus } from 'react-icons/fa';
 import { FaUser } from 'react-icons/fa6';
 import EditarPerfil from './EditarPerfil';
@@ -29,6 +29,7 @@ interface PerfilContentProps {
   userId: string;
   geoData: GeoData;
   membresia: string;
+  usuarioPermisos: PermisoUsuario[] | null;
 }
 
 export default function PerfilContent({
@@ -37,7 +38,8 @@ export default function PerfilContent({
   userName,
   userId,
   geoData,
-  membresia
+  membresia,
+  usuarioPermisos,
 }: PerfilContentProps) {
   const [perfiles, setPerfiles] = useState<Perfil[]>(initialProfiles);
   const [perfilVista, setPerfilVista] = useState<Perfil | null>(null);
@@ -45,7 +47,7 @@ export default function PerfilContent({
   const [creandoPerfil, setCreandoPerfil] = useState(false);
   const [membresiaEstado, setMembresiaEstado] = useState(membresia);
   const router = useRouter();
-
+ // console.log('PerfilContent - Permisos recibidos:', usuarioPermisos);
   // BUSCADOR 
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -358,6 +360,8 @@ const handleGestionarAdministradoresbanda = async (id_perfil: string) => {
             onCancel={() => setCreandoPerfil(false)}
             geoData={geoData}
             membresia={membresiaEstado}
+            usuarioPermisos={usuarioPermisos}
+            perfilesActuales={perfiles.length}
           />
         </div>
       </div>

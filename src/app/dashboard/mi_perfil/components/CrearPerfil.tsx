@@ -1,7 +1,7 @@
 // app/dashboard/mi_perfil/CrearPerfil.tsx
 'use client';
 
-import { categoria_perfil, Perfil, PerfilSelect } from '@/types/profile';
+import { categoria_perfil, Perfil, PerfilSelect, PermisoUsuario } from '@/types/profile';
 import { 
   FaBuilding,
   FaPhone,
@@ -20,7 +20,8 @@ import {
   FaTrash,
   FaPlus,
   FaBriefcase,
-  FaMapMarkerAlt
+  FaMapMarkerAlt,
+   FaExclamationTriangle
 } from 'react-icons/fa';
 import { FaCheck, FaCrown, FaUser as FaUserSolid } from 'react-icons/fa6';
 import { motion } from 'framer-motion';
@@ -31,18 +32,36 @@ import LocationPickerMap from './LocationPickerMap';
 import { GeoData } from '@/types/profile';
 import { getPerfilesArtistaVisibles,getPerfilesRepresentanteVisibles,getCategoriasPerfilActivas  } from '../actions/actions';
 import { useRouter } from 'next/navigation';
-
+import { usePermisos } from '@/app/hooks/usePermisos';
 interface CrearPerfilProps {
   userId: string;
   onSave: (nuevoPerfil: Omit<Perfil, 'id_perfil' | 'creado_en' | 'actualizado_en'>) => Promise<void>;
   onCancel: () => void;
   geoData?: GeoData;
   membresia: string;
+  usuarioPermisos: PermisoUsuario[] | null;
+    perfilesActuales: number;  
 }
 
 
 
-export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresia }: CrearPerfilProps) {
+export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresia, usuarioPermisos, perfilesActuales }: CrearPerfilProps) {
+
+const { puedeCrear, disponibles,limite } = usePermisos({
+  CREAR_PERFIL: perfilesActuales
+});
+
+// 2. EJECUTAS la función pasándole el string 'CREAR_PERFIL'
+const puedeCrearPerfil = puedeCrear('CREAR_PERFIL');
+const cuposDisponibles = disponibles('CREAR_PERFIL');
+const limiteTotal = limite('CREAR_PERFIL');
+const { activo } = usePermisos({});
+const esVisible = activo('PERFIL_VISIBLE');
+// 3. Ahora sí, esto te va a dar un true o false
+console.log('¿Puede crear perfil?', puedeCrearPerfil); 
+console.log('Cupos disponibles:', cuposDisponibles);
+console.log('¿El permiso de perfil visible está activo?', esVisible);
+
   // Estado inicial para un nuevo perfil
   const [formData, setFormData] = useState<Omit<Perfil, 'id_perfil' | 'creado_en' | 'actualizado_en'>>({
     usuario_id: userId,
@@ -614,207 +633,167 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
           )}
         </div>
 
-        {/* Contenido principal */}
+           {/* Contenido principal */}
         <div className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* 🆕 BANNER DE LÍMITE ALCANZADO */}
+          {!puedeCrearPerfil && (
+            <div className="mb-6 p-5 bg-gradient-to-r from-red-900/30 to-red-800/20 border border-red-500/30 rounded-xl">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-red-500/20 rounded-full">
+                    <FaExclamationTriangle className="w-6 h-6 text-red-400" />
+                  </div>
+                  <div>
+                    <p className="text-red-300 font-semibold text-base">
+                      Límite de perfiles alcanzado ({limiteTotal === Infinity ? 'Ilimitado' : limiteTotal})
+                    </p>
+                    <p className="text-red-400/80 text-sm mt-1">
+                      Tu plan actual te permite crear un máximo de {limiteTotal === Infinity ? 'ilimitados' : limiteTotal} perfiles. Elimina uno o mejora tu plan.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => router.push('/dashboard/serPremium')}
+                  className="px-5 py-2.5 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap shadow-lg"
+                >
+                  <FaCrown className="w-4 h-4" />
+                  Mejorar Plan
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 🆕 Se agrega opacity y pointer-events-none si no puede crear */}
+          <div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 transition-opacity duration-300 ${!puedeCrearPerfil ? 'opacity-50 pointer-events-none' : ''}`}>
             {/* Columna izquierda */}
             <div className="space-y-6">
               {/* Tipo de Perfil */}
               <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
                 <h2 className="text-xl font-semibold text-white mb-5">Tipo de Perfil</h2>
-     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
-  {tiposPerfil.map((tipo) => {
-    // Verificar si este tipo requiere PREMIUM para usuarios no PREMIUM
-    const requierePremium = membresia !== 'PREMIUM' && 
-      (tipo.id === 'productor' || tipo.id === 'representante');
-    const estaSeleccionado = formData.tipo_perfil === tipo.id;
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
+                  {tiposPerfil.map((tipo) => {
+                    const requierePremium = membresia !== 'PREMIUM' && 
+                      (tipo.id === 'productor' || tipo.id === 'representante');
+                    const estaSeleccionado = formData.tipo_perfil === tipo.id;
 
-    return (
-      <button
-        key={tipo.id}
-        type="button"
-        onClick={() => {
-          if (!requierePremium) {
-            handleTipoPerfilChange(tipo.id as Perfil['tipo_perfil']);
-          }
-        }}
-        disabled={requierePremium}
-        className={`
-          flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl border-2 transition-all
-          relative group
-          ${estaSeleccionado 
-            ? `${tipo.color.replace('bg-', '')}/20 text-white border-${tipo.color.replace('bg-', '')}/50 bg-${tipo.color.replace('bg-', '')}/10` 
-            : 'bg-neutral-800/50 text-neutral-400 border-neutral-700'
-          }
-          ${!estaSeleccionado && !requierePremium ? 'hover:border-neutral-600 hover:text-neutral-300' : ''}
-          ${requierePremium ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}
-        `}
-      >
-        {/* Badge PREMIUM para tipos que lo requieren */}
-        {requierePremium && (
-          <div className="absolute -top-2 -right-2 z-10">
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-yellow-500/90 text-yellow-100 border border-yellow-500 shadow-lg">
-              <FaCrown className="w-3 h-3 mr-1" />
-              PREMIUM
-            </span>
-          </div>
-        )}
+                    return (
+                      <button
+                        key={tipo.id}
+                        type="button"
+                        onClick={() => {
+                          if (!requierePremium) {
+                            handleTipoPerfilChange(tipo.id as Perfil['tipo_perfil']);
+                          }
+                        }}
+                        disabled={requierePremium}
+                        className={`
+                          flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl border-2 transition-all
+                          relative group
+                          ${estaSeleccionado 
+                            ? `${tipo.color.replace('bg-', '')}/20 text-white border-${tipo.color.replace('bg-', '')}/50 bg-${tipo.color.replace('bg-', '')}/10` 
+                            : 'bg-neutral-800/50 text-neutral-400 border-neutral-700'
+                          }
+                          ${!estaSeleccionado && !requierePremium ? 'hover:border-neutral-600 hover:text-neutral-300' : ''}
+                          ${requierePremium ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}
+                        `}
+                      >
+                        {requierePremium && (
+                          <div className="absolute -top-2 -right-2 z-10">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-yellow-500/90 text-yellow-100 border border-yellow-500 shadow-lg">
+                              <FaCrown className="w-3 h-3 mr-1" />
+                              PREMIUM
+                            </span>
+                          </div>
+                        )}
+                        <div className={`text-xl sm:text-2xl mb-1 sm:mb-2 transition-transform ${requierePremium ? '' : 'group-hover:scale-110'}`}>
+                          {tipo.icon}
+                        </div>
+                        <span className="text-[5px] sm:text-[8px] font-medium text-center leading-tight">{tipo.label}</span>
+                        
+                        {requierePremium && (
+                          <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 hidden group-hover:block z-20">
+                            <div className="bg-neutral-900 border border-neutral-700 rounded-lg p-3 shadow-xl whitespace-nowrap">
+                              <div className="flex items-center gap-2 text-yellow-400 font-medium">
+                                <FaCrown className="w-3 h-3" />
+                                <span className="text-xs">Requiere cuenta PREMIUM</span>
+                              </div>
+                              <div className="text-xs text-neutral-300 mt-1">Actualiza tu plan para desbloquear</div>
+                            </div>
+                            <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                              <div className="w-3 h-3 bg-neutral-900 border-l border-t border-neutral-700 rotate-45"></div>
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
 
-        <div className={`
-          text-xl sm:text-2xl mb-1 sm:mb-2 transition-transform
-          ${requierePremium ? '' : 'group-hover:scale-110'}
-        `}>
-          {tipo.icon}
-        </div>
-        
-        <span className="text-[5px] sm:text-[8px] font-medium text-center leading-tight">
-          {tipo.label}
-        </span>
-        
-        {/* Tooltip para tipos PREMIUM */}
-        {requierePremium && (
-          <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 hidden group-hover:block z-20">
-            <div className="bg-neutral-900 border border-neutral-700 rounded-lg p-3 shadow-xl whitespace-nowrap">
-              <div className="flex items-center gap-2 text-yellow-400 font-medium">
-                <FaCrown className="w-3 h-3" />
-                <span className="text-xs">Requiere cuenta PREMIUM</span>
-              </div>
-              <div className="text-xs text-neutral-300 mt-1">
-                Actualiza tu plan para desbloquear
-              </div>
-            </div>
-            {/* Flecha del tooltip */}
-            <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
-              <div className="w-3 h-3 bg-neutral-900 border-l border-t border-neutral-700 rotate-45"></div>
-            </div>
-          </div>
-        )}
-      </button>
-    );
-  })}
-
-  {/* Mensaje informativo debajo de los botones */}
-  {membresia !== 'PREMIUM' && (
-    <div className="col-span-2 sm:col-span-3 md:col-span-5 p-4 bg-gradient-to-r from-yellow-500/10 to-yellow-500/5 border border-yellow-500/20 rounded-xl mt-2">
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-        <div className="p-2 bg-yellow-500/20 rounded-lg">
-          <FaCrown className="w-5 h-5 text-yellow-400" />
-        </div>
-        <div className="text-center sm:text-left">
-          <p className="text-yellow-400 font-medium text-sm">
-            Actualiza a PREMIUM para desbloquear todos los tipos de perfil
-          </p>
-          <p className="text-neutral-400 text-xs mt-1">
-            Los perfiles de Productor y Representante están disponibles solo para usuarios PREMIUM
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-           router.push('/dashboard/membresia');
-          }}
-          className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap"
-        >
-          <FaCrown className="w-4 h-4" />
-          Actualizar Plan
-        </button>
-      </div>
-    </div>
-  )}
-</div>
-                <div className={`
-                  mt-4 inline-flex items-center gap-2 px-4 py-2
-                  ${getTipoColor()}
-                  rounded-full text-sm font-semibold backdrop-blur-sm
-                `}>
+                  {membresia !== 'PREMIUM' && (
+                    <div className="col-span-2 sm:col-span-3 md:col-span-5 p-4 bg-gradient-to-r from-yellow-500/10 to-yellow-500/5 border border-yellow-500/20 rounded-xl mt-2">
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <div className="p-2 bg-yellow-500/20 rounded-lg"><FaCrown className="w-5 h-5 text-yellow-400" /></div>
+                        <div className="text-center sm:text-left">
+                          <p className="text-yellow-400 font-medium text-sm">Actualiza a PREMIUM para desbloquear todos los tipos de perfil</p>
+                          <p className="text-neutral-400 text-xs mt-1">Los perfiles de Productor y Representante están disponibles solo para usuarios PREMIUM</p>
+                        </div>
+                        <button type="button" onClick={() => router.push('/dashboard/membresia')} className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap">
+                          <FaCrown className="w-4 h-4" /> Actualizar Plan
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className={`mt-4 inline-flex items-center gap-2 px-4 py-2 ${getTipoColor()} rounded-full text-sm font-semibold backdrop-blur-sm`}>
                   {formData.tipo_perfil === 'artista' ? <FaUserSolid className="w-4 h-4" /> :
                    formData.tipo_perfil === 'banda' ? <FaUsers className="w-4 h-4" /> :
                    formData.tipo_perfil === 'local' ? <FaBuilding className="w-4 h-4" /> :
                    formData.tipo_perfil === 'productor' ? <FaHeadphones className="w-4 h-4" /> :
                    <FaBriefcase className="w-4 h-4" />}
-                  <span className="capitalize">
-                    {tiposPerfil.find(t => t.id === formData.tipo_perfil)?.label}
-                  </span>
+                  <span className="capitalize">{tiposPerfil.find(t => t.id === formData.tipo_perfil)?.label}</span>
                 </div>
               </div>
 
-            {/* Campos categoria del perfil  */}
               {(formData.tipo_perfil !== 'representante' && formData.tipo_perfil !== 'productor') && (
                 <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
-                  <h2 className="text-xl font-semibold text-white mb-5">
-                    categoria del perfil
-                  </h2>
+                  <h2 className="text-xl font-semibold text-white mb-5">categoria del perfil</h2>
                   {renderCamposcategoria()}
                 </div>
               )}
 
-              {/* Campos adicionales según tipo */}
               {(formData.tipo_perfil === 'banda' || formData.tipo_perfil === 'representante') && (
                 <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
-                  <h2 className="text-xl font-semibold text-white mb-5">
-                    {formData.tipo_perfil === 'banda' ? 'Integrantes' : 'Artistas Representados'}
-                  </h2>
+                  <h2 className="text-xl font-semibold text-white mb-5">{formData.tipo_perfil === 'banda' ? 'Integrantes' : 'Artistas Representados'}</h2>
                   {renderCamposAdicionales()}
                 </div>
               )}
 
-
-
               {/* Contacto */}
               <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
                 <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
-                  <div className="p-2 bg-blue-500/10 rounded-lg">
-                    <FaPhone className="w-5 h-5 text-blue-400" />
-                  </div>
+                  <div className="p-2 bg-blue-500/10 rounded-lg"><FaPhone className="w-5 h-5 text-blue-400" /></div>
                   <span>Contacto</span>
                 </h2>
-                
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-neutral-400 mb-2">Teléfono</label>
-                    <input
-                      type="text"
-                      value={formData.telefono_contacto || ''}
-                      onChange={(e) => setFormData({...formData, telefono_contacto: e.target.value})}
-                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                      placeholder="Ingresa teléfono"
-                    />
+                    <input type="text" value={formData.telefono_contacto || ''} onChange={(e) => setFormData({...formData, telefono_contacto: e.target.value})} className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-blue-500" placeholder="Ingresa teléfono" />
                   </div>
-                  
                   <div>
                     <label className="block text-sm font-medium text-neutral-400 mb-2">Email</label>
-                    <input
-                      type="email"
-                      value={formData.email || ''}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                      placeholder="Ingresa email"
-                    />
+                    <input type="email" value={formData.email || ''} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-blue-500" placeholder="Ingresa email" />
                   </div>
-
-                  {/* Visibilidad */}
                   <div className="pt-4 border-t border-neutral-700/50">
                     <label className="flex items-center gap-3 cursor-pointer">
-                      <div className={`
-                        relative inline-flex items-center h-6 rounded-full w-11
-                        ${formData.perfil_visible ? 'bg-green-500' : 'bg-neutral-700'}
-                        transition-colors
-                      `}>
-                        <span className={`
-                          inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-                          ${formData.perfil_visible ? 'translate-x-6' : 'translate-x-1'}
-                        `} />
+                      <div className={`relative inline-flex items-center h-6 rounded-full w-11 ${formData.perfil_visible ? 'bg-green-500' : 'bg-neutral-700'} transition-colors`}>
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.perfil_visible ? 'translate-x-6' : 'translate-x-1'}`} />
                       </div>
                       <div className="flex items-center gap-2">
                         {formData.perfil_visible ? <FaEye /> : <FaEyeSlash />}
                         <span className="text-neutral-300">Perfil visible públicamente</span>
                       </div>
-                      <input
-                        type="checkbox"
-                        checked={formData.perfil_visible}
-                        onChange={(e) => setFormData({...formData, perfil_visible: e.target.checked})}
-                        className="hidden"
-                      />
+                      <input type="checkbox" checked={formData.perfil_visible} onChange={(e) => setFormData({...formData, perfil_visible: e.target.checked})} className="hidden" />
                     </label>
                   </div>
                 </div>
@@ -826,67 +805,29 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
               {/* Ubicación Geográfica */}
               <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
                 <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
-                  <div className="p-2 bg-purple-500/10 rounded-lg">
-                    <FiGlobe className="w-5 h-5 text-purple-400" />
-                  </div>
+                  <div className="p-2 bg-purple-500/10 rounded-lg"><FiGlobe className="w-5 h-5 text-purple-400" /></div>
                   <span>Ubicación Geográfica *</span>
                 </h2>
-                
                 <div className="space-y-4">
-                  {/* País */}
                   <div>
                     <label className="block text-sm font-medium text-neutral-400 mb-2">País *</label>
-                    <select
-                      value={formData.id_pais || ''}
-                      onChange={(e) => handlePaisChange(e.target.value)}
-                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                      disabled={!geoData}
-                      required
-                    >
+                    <select value={formData.id_pais || ''} onChange={(e) => handlePaisChange(e.target.value)} className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-purple-500" disabled={!geoData} required>
                       <option value="">Seleccionar país</option>
-                      {geoData?.paises.map(pais => (
-                        <option key={pais.id} value={pais.id}>
-                          {pais.name}
-                        </option>
-                      ))}
+                      {geoData?.paises.map(pais => (<option key={pais.id} value={pais.id}>{pais.name}</option>))}
                     </select>
                   </div>
-
-                  {/* Región */}
                   <div>
                     <label className="block text-sm font-medium text-neutral-400 mb-2">Región *</label>
-                    <select
-                      value={formData.id_region || ''}
-                      onChange={(e) => handleRegionChange(e.target.value)}
-                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                      disabled={!formData.id_pais || filteredRegiones.length === 0}
-                      required
-                    >
+                    <select value={formData.id_region || ''} onChange={(e) => handleRegionChange(e.target.value)} className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-purple-500" disabled={!formData.id_pais || filteredRegiones.length === 0} required>
                       <option value="">Seleccionar región</option>
-                      {filteredRegiones.map(region => (
-                        <option key={region.id} value={region.id}>
-                          {region.name}
-                        </option>
-                      ))}
+                      {filteredRegiones.map(region => (<option key={region.id} value={region.id}>{region.name}</option>))}
                     </select>
                   </div>
-
-                  {/* Comuna */}
                   <div>
                     <label className="block text-sm font-medium text-neutral-400 mb-2">Comuna *</label>
-                    <select
-                      value={formData.id_comuna || ''}
-                      onChange={(e) => handleComunaChange(e.target.value)}
-                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                      disabled={!formData.id_region || filteredComunas.length === 0}
-                      required
-                    >
+                    <select value={formData.id_comuna || ''} onChange={(e) => handleComunaChange(e.target.value)} className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-purple-500" disabled={!formData.id_region || filteredComunas.length === 0} required>
                       <option value="">Seleccionar comuna</option>
-                      {filteredComunas.map(comuna => (
-                        <option key={comuna.id} value={comuna.id}>
-                          {comuna.name}
-                        </option>
-                      ))}
+                      {filteredComunas.map(comuna => (<option key={comuna.id} value={comuna.id}>{comuna.name}</option>))}
                     </select>
                   </div>
                 </div>
@@ -895,62 +836,24 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
               {/* Dirección y Coordenadas */}
               <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
                 <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
-                  <div className="p-2 bg-green-500/10 rounded-lg">
-                    <FaMapMarkerAlt className="w-5 h-5 text-green-400" />
-                  </div>
+                  <div className="p-2 bg-green-500/10 rounded-lg"><FaMapMarkerAlt className="w-5 h-5 text-green-400" /></div>
                   <span>Dirección y Coordenadas</span>
                 </h2>
-                
                 <div className="space-y-4">
-                  {/* Dirección */}
                   <div>
                     <label className="block text-sm font-medium text-neutral-400 mb-2">Dirección</label>
-                    <textarea
-                      value={formData.direccion || ''}
-                      onChange={(e) => setFormData({...formData, direccion: e.target.value})}
-                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500"
-                      placeholder="Ingresa dirección completa"
-                      rows={3}
-                    />
+                    <textarea value={formData.direccion || ''} onChange={(e) => setFormData({...formData, direccion: e.target.value})} className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500" placeholder="Ingresa dirección completa" rows={3} />
                   </div>
-
-                  {/* Coordenadas */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <label hidden className="text-sm font-medium text-neutral-400">Coordenadas</label>
-                      <button
-                        type="button"
-                        onClick={() => setShowMapModal(true)}
-                        className="px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white text-sm rounded-lg flex items-center gap-2"
-                      >
-                        <FaMap className="w-3 h-3" />
-                        Seleccionar en mapa
+                      <button type="button" onClick={() => setShowMapModal(true)} className="px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white text-sm rounded-lg flex items-center gap-2">
+                        <FaMap className="w-3 h-3" /> Seleccionar en mapa
                       </button>
                     </div>
-                    
                     <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <input
-                        hidden
-                          type="number"
-                          step="any"
-                          value={formData.lat || ''}
-                          onChange={(e) => setFormData({...formData, lat: parseFloat(e.target.value) || null})}
-                          className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-sky-500"
-                          placeholder="Latitud"
-                        />
-                      </div>
-                      <div>
-                        <input
-                        hidden
-                          type="number"
-                          step="any"
-                          value={formData.lon || ''}
-                          onChange={(e) => setFormData({...formData, lon: parseFloat(e.target.value) || null})}
-                          className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-sky-500"
-                          placeholder="Longitud"
-                        />
-                      </div>
+                      <div><input hidden type="number" step="any" value={formData.lat || ''} onChange={(e) => setFormData({...formData, lat: parseFloat(e.target.value) || null})} className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-sky-500" placeholder="Latitud" /></div>
+                      <div><input hidden type="number" step="any" value={formData.lon || ''} onChange={(e) => setFormData({...formData, lon: parseFloat(e.target.value) || null})} className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-sky-500" placeholder="Longitud" /></div>
                     </div>
                   </div>
                 </div>
@@ -959,50 +862,35 @@ export default function CrearPerfil({ userId, onSave, onCancel, geoData,membresi
               {/* Video */}
               <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
                 <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-3">
-                  <div className="p-2 bg-red-500/10 rounded-lg">
-                    <FaVideo className="w-5 h-5 text-red-400" />
-                  </div>
+                  <div className="p-2 bg-red-500/10 rounded-lg"><FaVideo className="w-5 h-5 text-red-400" /></div>
                   <span>Video</span>
                 </h2>
                 <div className="space-y-3">
-                  <input
-                    type="url"
-                    value={tempVideoUrl}
-                    onChange={(e) => setTempVideoUrl(e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-red-500"
-                    placeholder="URL del video (Solo YouTube)"
-                  />
+                  <input type="url" value={tempVideoUrl} onChange={(e) => setTempVideoUrl(e.target.value)} className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-red-500" placeholder="URL del video (Solo YouTube)" />
                 </div>
               </div>
             </div>
-          </div>
+          </div> {/* 🆕 Cierre del grid con la clase dinámica */}
 
           {/* Botones de acción */}
           <div className="mt-8 pt-8 border-t border-neutral-700/50 flex justify-end gap-4">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="px-6 py-3 bg-neutral-700 hover:bg-neutral-600 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
-            >
-              <FiX className="w-4 h-4" />
-              Cancelar
+            <button type="button" onClick={onCancel} className="px-6 py-3 bg-neutral-700 hover:bg-neutral-600 text-white font-medium rounded-lg transition-colors flex items-center gap-2">
+              <FiX className="w-4 h-4" /> Cancelar
             </button>
             <button
               type="button"
               onClick={handleSave}
-              className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
-              disabled={uploading}
+              className={`px-6 py-3 font-medium rounded-lg transition-colors flex items-center gap-2 ${
+                !puedeCrearPerfil 
+                  ? 'bg-neutral-600/50 text-neutral-500 cursor-not-allowed' 
+                  : 'bg-green-600 hover:bg-green-700 text-white'
+              }`}
+              disabled={uploading || !puedeCrearPerfil} // 🆕 SE BLOQUEA SI ALCANZA LÍMITE
             >
               {uploading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Creando...
-                </>
+                <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> Creando...</>
               ) : (
-                <>
-                  <FaSave className="w-4 h-4" />
-                  Crear Perfil
-                </>
+                <><FaSave className="w-4 h-4" /> Crear Perfil</>
               )}
             </button>
           </div>

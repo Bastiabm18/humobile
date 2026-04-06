@@ -10,6 +10,8 @@ import { FiUploadCloud, FiX, FiTrash2 } from 'react-icons/fi';
 import RespuestaModal from './RespuestaModal';
 import { categoriaEvento, EventoGuardar, ParticipanteEvento, Profile } from '@/types/profile';
 import { FaCheck } from 'react-icons/fa6';
+import { usePermisos } from '@/app/hooks/usePermisos';
+import { FaCrown } from 'react-icons/fa';
 
 // Interfaces
 
@@ -30,6 +32,9 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate,
   const supabase = getSupabaseBrowser();
  // console.log('crear eventos en fecha:' ,selectedDate, 'hasta: ',selectedEndDate);
   // ========== ESTADOS DEL FORMULARIO ==========
+    const { activo } = usePermisos({});
+  // OJO: Usa 'AGREGAR_PARTICIPAMNTES' tal cual está en tu base de datos
+  const puedeAgregarParticipantes = activo('AGREGAR_PARTICIPANTES');
   const [form, setForm] = useState<EventoGuardar>({
     titulo: '',
     descripcion: '',
@@ -583,6 +588,8 @@ const endDateTime = form.fecha_hora_fin ? new Date(form.fecha_hora_fin + 'Z') : 
           </div>
 
               {/* Participantes */}
+         {puedeAgregarParticipantes && (
+          
               <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
                 <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
                   <HiUserGroup size={16} /> Participantes
@@ -637,6 +644,16 @@ const endDateTime = form.fecha_hora_fin ? new Date(form.fecha_hora_fin + 'Z') : 
                   )}
                 </div>
               </div>
+                )}
+                   {/* Mensaje si no tiene permiso */}
+              {!puedeAgregarParticipantes && (
+                <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-3 text-center">
+                  <p className="text-yellow-400 text-xs font-medium">Tu plan no permite agregar participantes a eventos.</p>
+                   <a href="/SerPremium" className="text-green-400 hover:text-green-300 text-sm font-medium flex-col items-center justify-center mt-2 inline-flex gap-1">
+                    Actualizar plan <FaCrown className='text-yellow-400'/>
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Columna 3: Información adicional */}

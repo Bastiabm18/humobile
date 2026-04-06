@@ -11,12 +11,13 @@ import { BiUserX } from 'react-icons/bi';
 import { FaArrowLeft } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import NeonSign from '@/app/components/NeonSign';
-import { Profile } from '@/types/profile';
+import { PermisoUsuario, Profile } from '@/types/profile';
 
 interface AgendaContentProps {
   initialProfiles: Profile[];
   userId: string;
   userName?: string;   
+  usuarioPermisos?: PermisoUsuario[] | null; // Aseguramos que puede ser un array de permisos o null
 }
 
 
@@ -24,7 +25,8 @@ interface AgendaContentProps {
 export default function AgendaContent({ 
   initialProfiles, 
   userId, 
-  userName 
+  userName,
+  usuarioPermisos 
 }: AgendaContentProps) {
   const [profiles, setProfiles] = useState(initialProfiles);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
@@ -33,7 +35,8 @@ export default function AgendaContent({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
 
-  console.log('Initial Profiles:', selectedProfile);
+  //console.log('Initial Profiles:', selectedProfile);
+  console.log('Usuario Permisos:', usuarioPermisos);
   const loadProfiles = async () => {
     const data = await getProfiles(userId);
   //  setProfiles(data);

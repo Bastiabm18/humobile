@@ -4,9 +4,11 @@ import { cookies } from 'next/headers';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import { getProfiles } from './actions/actions';
 import SolicitudesContent from './components/SolicitudesContent';
+import { getPermisosUser } from '@/app/actions/actions';
 
 export default async function AgendaPage() {
   let userData = null;
+  let permisosUsuario = null;
 
   try {
     const cookieStore = await cookies();
@@ -25,6 +27,20 @@ export default async function AgendaPage() {
     const data = await res.json();
     userData = data.user;
 
+       try{
+                          const permisos = await getPermisosUser(userData.membresia.id)
+                  
+                          if(permisos){
+                  
+                            permisosUsuario = permisos;
+                        //   console.log('Permisos obtenidos:', permisosUsuario);
+                          }
+                  
+                        }catch(error){
+                          console.error('Error al obtener permisos:', error);
+                        }
+          
+
   } catch (error) {
     redirect('/login');
   }
@@ -39,7 +55,7 @@ export default async function AgendaPage() {
       userRole={userData.role}
       userMembresia={userData.membresia}
       >
-      <SolicitudesContent initialProfiles={profiles} userId={userData.id} userName={userData.name} />
+      <SolicitudesContent initialProfiles={profiles} userId={userData.id} userName={userData.name}  usuarioPermisos={permisosUsuario}/>
     </DashboardLayout>
   );
 }

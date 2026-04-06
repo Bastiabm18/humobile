@@ -18,7 +18,7 @@ import {
   HiMail,
 } from "react-icons/hi";
 import { useState, useEffect } from "react";
-import { Profile, SolicitudRespuesta } from "@/types/profile";
+import { PermisoUsuario, Profile, SolicitudRespuesta } from "@/types/profile";
 import SolicitudesTabla from "./SolicitudesTabla";
 import { aceptarSolicitud, getSolicitudesByPerfil, rechazarSolicitud } from "../actions/actions";
 import { BiUserX } from "react-icons/bi";
@@ -33,12 +33,13 @@ interface Props {
   initialProfiles: Profile[];
   userId: string;
   userName: string;
+  usuarioPermisos?: PermisoUsuario[] | null;
 }
 
 
 
 // COMPONENTE PRINCIPAL
-export default function SolicitudesContent({ initialProfiles, userId, userName }: Props) {
+export default function SolicitudesContent({ initialProfiles, userId, userName, usuarioPermisos }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState<SolicitudRespuesta | null>(null);
   const [solicitudes, setSolicitudes] = useState<SolicitudRespuesta[]>([]);
@@ -46,7 +47,7 @@ export default function SolicitudesContent({ initialProfiles, userId, userName }
   const [profiles, setProfiles] = useState(initialProfiles);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [estado_solicitud, SetEstadoSolicitud] = useState('');
-
+  //console.log('usuarioPermisos en SolicitudesContent →', usuarioPermisos);
   const perfilId = selectedProfile ? selectedProfile.id : '';
 
   useEffect(() => {

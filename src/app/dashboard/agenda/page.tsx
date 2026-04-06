@@ -6,9 +6,11 @@ import AgendaContent from './components/AgendaContent';
 import { getProfiles } from './actions/actions';
 import { getAuthUser } from '@/lib/auth/auth-service';
 import { UsuarioData } from '@/types/profile';
+import { getPermisosUser } from '@/app/actions/actions';
 
 export default async function AgendaPage() {
   let userData = null;
+  let permisosUsuario = null;
 
   try {
     const cookieStore = await cookies();
@@ -26,6 +28,18 @@ export default async function AgendaPage() {
     if (!res.ok) throw new Error('No session');
     const data = await res.json();
     userData = data.user;
+       try{
+                const permisos = await getPermisosUser(userData.membresia.id)
+        
+                if(permisos){
+        
+                  permisosUsuario = permisos;
+              //   console.log('Permisos obtenidos:', permisosUsuario);
+                }
+        
+              }catch(error){
+                console.error('Error al obtener permisos:', error);
+              }
 
   } catch (error) {
     redirect('/login');
@@ -40,7 +54,7 @@ export default async function AgendaPage() {
    redirect('/login');
  }
 
- console.log('Perfil Dashboard →', perfilDashboard);
+ //console.log('Perfil Dashboard →', perfilDashboard);
     
   return (
     <DashboardLayout
@@ -49,7 +63,7 @@ export default async function AgendaPage() {
      userRole={userData.role}
      userMembresia={userData.membresia}
      >
-      <AgendaContent initialProfiles={profiles} userId={userData.id} userName={userData.name} />
+      <AgendaContent initialProfiles={profiles} userId={userData.id} userName={userData.name} usuarioPermisos={permisosUsuario} />
     </DashboardLayout>
   );
 }

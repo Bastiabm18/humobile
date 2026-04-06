@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { getProfiles } from '../actions/actions';
-import { Profile } from '@/types/profile';
+import { PermisoUsuario, Profile } from '@/types/profile';
 import CalendarView from './CalendarView';
 import { BsCalendar3 } from 'react-icons/bs';
 import { FaArrowCircleLeft, FaArrowLeft } from 'react-icons/fa';
@@ -19,32 +19,38 @@ import {
   FaGlobeAmericas, 
   FaMapMarkerAlt, 
   FaCity, 
-  FaHome 
+  FaHome,
+  FaCrown
 } from 'react-icons/fa';
 import { HiMail, HiPhone } from 'react-icons/hi';
 import SimpleToggle from './SimpleToggle';
+import { usePermisos } from '@/app/hooks/usePermisos';
 
 interface AgendaContentProps {
   initialProfiles: Profile[];
   userId: string;
   userName?: string;   
+  usuarioPermisos?: PermisoUsuario[] | null;
 }
 
 export default function AgendaContent({ 
   initialProfiles, 
   userId, 
-  userName 
+  userName ,
+  usuarioPermisos
 }: AgendaContentProps) {
   const [profiles, setProfiles] = useState(initialProfiles);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const router = useRouter();
-
+  console.log('AgendaContent - Permisos recibidos:', usuarioPermisos);
   //console.log(initialProfiles);
   const loadProfiles = async () => {
     const data = await getProfiles(userId);
     setProfiles(data);
     
   };
+    const { activo } = usePermisos({});
+    const agendaVisible = activo('AGENDA_VISIBLE');
 
  // console.log(selectedProfile);
 
@@ -203,10 +209,19 @@ export default function AgendaContent({
             <span>Volver a perfiles</span>
           
           </motion.button>
-          <div className=' border-neutral-500 px-5 py-2 bg-neutral-600/50 rounded-2xl flex flex-col items-center justify-center'>
+           <div className={`border-neutral-500 px-5 py-2 bg-neutral-600/50 rounded-2xl flex flex-col items-center justify-center relative ${!agendaVisible ? 'opacity-50 pointer-events-none' : ''}`}>
             <span>Agenda Publica</span>
             <SimpleToggle id={selectedProfile.id} initialState={ (selectedProfile as any).perfil_visible || false } />
-
+            
+            {/* Mensaje si no tiene permiso */}
+            {!agendaVisible && (
+              <div className="absolute -top-0.5 left-5/12 transform -translate-x-1/2 z-50 bg-neutral-900/70 border border-neutral-700 rounded-lg p-3 shadow-xl whitespace-nowrap">
+                <div className="flex items-center gap-2 text-yellow-400 font-medium text-xs  flex-col  justify-center">
+                  <FaCrown className="w-5 h-5" />
+                  <span className='text-center text-bold'>Mejora tu plan <br/> para hacer tu agenda pública</span>
+                </div>
+              </div>
+            )}
           </div>
       </div>
       

@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { Session, User } from '@supabase/supabase-js';
 import { getSupabaseBrowser } from '@/lib/supabase/supabase-client';
 import Spinner from '@/app/components/Spinner';
+import { getPermisosUser } from '@/app/actions/actions'; 
+import { PermisoUsuario } from '@/types/profile'; 
 
 // Interfaz para el usuario enriquecido (con el rol desde tu DB)
 interface CustomUser extends User {
@@ -16,6 +18,7 @@ interface AuthContextType {
   loading: boolean;
   session: Session | null;
   isAdmin: boolean;
+  permisos: PermisoUsuario[] | null;
   refetchUser: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -25,6 +28,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   session: null,
   isAdmin: false,
+   permisos: null,
   refetchUser: async () => {},
   logout: async () => {},
 });
@@ -34,6 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [permisos, setPermisos] = useState<PermisoUsuario[] | null>(null);
 
   const supabase = getSupabaseBrowser();
 
@@ -59,20 +64,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
           setUser(userWithRole);
           setIsAdmin(fetchedUser.role === 'ADMIN');
+        // PERMISOS DE LA MEMBRESÍA
+           if (fetchedUser.membresia?.id) {
+            try {
+              const perms = await getPermisosUser(fetchedUser.membresia.id);
+              setPermisos(perms);
+             // console.error("Permisos cargados:", perms);
+            } catch (errorPerm) {
+              console.error("Error cargando permiso:", errorPerm);
+              setPermisos(null);
+            }
+          } else {
+            setPermisos(null);
+          }
         } else {
           // No hay cookie o expiró, pero la llamada fue exitosa
           setUser(null);
+          setIsAdmin(false); 
           setIsAdmin(false);
+            setPermisos(null);
         }
       } else {
         console.error('API Error fetching auth status:', res.status);
         setUser(null);
         setIsAdmin(false);
+          setIsAdmin(false);
+          setPermisos(null);
       }
     } catch (error) {
       console.error('Error fetching user role from server:', error);
       setUser(null);
       setIsAdmin(false);
+          setIsAdmin(false);
+        setPermisos(null);
     } finally {
       setLoading(false);
     }
@@ -169,7 +193,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, session, isAdmin, refetchUser, logout }}>
+    <AuthContext.Provider value={{ user, loading, session, isAdmin,permisos, refetchUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

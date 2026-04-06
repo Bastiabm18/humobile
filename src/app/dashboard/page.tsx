@@ -3,9 +3,12 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import DashboardLayout from '../components/DashboardLayout';
 import DashboardContent from '../components/DashboardContent';
+import { getPermisosDeMembresia } from './Configuracion/actions/actions';
+import { getPermisosUser } from '../actions/actions';
 
 export default async function DashboardPage() {
   let userData = null;
+  let permisosUsuario = null;
 
   try {
     // AWAIT cookies() → ES UNA PROMESA
@@ -23,7 +26,19 @@ export default async function DashboardPage() {
     if (res.ok) {
       const data = await res.json();
       userData = data.user;
-      console.log('DASHBOARD: UserData →', userData);
+//      console.log('DASHBOARD: UserData →', userData);
+      try{
+        const permisos = await getPermisosUser(userData.membresia.id)
+
+        if(permisos){
+
+          permisosUsuario = permisos;
+    //    console.log('Permisos obtenidos:', permisosUsuario);
+        }
+
+      }catch(error){
+
+      }
     }
   } catch (error) {
     console.error('Error fetching user:', error);
@@ -43,7 +58,9 @@ export default async function DashboardPage() {
       <DashboardContent
        userName={userData.name} 
        userRole={userData.role}
-       userMembresia = {userData.membresia}  />
+       userMembresia = {userData.membresia}
+       usuario_permisos = {permisosUsuario}
+       />
     </DashboardLayout>
   );
 }

@@ -5,10 +5,11 @@ import DashboardLayout from '@/app/components/DashboardLayout';
 import ProfileManager from './components/PerfilContent';
 import { getGeoData, getProfiles } from './actions/actions';
 import PerfilContent from './components/PerfilContent';
+import { getPermisosUser } from '@/app/actions/actions';
 
 export default async function MiPerfilPage() {
   let userData = null;
-
+  let permisosUsuario = null;
   try {
     // AWAIT cookies() → ES UNA PROMESA
     const cookieStore = await cookies();
@@ -27,6 +28,19 @@ export default async function MiPerfilPage() {
       userData = data.user;
       console.log('DASHBOARD: UserData →', userData);
     }
+
+     try{
+            const permisos = await getPermisosUser(userData.membresia.id)
+    
+            if(permisos){
+    
+              permisosUsuario = permisos;
+          //   console.log('Permisos obtenidos:', permisosUsuario);
+            }
+    
+          }catch(error){
+    
+          }
   } catch (error) {
     console.error('Error fetching user:', error);
   }
@@ -36,10 +50,10 @@ export default async function MiPerfilPage() {
   }
 
   const geoData = await getGeoData();
-  console.log('Mi Perfil - UserData membresia →', userData.membresia.nombre_membresia);
+ // console.log('Mi Perfil - UserData membresia →', userData.membresia.nombre_membresia);
   const initialProfiles = await getProfiles(userData.uid);
 
-  console.log('Mi Perfil - Initial Profiles →', initialProfiles);
+ // console.log('Mi Perfil - Initial Profiles →', initialProfiles);
   return (
     <DashboardLayout
         userEmail={userData.email}
@@ -54,6 +68,7 @@ export default async function MiPerfilPage() {
         userId={userData.uid || ''}
         geoData={geoData}
         membresia={userData.membresia.nombre_membresia || 'Gratis'}
+        usuarioPermisos={permisosUsuario}
       />
     </DashboardLayout>
   );

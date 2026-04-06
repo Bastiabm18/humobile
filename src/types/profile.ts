@@ -702,3 +702,16 @@ export type TipoSeccion =
   | 'gestor_perfil'
   | 'gestor_permisos'
   | 'pagos';
+
+  export interface PermisoUsuario {
+  id_permiso: string;           // UUID
+  codigo_permiso: string;
+  nombre_permiso: string;
+  descripcion: string;
+  estado: boolean;
+  createdat: string | Date;     // Viene como string ISO de la DB
+  updatedat: string | Date;     // Viene como string ISO de la DB
+  id_membership: string;        // UUID
+  valor_limite: number;
+}
+
