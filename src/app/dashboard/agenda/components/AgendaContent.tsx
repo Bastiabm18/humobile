@@ -209,17 +209,27 @@ export default function AgendaContent({
             <span>Volver a perfiles</span>
           
           </motion.button>
-           <div className={`border-neutral-500 px-5 py-2 bg-neutral-600/50 rounded-2xl flex flex-col items-center justify-center relative ${!agendaVisible ? 'opacity-50 pointer-events-none' : ''}`}>
-            <span>Agenda Publica</span>
-            <SimpleToggle id={selectedProfile.id} initialState={ (selectedProfile as any).perfil_visible || false } />
+     {/* Contenedor relativo general */}
+          <div className="relative">
+            {/* Contenedor que se apaga */}
+            <div className={`border-neutral-500 px-5 py-2 bg-neutral-600/50 rounded-2xl flex flex-col items-center justify-center ${!agendaVisible ? 'opacity-50 pointer-events-none' : ''}`}>
+              <span>Agenda Publica</span>
+              <SimpleToggle id={selectedProfile.id} initialState={ (selectedProfile as any).perfil_visible || false } />
+            </div>
             
-            {/* Mensaje si no tiene permiso */}
+            {/* Tooltip FUERA del contenedor apagado */}
             {!agendaVisible && (
-              <div className="absolute -top-0.5 left-5/12 transform -translate-x-1/2 z-50 bg-neutral-900/70 border border-neutral-700 rounded-lg p-3 shadow-xl whitespace-nowrap">
-                <div className="flex items-center gap-2 text-yellow-400 font-medium text-xs  flex-col  justify-center">
-                  <FaCrown className="w-5 h-5" />
-                  <span className='text-center text-bold'>Mejora tu plan <br/> para hacer tu agenda pública</span>
-                </div>
+              <div 
+                onClick={() => router.push('/dashboard/serPremium')}
+                className="absolute -top-[10%] left-[35%] transform -translate-x-1/2 z-[9999] bg-neutral-900/70 border border-neutral-700 rounded-lg p-3 shadow-xl whitespace-nowrap hover:bg-red-900/90 hover:scale-105 transition-all duration-200 cursor-pointer"
+              >
+                 <div className="flex items-center gap-2 text-yellow-400 font-medium text-xs flex-col">
+                      <span className='text-center flex '>Mejora tu plan <br /> y aparece en explorador Humobile</span>
+                      <div className="flex items-center gap-1 mt-2">
+                        <FaCrown className='text-yellow-400'/>
+                        <span className="text-green-400 hover:text-green-300 text-sm font-medium">Mejoorar Plan</span>
+                      </div>
+                    </div>
               </div>
             )}
           </div>

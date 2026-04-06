@@ -303,7 +303,7 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
                   <div 
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push('/SerPremium');
+                      router.push('/dashboard/serPremium');
                     }}
                     className="absolute -bottom-1/2 left-1/2 transform -translate-x-1/2 z-[9999] bg-neutral-900/60 border border-neutral-700 rounded-lg p-3 shadow-xl whitespace-nowrap hover:bg-red-900/90 hover:scale-105 transition-all duration-200 cursor-pointer"
                   >
@@ -640,16 +640,22 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
               Gestionar    {format(selectedDate, 'dd/MM/yyyy')}
              </h3>
 
+         
             {/* Mensaje si no tiene permiso */}
             {!puedeCrearEvento && (
-              <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-3 text-center mb-4">
+              <div 
+                onClick={() => router.push('/dashboard/serPremium')}
+                className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-3 text-center mb-4 cursor-pointer hover:bg-yellow-900/40 transition-colors"
+              >
                 <div className="flex items-center justify-center gap-2 text-yellow-400 font-medium text-sm">
                   <FaCrown className="w-4 h-4" />
-                  <span>Tu plan no permite gestionar Agenda</span>
+                  <span>Tu plan no permite gestionar Agenda
+                        <br/><a className="text-green-600 hover:text-green-900">Mejorar plan</a>
+                  </span>
+              
                 </div>
               </div>
             )}
-            
             <div className={`flex gap-3 mb-4 ${!puedeCrearEvento ? 'opacity-50 pointer-events-none' : ''}`}>
               <button
                 onClick={() => {
@@ -697,11 +703,17 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
             </h4>
     
             {/* Mensaje si no tiene permiso */}
-            {!puedeCrearEvento && (
-              <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-3 text-center mb-4">
+      {!puedeCrearEvento && (
+              <div 
+                onClick={() => router.push('/dashboard/serPremium')}
+                className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-3 text-center mb-4 cursor-pointer hover:bg-yellow-900/40 transition-colors"
+              >
                 <div className="flex items-center justify-center gap-2 text-yellow-400 font-medium text-sm">
                   <FaCrown className="w-4 h-4" />
-                  <span>Tu plan no permite gestionar eventos</span>
+                  <span>Tu plan no permite gestionar Agenda
+                        <br/><a className="text-green-600 hover:text-green-900">Mejorar plan</a>
+                  </span>
+              
                 </div>
               </div>
             )}
