@@ -241,7 +241,7 @@ export async function getEventosByPerfilParticipacion(
     }
 
     const { data: eventosDB, error } = await supabaseAdmin
-      .rpc('get_eventos_perfil_estados_v5', params);
+      .rpc('get_eventos_perfil_v8', params);
 
     if (error) {
       console.error(' Error al llamar a get_eventos_perfil_estados:', error);
