@@ -207,21 +207,19 @@ export default function PublicCalendarView({
     return (
       <div className="relative h-full w-full group">
         {children}
-        
-        {hasEventsAtThisSlot && !esColumnaHora && (
+                
+           {hasEventsAtThisSlot && !esColumnaHora && (
           <PublicEventBadge 
             profile={{ id: profileId, tipo: perfilTipo, nombre: perfilNombre }}
             events={eventsAtThisSlot}
             date={slotDate} 
             view={view}
-            slotTime={slotDate}
             onEventClick={() => {}}
             onMultipleEventsClick={() => {}}
             onBlockClick={() => {}}
             esColumnaHora={esColumnaHora}
           />
         )}
-        
         {/* Botón de invitar en slots vacíos (vista semana/día) */}
         {isEmptySlot && view !== Views.MONTH && !esColumnaHora && puedeInvitar && (
           <div className="absolute inset-0 flex items-center justify-center z-40 rounded transition-opacity duration-200 opacity-0 group-hover:opacity-100">
@@ -435,10 +433,10 @@ export default function PublicCalendarView({
           <div className="bg-neutral-800 rounded-2xl p-6 w-full max-w-md">
             <h3 className="text-white text-xl font-bold mb-4">ℹ️ Información de la Agenda</h3>
             <div className="space-y-3 text-neutral-300">
-              <p>📅 Los eventos mostrados son los <strong className="text-green-400">confirmados</strong> de {perfilNombre}.</p>
-              <p>🎯 Puedes invitar a {perfilNombre} a tus eventos seleccionando una fecha u horario disponible.</p>
-              <p>🔒 Los espacios con eventos ya están ocupados.</p>
-              <p>✉️ Al invitar, {perfilNombre} recibirá una notificación y podrá aceptar o rechazar tu invitación.</p>
+              <p> Los eventos mostrados son los <strong className="text-green-400">confirmados</strong> de {perfilNombre}.</p>
+              <p> Puedes invitar a {perfilNombre} a tus eventos seleccionando una fecha u horario disponible.</p>
+              <p> Los espacios con eventos ya están ocupados.</p>
+              <p> Al invitar, {perfilNombre} recibirá una notificación y podrá aceptar o rechazar tu invitación.</p>
             </div>
             <button
               onClick={() => setVerModalInformativo(false)}
