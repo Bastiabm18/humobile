@@ -207,19 +207,20 @@ export default function PublicCalendarView({
     return (
       <div className="relative h-full w-full group">
         {children}
-                
-           {hasEventsAtThisSlot && !esColumnaHora && (
-          <PublicEventBadge 
-            profile={{ id: profileId, tipo: perfilTipo, nombre: perfilNombre }}
-            events={eventsAtThisSlot}
-            date={slotDate} 
-            view={view}
-            onEventClick={() => {}}
-            onMultipleEventsClick={() => {}}
-            onBlockClick={() => {}}
-            esColumnaHora={esColumnaHora}
-          />
-        )}
+        
+        {hasEventsAtThisSlot && !esColumnaHora && (
+              <PublicEventBadge 
+                profile={{ id: profileId, tipo: perfilTipo, nombre: perfilNombre }}
+                events={eventsAtThisSlot}
+                date={slotDate} 
+                view={view}
+                slotTime={slotDate}
+                onEventClick={() => {}}
+                onMultipleEventsClick={() => {}}
+                onBlockClick={() => {}}
+                esColumnaHora={esColumnaHora}
+              />
+            )}
         {/* Botón de invitar en slots vacíos (vista semana/día) */}
         {isEmptySlot && view !== Views.MONTH && !esColumnaHora && puedeInvitar && (
           <div className="absolute inset-0 flex items-center justify-center z-40 rounded transition-opacity duration-200 opacity-0 group-hover:opacity-100">
