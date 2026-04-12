@@ -87,7 +87,7 @@ export default function BusquedaContent({
   }, []);
 
       
-  console.log(todosPerfiles)
+ // console.log(todosPerfiles)
   // FUNCIÓN PRINCIPAL: Recibe la búsqueda del componente Buscador
   const handleBuscar = async (query: string, filtros: FiltrosEventos | FiltrosPerfiles) => {
     console.log('=== INFORMACIÓN RECIBIDA DEL BUSCADOR ===');

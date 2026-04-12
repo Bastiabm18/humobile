@@ -31,7 +31,7 @@ const GridPerfil: React.FC<GridPerfilProps> = ({ items }) => {
 
   const handleItemClick = (item: Profile) => {
     const encodedData = encodeProfileData(item.id, item.tipo);
-    router.push(`/perfil?perfil=${encodedData}`);
+    router.push(`/dashboard/perfil?perfil=${encodedData}`);
   };
 
   if (items.length === 0) {

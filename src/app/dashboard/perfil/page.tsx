@@ -2,15 +2,16 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getProfile } from '../actions/actions';
+import { getProfile } from '../../actions/actions';
 import PresentacionPerfil from './components/PresentacionPerfil';
 import PerfilEventos from './components/PerfilEventos';
-import NeonSign from '../components/NeonSign';
+import NeonSign from '@/app/components/NeonSign';
 import { MdArrowBack } from 'react-icons/md';
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { Profile } from '@/types/profile';
+import PublicCalendarView from './components/PublicCalendarView';
 // Función para decodificar
 const decodeProfileData = (encoded: string): { id: string; type: 'artist' | 'band' | 'place' } | null => {
     
@@ -120,19 +121,35 @@ export default function PerfilPage() {
     <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black text-white p-4 md:p-8">
         <div className='w-full mt-16 items-start justify-center py-5 px-2'>
                <motion.button
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/dashboard')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-700 text-neutral-300 hover:bg-neutral-600 transition-colors"
           >
             <FaArrowLeft className="text-sm" />
-            <span>Volver al Inicio</span>
+            <span>Atras</span>
           </motion.button>
         </div>
       {profileData && (
         <div className="space-y-8">
           {/* Componente de presentación */}
           <PresentacionPerfil perfil={profileData} />
+           {/* Calendario público */}
+          <div className="w-[95vw] md:w-[95vw] mx-auto p-6 bg-neutral-800/30 rounded-2xl border border-neutral-700">
+            <h2 className="text-2xl font-bold mb-4 text-white">
+              Agenda de {profileData.nombre}
+            </h2>
+            <PublicCalendarView 
+              profileId={profileData.id}
+              perfilTipo={profileData.tipo}
+              perfilNombre={profileData.nombre}
+              onInvitar={() => {
+                // Aquí puedes abrir un modal para invitar al perfil
+                console.log('Invitar a evento a:', profileData.nombre);
+                // TODO: Implementar lógica de invitación
+              }}
+            />
+          </div>
           
           {/* Aquí irán más componentes futuros */}
           <div className="w-[95vw] md:w-[95vw] mx-auto p-6 bg-neutral-800/30 rounded-2xl border border-neutral-700">

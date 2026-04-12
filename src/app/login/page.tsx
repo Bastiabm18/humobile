@@ -49,7 +49,7 @@ const [error, setError] = useState('');
         }
 
         // 3. Redirigir al dashboard
-        router.push('/dashboard');
+        router.push('/dashboard/serPremium');
       }
     } catch (err: any) {
       console.error('Error en login:', err);

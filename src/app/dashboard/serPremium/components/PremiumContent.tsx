@@ -60,6 +60,7 @@ export default function PremiumContent({ userData }: { userData: UserData }) {
       await new Promise(resolve => setTimeout(resolve, 1500)); 
       const res = await insertMembresia(userData.uid, selectedPlan.nombre as any, 'monthly');
       if (res.success) setPagoExitoso(true);
+      window.location.reload();
     } catch (error) {
       alert('Error en el proceso de pago');
     } finally {
@@ -72,11 +73,11 @@ export default function PremiumContent({ userData }: { userData: UserData }) {
     try {
       const res = await eliminarMembresia(userData.uid);
       if(!res.success) throw new Error(res.error);
-      alert('Suscripción cancelada exitosamente');
+      //alert('Suscripción cancelada exitosamente');
       setModalOpen(false);
       window.location.reload();
     } catch (error) {
-      alert('Error al cancelar la suscripción');
+      //alert('Error al cancelar la suscripción');
     } finally {
       setCancelling(false);
     }
