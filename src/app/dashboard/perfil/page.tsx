@@ -7,7 +7,7 @@ import PerfilContent from './components/PerfilContent';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import { getPermisosUser } from '@/app/actions/actions';
 
-
+export const dynamic = 'force-dynamic';
 
 export default async function PerfilPage() {
   let userData = null;
