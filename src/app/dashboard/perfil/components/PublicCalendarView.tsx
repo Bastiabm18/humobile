@@ -81,6 +81,19 @@ export default function PublicCalendarView({
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
     if (!puedeInvitar) return;
+    // ===== VALIDACIÓN: VERIFICAR SI HAY EVENTOS EN ESE RANGO =====
+    const slotStart = slotInfo.start.getTime();
+    const slotEnd = slotInfo.end.getTime();
+
+    const hayEventos = events.some(event => {
+      const eventStart = event.inicio.getTime();
+      const eventEnd = event.fin ? event.fin.getTime() : eventStart + 3600000;
+      return slotStart < eventEnd && slotEnd > eventStart;
+    });
+
+    // Si hay eventos (públicos o privados), no hacer nada
+    if (hayEventos) return;
+    // ============================================================
     
     setSelectedSlot({ start: slotInfo.start, end: slotInfo.end });
     setSelectedDate(slotInfo.start);
@@ -141,7 +154,7 @@ export default function PublicCalendarView({
                     setShowActionModal(true);
                   }
                 }}
-                className="text-green-100 p-2 w-full h-full shadow-xl hover:scale-110 transition-all duration-200"
+                className="text-green-700/90 p-2 w-full h-full shadow-xl hover:scale-110 transition-all duration-200"
                 title={`Invitar a ${perfilNombre} en esta fecha`}
               >
                 <FaPaperPlane size={18} />

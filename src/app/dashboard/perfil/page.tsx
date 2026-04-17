@@ -1,172 +1,65 @@
-'use client';
+// app/perfil/page.tsx
+import { cookies } from 'next/headers';
+import { getProfiles } from '../../dashboard/agenda/actions/actions'
+import PerfilContent from './components/PerfilContent';
+import DashboardLayout from '@/app/components/DashboardLayout';
+import { getPermisosUser } from '@/app/actions/actions';
 
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { getProfile } from '../../actions/actions';
-import PresentacionPerfil from './components/PresentacionPerfil';
-import PerfilEventos from './components/PerfilEventos';
-import NeonSign from '@/app/components/NeonSign';
-import { MdArrowBack } from 'react-icons/md';
-import { useRouter } from 'next/navigation';
-import { FaArrowLeft } from 'react-icons/fa';
-import { motion } from 'framer-motion';
-import { Profile } from '@/types/profile';
-import PublicCalendarView from './components/PublicCalendarView';
-// Función para decodificar
-const decodeProfileData = (encoded: string): { id: string; type: 'artist' | 'band' | 'place' } | null => {
-    
-  
-    try {
-    // Convertir base64url a base64 normal
-    let base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
-    while (base64.length % 4) {
-      base64 += '=';
-    }
-    
-    // Decodificar base64
-    const jsonString = atob(base64);
-    
-    // Parsear JSON
-    const data = JSON.parse(jsonString);
-    
-    // Validar que tenga los campos correctos
-    if (!data.id || !['artista', 'banda', 'lugar'].includes(data.type)) {
-      return null;
-    }
-    
-    return data as { id: string; type: 'artist' | 'band' | 'place' };
-  } catch (error) {
-    console.error('Error decodificando:', error);
-    return null;
-  }
-};
+export default async function PerfilPage() {
+  let perfilesUsuarioLogueado = null;
+  let userData=null;
+  let permisosUsuario = null;
 
-export default function PerfilPage() {
-  const searchParams = useSearchParams();
-  const [profileData, setProfileData] = useState<Profile>();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-  useEffect(() => {
-  window.scrollTo(0, 0);
-}, []);
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const encodedData = searchParams.get('perfil');
-      
-      if (!encodedData) {
-        console.log(' No se encontró parámetro "perfil" en la URL');
-        setError('No se encontró el perfil');
-        return;
-      }
-      
-      const decodedData = decodeProfileData(encodedData);
-      
-      if (!decodedData) {
-        console.error('Error: Datos decodificados inválidos');
-        setError('Datos del perfil inválidos');
-        return;
-      }
-      
-      console.log(' ID listo para usar:', decodedData.id);
-      console.log(' Tipo de perfil:', decodedData.type);
-      
-      // Aquí llamamos a getProfile
-      setLoading(true);
-      try {
-        const resultado = await getProfile(decodedData.id, decodedData.type);
-        console.log(' Datos del perfil obtenidos:', resultado);
-        
-        // El resultado es un array, tomamos el primer elemento
-        if (Array.isArray(resultado) && resultado.length > 0) {
-          setProfileData(
-           resultado[0]
-          );
-        } else {
-          throw new Error('No se encontraron datos del perfil');
+  try {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('supabaseAuthSession')?.value;
+
+    if (sessionCookie) {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/session`, {
+        headers: {
+          Cookie: `supabaseAuthSession=${sessionCookie}`,
+        },
+        cache: 'no-store',
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+
+        if (data.user?.uid) {
+          perfilesUsuarioLogueado = await getProfiles(data.user.uid);
         }
+        userData = data.user;
+          try{
+                        const permisos = await getPermisosUser(userData.membresia.id)
+                
+                        if(permisos){
+                
+                          permisosUsuario = permisos;
+                      //   console.log('Permisos obtenidos:', permisosUsuario);
+                        }
+                
+                      }catch(error){
+                        console.error('Error al obtener permisos:', error);
+                      }
         
-        setError(null);
-      } catch (error: any) {
-        console.error(' Error obteniendo perfil:', error);
-        setError(`Error al cargar el perfil: ${error.message}`);
-      } finally {
-        setLoading(false);
       }
-    };
-    
-    fetchProfile();
-  }, [searchParams]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <NeonSign/>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center p-8 bg-red-50 rounded-lg">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
-          <p className="text-red-500">{error}</p>
-        </div>
-      </div>
-    );
+    }
+  } catch (error) {
+    // Usuario no logueado - modo público
+    perfilesUsuarioLogueado = null;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black text-white p-4 md:p-8">
-        <div className='w-full mt-16 items-start justify-center py-5 px-2'>
-               <motion.button
-            onClick={() => router.push('/dashboard')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-700 text-neutral-300 hover:bg-neutral-600 transition-colors"
-          >
-            <FaArrowLeft className="text-sm" />
-            <span>Atras</span>
-          </motion.button>
-        </div>
-      {profileData && (
-        <div className="space-y-8">
-          {/* Componente de presentación */}
-          <PresentacionPerfil perfil={profileData} />
-           {/* Calendario público */}
-          <div className="w-[95vw] md:w-[95vw] mx-auto p-6 bg-neutral-800/30 rounded-2xl border border-neutral-700">
-            <h2 className="text-2xl font-bold mb-4 text-white">
-              Agenda de {profileData.nombre}
-            </h2>
-            <PublicCalendarView 
-              profileId={profileData.id}
-              perfilTipo={profileData.tipo}
-              perfilNombre={profileData.nombre}
-              onInvitar={() => {
-                // Aquí puedes abrir un modal para invitar al perfil
-                console.log('Invitar a evento a:', profileData.nombre);
-                // TODO: Implementar lógica de invitación
-              }}
-            />
-          </div>
-          
-          {/* Aquí irán más componentes futuros */}
-          <div className="w-[95vw] md:w-[95vw] mx-auto p-6 bg-neutral-800/30 rounded-2xl border border-neutral-700">
-           {/* Componente de eventos */}
-      <PerfilEventos
-        perfilId={profileData.id}
-        perfilType={profileData.tipo}
-      />
-          </div>
-        </div>
-      )}
-      
-      {!profileData && !loading && !error && (
-        <div className="text-center py-12">
-          <p className="text-gray-500">No hay perfil para mostrar</p>
-        </div>
-      )}
-    </div>
+     <DashboardLayout
+         userEmail={userData.email} 
+         userName={userData.name} 
+         userRole={userData.role}
+         userMembresia={userData.membresia}
+         >
+
+           <PerfilContent 
+             perfilesUsuarioLogueado={perfilesUsuarioLogueado} usuarioPermisos={permisosUsuario}
+           />
+         </DashboardLayout>
   );
 }

@@ -22,12 +22,13 @@ interface CrearEventoModalProps {
   profile: Profile;
   selectedDate: Date;
   selectedEndDate?:Date;
+    invitadoPreCargado?: Profile;
 }
 
 
 
 
-export default function CrearEventoModal({ open, onClose, profile, selectedDate, selectedEndDate }: CrearEventoModalProps) {
+export default function CrearEventoModal({ open, onClose, profile, selectedDate, selectedEndDate,invitadoPreCargado }: CrearEventoModalProps) {
   // browser para subir imagen
   const supabase = getSupabaseBrowser();
  // console.log('crear eventos en fecha:' ,selectedDate, 'hasta: ',selectedEndDate);
@@ -125,6 +126,36 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate,
         fecha_hora_ini: `${dateStr}`,
         fecha_hora_fin: `${tomorrowStr}`
       }));
+
+      // =============================================
+      //  BLOQUE NUEVO: Invitado pre-cargado
+      // =============================================
+      if (invitadoPreCargado && invitadoPreCargado.id !== profile.id) {
+        // Agregar como participante
+        setParticipantes(prev => {
+          if (prev.some(p => p.id_perfil === invitadoPreCargado.id)) {
+            return prev;
+          }
+          return [...prev, {
+            id_perfil: invitadoPreCargado.id,
+            nombre: invitadoPreCargado.nombre || '',
+            tipo: invitadoPreCargado.tipo
+          }];
+        });
+
+        // Si es lugar, setearlo como lugar del evento
+        if (invitadoPreCargado.tipo === 'lugar') {
+          setForm(prev => ({
+            ...prev,
+            id_lugar: invitadoPreCargado.id,
+            nombre_lugar: invitadoPreCargado.nombre || '',
+            direccion_lugar: invitadoPreCargado.direccion || '',
+            lat_lugar: invitadoPreCargado.lat || null,
+            lon_lugar: invitadoPreCargado.lon || null
+          }));
+        }
+      }
+      // =============================================
     }
   }, [open]);
 
