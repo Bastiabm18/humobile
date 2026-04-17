@@ -1,3 +1,4 @@
+"use server"
 // app/perfil/page.tsx
 import { cookies } from 'next/headers';
 import { getProfiles } from '../../dashboard/agenda/actions/actions'

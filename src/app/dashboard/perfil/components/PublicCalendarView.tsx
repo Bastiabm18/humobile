@@ -12,8 +12,9 @@ import { BsFillInfoSquareFill } from 'react-icons/bs';
 import PublicEventBadge from './PublicEventBadge';
 import { getEventosByPerfilParticipacion } from '../../agenda/actions/actions';
 import { usePermisos } from '@/app/hooks/usePermisos';
-import { EventoCalendario } from '@/types/profile';
+import { EventoCalendario, Profile } from '@/types/profile';
 import { useRouter } from 'next/navigation';
+import EventModal from '../../agenda/components/EventModal';
 
 const localizer = dateFnsLocalizer({
   format,
@@ -28,13 +29,15 @@ interface PublicCalendarViewProps {
   perfilTipo: string;
   perfilNombre: string;
   onInvitar?: (fecha?: Date, horaInicio?: Date, horaFin?: Date) => void;
+  perfilesUsuarioLogueado?: Profile[] | null;
 }
 
 export default function PublicCalendarView({ 
   profileId, 
   perfilTipo, 
   perfilNombre,
-  onInvitar 
+  onInvitar,
+  perfilesUsuarioLogueado 
 }: PublicCalendarViewProps) {
   const [view, setView] = useState<View>(Views.WEEK);
   const [date, setDate] = useState(new Date());
@@ -46,6 +49,10 @@ export default function PublicCalendarView({
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null);
   const [verModalInformativo, setVerModalInformativo] = useState(false);
   
+    // ===== ESTADOS PARA VER EVENTO PÚBLICO =====
+  const [eventModalOpen, setEventModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<EventoCalendario | null>(null);
+
   const router = useRouter();
   const { activo } = usePermisos({});
   const puedeInvitar = activo('CREAR_EVENTO');
@@ -77,6 +84,13 @@ export default function PublicCalendarView({
       return startString === targetString || endString === targetString ||
              (event.inicio < targetDate && event.fin > targetDate);
     });
+  };
+
+    // ===== HANDLER PARA VER EVENTO PÚBLICO =====
+  const handleEventClick = (event: EventoCalendario) => {
+    if (!event.es_publico) return; // Privados no se ven
+    setSelectedEvent(event);
+    setEventModalOpen(true);
   };
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
@@ -135,7 +149,7 @@ export default function PublicCalendarView({
             profile={{ id: profileId, tipo: perfilTipo, nombre: perfilNombre }} 
             date={value} 
             view={view}
-            onEventClick={() => {}}
+            onEventClick={handleEventClick}
             onMultipleEventsClick={() => {}}
             onBlockClick={() => {}}
           />
@@ -228,7 +242,7 @@ export default function PublicCalendarView({
                 date={slotDate} 
                 view={view}
                 slotTime={slotDate}
-                onEventClick={() => {}}
+                onEventClick={handleEventClick}
                 onMultipleEventsClick={() => {}}
                 onBlockClick={() => {}}
                 esColumnaHora={esColumnaHora}
@@ -460,6 +474,19 @@ export default function PublicCalendarView({
             </button>
           </div>
         </div>
+      )}
+
+         {eventModalOpen && selectedEvent && (
+        <EventModal
+          event={{ id: selectedEvent.id }}
+          isOpen={eventModalOpen}
+          onRequestClose={() => {
+            setEventModalOpen(false);
+            setSelectedEvent(null);
+          }}
+          profile={perfilesUsuarioLogueado?.[0] || { id: '', tipo: 'visitante', nombre: 'Visitante' }}
+          onEventUpdated={() => {}}
+        />
       )}
     </>
   );

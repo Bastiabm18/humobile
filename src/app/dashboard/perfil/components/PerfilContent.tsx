@@ -199,13 +199,14 @@ const puedeInvitar = perfilesUsuarioLogueado !== null && activo('AGREGAR_PARTICI
                   // Si tiene solo 1 perfil, usarlo directo
                   if (perfilesUsuarioLogueado && perfilesUsuarioLogueado.length === 1) {
                       setPerfilCreador(perfilesUsuarioLogueado[0]);
-                    // Aquí abres el CrearEventoModal con perfilCreadorSeleccionado
+                    
                     console.log('Perfil único seleccionado:', perfilesUsuarioLogueado[0].nombre);
                     return;
                 }
                 // Si tiene más de 1, abrir modal de selección
                 setModalSeleccionOpen(true);
             }}
+            perfilesUsuarioLogueado={perfilesUsuarioLogueado}
             />  
           </div>
           
