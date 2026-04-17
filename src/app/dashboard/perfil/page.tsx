@@ -42,6 +42,9 @@ export default async function PerfilPage() {
         console.error('Error al obtener permisos:', error);
       }
     }
+
+     perfilesUsuarioLogueado = await getProfiles(userData.uid);
+
   } catch (error) {
     redirect('/login');
   
@@ -49,11 +52,6 @@ export default async function PerfilPage() {
 
 
 
-  try {
-    perfilesUsuarioLogueado = await getProfiles(userData.uid);
-  } catch (error) {
-    console.error('Error fetching profiles:', error);
-  }
 
   return (
      <DashboardLayout
