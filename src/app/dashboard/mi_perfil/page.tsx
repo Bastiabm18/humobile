@@ -1,64 +1,59 @@
-"use server"
-// app/perfil/page.tsx
+// app/dashboard/mi_perfil/page.tsx
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getProfiles } from '../../dashboard/agenda/actions/actions';
-import PerfilContent from './components/PerfilContent';
 import DashboardLayout from '@/app/components/DashboardLayout';
+import ProfileManager from './components/PerfilContent';
+import { getGeoData, getProfiles } from './actions/actions';
+import PerfilContent from './components/PerfilContent';
 import { getPermisosUser } from '@/app/actions/actions';
 
-// Forzamos renderizado dinámico para evitar errores en el build de Vercel/Next.js
-export const dynamic = 'force-dynamic';
-
-export default async function PerfilPage() {
+export default async function MiPerfilPage() {
   let userData = null;
   let permisosUsuario = null;
-  let perfilesUsuarioLogueado = null;
-
   try {
+    // AWAIT cookies() → ES UNA PROMESA
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.get('supabaseAuthSession')?.value;
 
-    // 1. Obtener Sesión
     const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/session`, {
       method: 'GET',
       cache: 'no-store',
       headers: cookieHeader
-        ? { Cookie: `supabaseAuthSession=${cookieHeader}` }
+        ? { Cookie: `${'supabaseAuthSession'}=${cookieHeader}` }
         : {},
     });
 
     if (res.ok) {
       const data = await res.json();
       userData = data.user;
+      console.log('DASHBOARD: UserData →', userData);
     }
 
-    // 2. Obtener Permisos (solo si hay usuario y membresía)
-    if (userData?.membresia?.id) {
-      try {
-        const permisos = await getPermisosUser(userData.membresia.id);
-        if (permisos) {
-          permisosUsuario = permisos;
-        }
-      } catch (error) {
-        console.error('Error al obtener permisos:', error);
-      }
-    }
+     try{
+            const permisos = await getPermisosUser(userData.membresia.id)
+    
+            if(permisos){
+    
+              permisosUsuario = permisos;
+          //   console.log('Permisos obtenidos:', permisosUsuario);
+            }
+    
+          }catch(error){
+    
+          }
   } catch (error) {
-    console.error('Error fetching user session:', error);
+    console.error('Error fetching user:', error);
   }
 
-  // 3. Validación Temprana (Evita errores de "reading properties of null")
   if (!userData) {
     redirect('/login');
   }
 
-  // 4. Carga de datos adicionales (Ahora es seguro porque userData existe)
-  try {
-    perfilesUsuarioLogueado = await getProfiles(userData.uid);
-  } catch (error) {
-    console.error('Error fetching profiles:', error);
-  }
+  const geoData = await getGeoData();
+ // console.log('Mi Perfil - UserData membresia →', userData.membresia.nombre_membresia);
+  const initialProfiles = await getProfiles(userData.uid);
+
+ // console.log('Mi Perfil - Initial Profiles →', initialProfiles);
   return (
     <DashboardLayout
         userEmail={userData.email}
