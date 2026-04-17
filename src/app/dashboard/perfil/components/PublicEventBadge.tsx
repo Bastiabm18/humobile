@@ -101,8 +101,8 @@ export default function PublicEventBadge({
                 title="Evento privado"
               >
                 <div className="flex items-center justify-center w-full gap-2">
-                  <FaEyeSlash size={14} className="text-neutral-400" />
-                  <span className="text-neutral-200 text-xs md:text-sm">Privado</span>
+                  <FaEyeSlash size={26} className="text-neutral-400" />
+                  <span className="text-neutral-200 text-xs md:text-xl">Privado</span>
                 </div>
               </div>
             </div>
@@ -396,9 +396,9 @@ export default function PublicEventBadge({
             title="Evento privado"
           >
             <div className="p-0.5 h-full flex flex-col justify-center overflow-hidden">
-              <div className="text-[10px] text-neutral-400 font-medium truncate px-0.5 flex items-center gap-1">
-                <FaEyeSlash size={8} />
-                <span>Privado</span>
+              <div className="text-[10px] text-neutral-400 font-medium truncate px-0.5 flex items-center justify-center gap-1">
+                <FaEyeSlash size={16} />
+                <span className='hidden md:flex md:text-xl'>Privado</span>
               </div>
             </div>
           </div>

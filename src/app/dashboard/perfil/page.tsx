@@ -1,5 +1,5 @@
 
-// app/perfil/page.tsx
+// app/dashboard/perfil/page.tsx
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getProfiles } from '../../dashboard/agenda/actions/actions';
