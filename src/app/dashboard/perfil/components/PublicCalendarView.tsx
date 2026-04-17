@@ -249,22 +249,42 @@ export default function PublicCalendarView({
               />
             )}
         {/* Botón de invitar en slots vacíos (vista semana/día) */}
-        {isEmptySlot && view !== Views.MONTH && !esColumnaHora && puedeInvitar && (
-          <div className="absolute inset-0 flex items-center justify-center z-40 rounded transition-opacity duration-200 opacity-0 group-hover:opacity-100">
-            <button
+   {isEmptySlot && view !== Views.MONTH && !esColumnaHora && (
+          puedeInvitar ? (
+            <div className="absolute inset-0 flex items-center justify-center z-40 rounded transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setSelectedSlot({ start: slotDate, end: new Date(slotDate.getTime() + 3600000) });
+                  setSelectedDate(slotDate);
+                  setShowActionModal(true);
+                }}
+                className="bg-green-600/80 hover:bg-green-700 text-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-all"
+                title={`Invitar a ${perfilNombre} en este horario`}
+              >
+                <FaPaperPlane size={14} />
+              </button>
+            </div>
+          ) : (
+            <div 
               onClick={(e) => {
                 e.stopPropagation();
-                e.preventDefault();
-                setSelectedSlot({ start: slotDate, end: new Date(slotDate.getTime() + 3600000) });
-                setSelectedDate(slotDate);
-                setShowActionModal(true);
+                router.push('/dashboard/serPremium');
               }}
-              className="bg-green-600/80 hover:bg-green-700 text-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-all"
-              title={`Invitar a ${perfilNombre} en este horario`}
+              className="absolute inset-0 flex items-center justify-center z-40 rounded transition-opacity duration-200 opacity-0 group-hover:opacity-100 cursor-pointer"
             >
-              <FaPaperPlane size={14} />
-            </button>
-          </div>
+              <div className="bg-neutral-900/60 border border-neutral-700 rounded-lg p-2 shadow-xl whitespace-nowrap hover:bg-red-900/90 hover:scale-105 transition-all duration-200">
+                <div className="flex items-center gap-2 text-yellow-400 font-medium text-xs flex-col">
+                  <span className='text-center'>Mejora tu plan<br/>para enviar invitaciones</span>
+                  <div className="flex items-center gap-1 mt-1">
+                    <FaCrown className='text-yellow-400'/>
+                    <span className="text-green-400 hover:text-green-300 text-sm font-medium">Mejorar Plan</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
         )}
       </div>
     );
@@ -302,7 +322,7 @@ export default function PublicCalendarView({
 
   return (
     <>
-      <div className="h-[95vh] bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70 relative">
+      <div className=" h-[65vh] md:h-[95vh] bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70 relative">
         
         {/* Botón de información */}
         <button 
