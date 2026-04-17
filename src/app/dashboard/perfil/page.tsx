@@ -7,8 +7,7 @@ import PerfilContent from './components/PerfilContent';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import { getPermisosUser } from '@/app/actions/actions';
 
-// Forzamos renderizado dinámico para evitar errores en el build de Vercel/Next.js
-export const dynamic = 'force-dynamic';
+
 
 export default async function PerfilPage() {
   let userData = null;
