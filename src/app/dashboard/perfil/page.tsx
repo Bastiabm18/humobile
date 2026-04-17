@@ -7,7 +7,6 @@ import PerfilContent from './components/PerfilContent';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import { getPermisosUser } from '@/app/actions/actions';
 
-export const dynamic = 'force-dynamic';
 
 export default async function PerfilPage() {
   let userData = null;
@@ -44,15 +43,12 @@ export default async function PerfilPage() {
       }
     }
   } catch (error) {
-    console.error('Error fetching user session:', error);
-  }
-
-  // 3. Validación Temprana (Evita errores de "reading properties of null")
-  if (!userData) {
     redirect('/login');
+  
   }
 
-  // 4. Carga de datos adicionales (Ahora es seguro porque userData existe)
+
+
   try {
     perfilesUsuarioLogueado = await getProfiles(userData.uid);
   } catch (error) {
