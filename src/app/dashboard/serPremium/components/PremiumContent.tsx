@@ -112,6 +112,8 @@ export default function PremiumContent({ userData }: { userData: UserData }) {
 
   return (
     <>
+    <div className='flex flex-col'>
+      
       {/* ===== ALERTAS TRANSBANK ===== */}
       <div className="max-w-7xl mx-auto p-4 pt-0">
         <AnimatePresence>
@@ -346,6 +348,8 @@ export default function PremiumContent({ userData }: { userData: UserData }) {
           </AnimatePresence>
         </div>
       )}
+      
+    </div>
     </>
   );
 }
