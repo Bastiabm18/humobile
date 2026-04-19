@@ -5,6 +5,7 @@ import { ArtistData, BandData, PlaceData,EventoActualizar, ProfileType, GeoData,
 import { revalidatePath } from 'next/cache';
 import { format } from 'date-fns';
 import moment from 'moment-timezone';
+import { enviarEmailInvitacionEvento, enviarEmailRespuestaParticipacion } from '@/lib/emailjs/emailjs';
 const TIMEZONE = 'America/Chile/Santiago'; // Ajustá si es otra
 
 /**
@@ -564,6 +565,28 @@ export async function aceptarRechazarParticipacionEvento(
         success: false, 
         error: errorSolicitud.message || `Error al ${eleccion ? 'confirmar' : 'rechazar'} la participación` 
       };
+    }
+
+     // ==========================================
+    // 3. ENVIO DE CORREO (Fire and forget)
+    // ==========================================
+    const datosInvitado = await obtenerDatosPerfil(idInvitado);
+    const datosEvento = await obtenerDatosEvento(idEvento);
+
+    if (datosInvitado?.email && datosEvento) {
+      const fechaFormateada = format(new Date(datosEvento.fecha_hora_ini), 'dd/MM/yyyy HH:mm');
+      
+      enviarEmailRespuestaParticipacion({
+        emailParticipante: datosInvitado.email,
+        nombreParticipante: datosInvitado.nombre,
+        tituloEvento: datosEvento.titulo,
+        fechaEvento: fechaFormateada,
+        esConfirmacion: eleccion,
+      }).catch(err => {
+        // Si falla el email, solo lo imprimimos en consola. 
+        // No rompemos la operacion que ya fue exitosa en la DB.
+        console.error('Error enviando email de respuesta:', err);
+      });
     }
 
 
@@ -1236,6 +1259,23 @@ for (const participante of participantes) {
   
   await crearParticipacionEvento(evento.id, participante.id_perfil, 'pendiente');
   await crearSolicitudEvento(evento.id, eventData.id_creador, participante.id_perfil, 'invitacion');
+
+   // ==========================================
+      // ENVIO DE CORREO DE INVITACION
+      // ==========================================
+      const datosParticipante = await obtenerDatosPerfil(participante.id_perfil);
+      
+      if (datosParticipante?.email) {
+        enviarEmailInvitacionEvento({
+          emailInvitado: datosParticipante.email,
+          nombreInvitado: datosParticipante.nombre,
+          tituloEvento: eventData.titulo,
+          fechaEvento: fechaInicio.toLocaleString(), // Puedes formatear mejor esta fecha
+          nombreCreador: eventData?.id_creador || 'Organizador',
+        }).catch(err => {
+          console.error('Error enviando email de invitacion:', err);
+        });
+      }
   
   // Si el participante es una banda, invitar a sus integrantes
   if (participante.tipo === 'banda') {
@@ -1243,6 +1283,7 @@ for (const participante of participantes) {
     await invitarIntegrantesBanda(evento.id, eventData.id_creador, participante.id_perfil);
   }
 }
+
 
 // PASO 3: Si el CREADOR es banda, invitar también a sus integrantes
 if (eventData.creador_tipo_perfil === 'banda') {
@@ -2231,3 +2272,36 @@ const supabaseAdmin = getSupabaseAdmin();
 
 
 
+//helpers para el correo
+
+async function obtenerDatosPerfil(perfilId: string): Promise<{ email: string; nombre: string } | null> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data, error } = await supabaseAdmin
+      .from('perfil')
+      .select('email, nombre')
+      .eq('id_perfil', perfilId)
+      .single();
+   console.log(`[DATOS PERFIL] ID: ${perfilId} -> Email encontrado: '${data?.email}' | Nombre: '${data?.nombre}' | Error DB: ${error?.message}`);
+    if (error) return null;
+    return data;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function obtenerDatosEvento(eventoId: string): Promise<{ titulo: string; fecha_hora_ini: string } | null> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data, error } = await supabaseAdmin
+      .from('evento')
+      .select('titulo, fecha_hora_ini')
+      .eq('id', eventoId)
+      .single();
+
+    if (error) return null;
+    return data;
+  } catch (error) {
+    return null;
+  }
+}
