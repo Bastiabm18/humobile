@@ -42,9 +42,9 @@ const handleLogout = async () => {
   };
   const navLinks = user
   ? [
-      ...links.slice(0, 4), // Inicio, Quiénes Somos, Contacto, Agenda
+      ...links.slice(0, 5), // Inicio, Quiénes Somos, Contacto, Agenda
       { name: 'Mi Humobile', href: '/dashboard' },
-      ...links.slice(5) // Login
+      ...links.slice(6) // Login
     ]
   : links;
 
