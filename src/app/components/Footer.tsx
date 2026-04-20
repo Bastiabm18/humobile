@@ -1,6 +1,7 @@
 // components/Footer.tsx
 'use client';
 
+import Image from 'next/image';
 import NeonSign from './NeonSign';
 
 export default function Footer() {
@@ -25,6 +26,7 @@ export default function Footer() {
               </span>
             </p>
           </div>
+          
         </div>
 
         {/* COLUMNA DERECHA - ENLACES + CONTACTO */}
@@ -64,7 +66,7 @@ export default function Footer() {
       <div className="mt-10 pt-6 border-t border-gray-600"></div>
 
       {/* FRASE FINAL - ABAJO DE TODO */}
-      <div className="mt-6 text-center text-xs text-gray-200">
+  <div className="mt-6 text-center text-xs text-gray-200">
         <p>
           Developed with <span className="text-red-500">❤</span> by{' '}
           <a
@@ -76,6 +78,18 @@ export default function Footer() {
             BABM
           </a>
         </p>
+        
+        {/* SELLO DE PAGO SEGURO */}
+        <div className="mt-6 flex items-center justify-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
+          <span className="text-gray-400 text-[10px] uppercase tracking-widest">Pagos seguros con</span>
+          <Image 
+           src="/2.WebpayPlus_FN_300px.png" 
+            alt="Webpay Plus" 
+            width={80} 
+            height={30} 
+            className="h-5 w-auto object-contain brightness-0 invert"
+          />
+        </div>
       </div>
     </footer>
   );
