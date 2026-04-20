@@ -6,6 +6,7 @@ import { FaCheck } from 'react-icons/fa';
 import { obtenerMembresiasDisponibles } from '../dashboard/serPremium/actions/actions';
 import { MembresiaConPermisos } from '@/types/profile';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function PlanesPage() {
   const [planes, setPlanes] = useState<MembresiaConPermisos[]>([]);
@@ -90,12 +91,18 @@ export default function PlanesPage() {
                 </div>
               </div>
 
-              <button
-                onClick={() => router.push('/dashboard/serPremium')}
-                className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black flex items-center justify-center gap-3 transition-colors"
-              >
-                Ir a Pagar
-              </button>
+            <button
+              onClick={() => router.push('/dashboard/serPremium')}
+              className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-black flex items-center justify-center gap-3 transition-colors"
+            >
+              <Image
+                  src="/2.WebpayPlus_FN_300px.png" 
+                alt="Pagar con Webpay" 
+                width={120} 
+                height={40} 
+                className="h-8 w-auto object-contain brightness-0 invert"
+              />
+            </button>
             </motion.div>
           )}
         </AnimatePresence>

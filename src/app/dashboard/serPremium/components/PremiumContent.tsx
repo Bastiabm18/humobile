@@ -17,6 +17,7 @@ import CancelarSuscripcionModal from './CancelarSuscripcionModal';
 import { GiPayMoney } from 'react-icons/gi';
 
 import { iniciarTransaccionWebpay } from '@/app/actions/transbank';
+import Image from 'next/image';
 
 export default function PremiumContent({ userData }: { userData: UserData }) {
   const [planes, setPlanes] = useState<MembresiaConPermisos[]>([]);
@@ -339,9 +340,21 @@ export default function PremiumContent({ userData }: { userData: UserData }) {
 
                 <button
                   onClick={handleWebPayPayment} disabled={loading}
-                  className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-black flex items-center justify-center gap-3"
+                  className="w-full py-4 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 disabled:opacity-50 text-white rounded-xl font-black flex items-center justify-center gap-3 transition-colors"
                 >
-                  {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><GiPayMoney size={28} /> Pagar con Webpay</>}
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Image 
+                        src="/2.WebpayPlus_FN_300px.png" 
+                        alt="Pagar con Webpay" 
+                        width={120} 
+                        height={40} 
+                        className="h-8 w-auto object-contain brightness-0 invert" // brightness-0 invert lo hace blanco si el PNG es de colores
+                      />
+                    </>
+                  )}
                 </button>
               </motion.div>
             )}
