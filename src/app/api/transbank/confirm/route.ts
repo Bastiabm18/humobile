@@ -33,7 +33,7 @@ async function procesarConfirmacion(req: NextRequest) {
   const tx = new WebpayPlus.Transaction(new Options(
     process.env.TBK_COMMERCE_CODE!,
     process.env.TBK_API_KEY!,
-    process.env.TBK_ENVIRONMENT === 'production' ? Environment.Production : Environment.Integration
+    Environment.Production
   ));
 
   try {
