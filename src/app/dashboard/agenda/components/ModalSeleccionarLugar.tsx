@@ -159,7 +159,7 @@ export default function ModalSeleccionarLugar({
                     }`}
                   >
                     <img 
-                      src={lugar.imagen_url || '/img/default-avatar.png'} 
+                      src={lugar.imagen_url ||  '/Gemini_Generated_Image_cqos2tcqos2tcqos-removebg-preview.png'} 
                       alt={lugar.nombre} 
                       className="w-12 h-12 rounded-lg object-cover border border-neutral-600"
                     />
