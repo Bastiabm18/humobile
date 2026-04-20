@@ -42,7 +42,7 @@ async function procesarConfirmacion(req: NextRequest) {
 
     // 5. Verificar si el pago fue APROBADO
     if (response.status === 'AUTHORIZED') {
-      console.log('✅ Pago APROBADO para usuario:', userId);
+      console.log(' Pago APROBADO para usuario:', userId);
       
       // Actualizamos la membresía en la base de datos
       await insertMembresia(userId, planNombre as any, 'monthly');
@@ -52,7 +52,7 @@ async function procesarConfirmacion(req: NextRequest) {
       
     } else {
       // Pago rechazado (Ej: Saldo insuficiente, tarjeta inválida)
-      console.log('❌ Pago RECHAZADO. Código:', response.response_code);
+      console.log(' Pago RECHAZADO. Código:', response.response_code);
       return NextResponse.redirect(new URL(`/dashboard/serPremium?error=rechazado&code=${response.response_code}`, req.url));
     }
 
