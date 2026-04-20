@@ -106,6 +106,18 @@ export default function Planes() {
             </motion.div>
           )}
         </AnimatePresence>
+
+         {/* SELLO DE PAGO SEGURO */}
+        <div className="mt-16 flex items-center justify-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
+          <span className="text-gray-400 text-xs uppercase tracking-widest">Pagos seguros con</span>
+          <Image 
+            src="/2.WebpayPlus_FN_300px.png" 
+            alt="Webpay Plus" 
+            width={80} 
+            height={30} 
+            className="h-5 w-auto object-contain brightness-0 invert"
+          />
+        </div>
       </div>
     </div>
   );
