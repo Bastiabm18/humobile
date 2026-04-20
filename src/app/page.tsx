@@ -11,6 +11,7 @@ import PreguntaFrecuenteComponente from "./components/Pregunta_frecuente";
 import PreguntaFrecuente from "./components/Pregunta_frecuente";
 import Contacto from "./components/Contacto";
 import IrAlExplorador from "./components/IrAlExplorador";
+import Planes from "./components/Planes";
 
 export default function Home() {
 
@@ -43,6 +44,9 @@ export default function Home() {
 <section id="QuienesSomos" className="w-full h-full flex ">
   <QuienesSomos />
 
+</section>
+<section>
+  <Planes/>
 </section>
 <section className="max-w-screen flex items-center justify-center">
   <PreguntaFrecuente/>
