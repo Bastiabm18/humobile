@@ -120,3 +120,35 @@ export async function obtenerMembresiasDisponibles() {
     return { success: false, error: error.message };
   }
 }
+
+export async function registrarCobroTransbank(data: {
+  token_ws: string;
+  perfil_id: string;
+  plan_nombre: string;
+  monto: number;
+  estado_transaccion: string;
+  codigo_autorizacion?: string;
+  orden_compra?: string;
+  fecha_fin: string;
+}) {
+  const supabase = getSupabaseAdmin();
+  
+  const { error } = await supabase.from('cobro_transbank').insert({
+    token_ws: data.token_ws,
+    perfil_id: data.perfil_id,
+    plan_nombre: data.plan_nombre,
+    monto: data.monto,
+    estado_transaccion: data.estado_transaccion,
+    codigo_autorizacion: data.codigo_autorizacion || null,
+    orden_compra: data.orden_compra || null,
+    fecha_inicio: new Date().toISOString(),
+    fecha_fin: data.fecha_fin
+  });
+
+  if (error) {
+    console.error('Error guardando historial de cobro:', error);
+    return { success: false };
+  }
+
+  return { success: true };
+}

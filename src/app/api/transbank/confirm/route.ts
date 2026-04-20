@@ -1,4 +1,4 @@
-import { insertMembresia } from '@/app/dashboard/serPremium/actions/actions';
+import { insertMembresia,registrarCobroTransbank } from '@/app/dashboard/serPremium/actions/actions';
 import { NextRequest, NextResponse } from 'next/server';
 import { WebpayPlus, Options, Environment } from 'transbank-sdk';
 
@@ -33,18 +33,35 @@ async function procesarConfirmacion(req: NextRequest) {
   const tx = new WebpayPlus.Transaction(new Options(
     process.env.TBK_COMMERCE_CODE!,
     process.env.TBK_API_KEY!,
-    Environment.Production
+    process.env.TBK_ENVIRONMENT === 'production' ? Environment.Production : Environment.Integration
   ));
 
   try {
     // 4. Confirmar la transacción (Commit)
     const response = await tx.commit(token_ws);
 
-    // 5. Verificar si el pago fue APROBADO
+     // Calculamos la fecha de fin (30 días)
+    const fechaFin = new Date();
+    fechaFin.setDate(fechaFin.getDate() + 30);
+
+    //  Verificar si el pago fue APROBADO
     if (response.status === 'AUTHORIZED') {
       console.log(' Pago APROBADO para usuario:', userId);
+
+       // 1. Guardamos en el historial
+      await registrarCobroTransbank({
+        token_ws: token_ws,
+        perfil_id: userId,
+        plan_nombre: planNombre!,
+        monto: response.amount,
+        estado_transaccion: response.status,
+        codigo_autorizacion: response.authorization_code,
+        orden_compra: response.buy_order,
+        fecha_fin: fechaFin.toISOString()
+      });
+
       
-      // Actualizamos la membresía en la base de datos
+      //2. Actualizamos la membresía en la base de datos
       await insertMembresia(userId, planNombre as any, 'monthly');
 
       // Redirigimos a su panel con un mensaje de éxito
