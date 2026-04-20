@@ -100,7 +100,7 @@ export default function PlanesPage() {
                 alt="Pagar con Webpay" 
                 width={120} 
                 height={40} 
-                className="h-8 w-auto object-contain brightness-0 invert"
+                className="h-8 w-auto object-contain "
               />
             </button>
             </motion.div>
@@ -114,7 +114,7 @@ export default function PlanesPage() {
             alt="Webpay Plus" 
             width={80} 
             height={30} 
-            className="h-5 w-auto object-contain brightness-0 invert"
+            className="h-8 w-auto object-contain  "
           />
         </div>
       </div>

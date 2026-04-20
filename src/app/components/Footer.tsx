@@ -87,7 +87,7 @@ export default function Footer() {
             alt="Webpay Plus" 
             width={80} 
             height={30} 
-            className="h-5 w-auto object-contain brightness-0 invert"
+            className="h-8 w-auto object-contain "
           />
         </div>
       </div>
