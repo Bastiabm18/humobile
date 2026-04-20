@@ -81,27 +81,33 @@ export async function enviarEmailInvitacionEvento({
 // ==========================================
 // FUNCION 2: CONFIRMACION O RECHAZO
 // ==========================================
+// ==========================================
+// FUNCION 2: CONFIRMACION O RECHAZO (Al Creador)
+// ==========================================
 export async function enviarEmailRespuestaParticipacion({
-  emailParticipante,
-  nombreParticipante,
+  emailCreador,
+  nombreCreador,
+  nombreInvitado,
   tituloEvento,
   fechaEvento,
   esConfirmacion,
 }: {
-  emailParticipante: string;
-  nombreParticipante: string;
+  emailCreador: string;
+  nombreCreador: string;
+  nombreInvitado: string;
   tituloEvento: string;
   fechaEvento: string;
   esConfirmacion: boolean;
 }) {
   return enviarEmailJS(PLANTILLA_RESPUESTA, {
-    to_email: emailParticipante,
-    to_name: nombreParticipante,
+    to_email: emailCreador,
+    to_name: nombreCreador,
     from_name: 'Sistema de Eventos',
-    subject: `Respuesta de participacion: ${tituloEvento}`,
-    message: esConfirmacion ? 'Tu participacion ha sido confirmada.' : 'Has rechazado la invitacion.',
+    subject: esConfirmacion ? `${nombreInvitado} acepto tu invitacion` : `${nombreInvitado} rechazo tu invitacion`,
+    message: esConfirmacion ? 'Un invitado ha confirmado.' : 'Un invitado ha rechazado.',
     titulo_evento: tituloEvento,
     fecha_evento: fechaEvento,
+    nombre_invitado: nombreInvitado,
     es_confirmacion: esConfirmacion ? 'true' : 'false',
   });
 }
