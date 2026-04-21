@@ -34,7 +34,7 @@ const [error, setError] = useState('');
       if (error) throw error;
 
       if (data.session) {
-        console.log('✅ Login exitoso, sincronizando sesión...');
+        console.log(' Login exitoso, sincronizando sesión...');
         
         // 2. Usar TU MISMO FLUJO de /api/auth/session
         const sessionResponse = await fetch('/api/auth/session', {

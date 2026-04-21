@@ -22,6 +22,8 @@ import {
 import { getSupabaseBrowser } from '@/lib/supabase/supabase-client';
 import RespuestaModal from './RespuestaModal';
 import { EventoCalendario, ParticipanteEvento, categoriaEvento, IntegranteBandaEvento } from '@/types/profile';
+import ModalSeleccionarParticipantesEdicion from './ModalSeleccionarParticipantesEdicion';
+import ModalSeleccionarLugarEdicion from './ModalSeleccionarLugarEdicion';
 
 interface EditarEventoModalProps {
   open: boolean;
@@ -63,11 +65,14 @@ export default function EditarEventoModal({
   const [selectedCategoria, setSelectedCategoria] = useState('');
   const [selectedParticipante, setSelectedParticipante] = useState('');
 
-  // Lugar
+   // Lugar (manejado por el modal ahora)
   const [idLugar, setIdLugar] = useState<string | null>(null);
-  const [showCustomLugar, setShowCustomLugar] = useState(false);
-  const [nombreLugarCustom, setNombreLugarCustom] = useState('');
-  const [direccionLugarCustom, setDireccionLugarCustom] = useState('');
+  const [nombreLugar, setNombreLugar] = useState<string | null>(null);
+  const [direccionLugar, setDireccionLugar] = useState<string | null>(null);
+
+  // Control de modales nuevos
+  const [mostrarModalParticipantes, setMostrarModalParticipantes] = useState(false);
+  const [mostrarModalLugar, setMostrarModalLugar] = useState(false);
 
   // Flyer
   const [preview, setPreview] = useState<string | null>(null);
@@ -111,14 +116,10 @@ export default function EditarEventoModal({
     );
 
     // Lugar
-    if (evento.id_lugar) {
-      setIdLugar(evento.id_lugar);
-      setShowCustomLugar(false);
-    } else if (evento.nombre_lugar) {
-      setShowCustomLugar(true);
-      setNombreLugarCustom(evento.nombre_lugar);
-      setDireccionLugarCustom(evento.direccion_lugar || '');
-    }
+     // Lugar
+    setIdLugar(evento.id_lugar || null);
+    setNombreLugar(evento.nombre_lugar || null);
+    setDireccionLugar(evento.direccion_lugar || null);
 
     // Cargar datos auxiliares
     cargarDatosAuxiliares();
@@ -187,6 +188,7 @@ export default function EditarEventoModal({
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  /*
   const agregarParticipante = () => {
     if (!selectedParticipante) return;
 
@@ -215,7 +217,7 @@ export default function EditarEventoModal({
     ]);
 
     setSelectedParticipante('');
-  };
+  }; */
 
   const quitarParticipante = (id: string) => {
     if (id === profile.id) {
@@ -224,7 +226,62 @@ export default function EditarEventoModal({
     }
     setParticipantes((prev) => prev.filter((p) => p.id_perfil !== id));
   };
-
+   const handleAgregarDesdeModal = (nuevosPerfiles: any[]) => {
+    const nuevosParticipantes = nuevosPerfiles.map(p => ({
+      id_perfil: p.id,
+      nombre: p.nombre || '',
+      tipo: p.tipo,
+    }));
+    setParticipantes(prev => [...prev, ...nuevosParticipantes]);
+  };
+    // ── Lugar (desde modal) ────────────────────────────────────────────────
+  const handleSeleccionarLugar = (lugar: {
+    id: string | null;
+    nombre: string | null;
+    direccion: string | null;
+    tipo: string;
+    accion: 'seleccionar' | 'editar_custom' | 'quitar';
+  }) => {
+    switch (lugar.accion) {
+   case 'seleccionar':
+        setIdLugar(lugar.id);
+        setNombreLugar(lugar.nombre);
+        setDireccionLugar(lugar.direccion);
+        
+        // AGREGAR EL LUGAR A PARTICIPANTES
+        if (lugar.id) {
+          const lugarIdSeguro: string = lugar.id; // Le decimos a TS que acá no es null es 1 paja pero typescript llora sin esto :(
+          setParticipantes(prev => {
+            const yaExiste = prev.some(p => p.id_perfil === lugarIdSeguro);
+            if (yaExiste) return prev;
+            return [...prev, {
+              id_perfil: lugarIdSeguro,
+              nombre: lugar.nombre || '',
+              tipo: 'lugar'
+            }];
+          });
+        }
+        break;
+        
+      case 'editar_custom':
+        setIdLugar(null);
+        setNombreLugar(lugar.nombre);
+        setDireccionLugar(lugar.direccion);
+        // Los lugares personalizados NO van a participantes (no tienen ID en BD)
+        break;
+        
+      case 'quitar':
+        // Si existía un lugar real con ID, lo quitamos de participantes
+        if (idLugar) {
+          setParticipantes(prev => prev.filter(p => p.id_perfil !== idLugar));
+        }
+        setIdLugar(null);
+        setNombreLugar(null);
+        setDireccionLugar(null);
+        break;
+    }
+  };
+  /*
   const handleSelectLugar = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     if (value === 'custom') {
@@ -240,7 +297,7 @@ export default function EditarEventoModal({
       setShowCustomLugar(false);
     }
   };
-
+  */
   const handleSubmit = async () => {
     if (!form.titulo.trim()) {
       alert('El título es obligatorio');
@@ -267,8 +324,8 @@ export default function EditarEventoModal({
 
         // Lugar
         id_lugar: idLugar,
-        nombre_lugar: showCustomLugar ? nombreLugarCustom.trim() || null : null,
-        direccion_lugar: showCustomLugar ? direccionLugarCustom.trim() || null : null,
+        nombre_lugar: nombreLugar,
+        direccion_lugar: direccionLugar,
         lat_lugar: null, // puedes implementar después
         lon_lugar: null,
 
@@ -457,7 +514,7 @@ export default function EditarEventoModal({
                 </div>
               </div>
 
-              {/* Lugar */}
+                            {/* Lugar */}
               <div className="bg-neutral-900/40 border border-neutral-700 rounded-xl p-5">
                 <h3 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
                   <HiMap /> Lugar del evento
@@ -466,45 +523,39 @@ export default function EditarEventoModal({
                 {profile.tipo === 'lugar' ? (
                   <div className="p-4 bg-emerald-950/40 border border-emerald-800/40 rounded-lg">
                     <p className="font-medium">{profile.nombre || 'Este local'}</p>
-                    <p className="text-sm text-gray-400 mt-1">
-                      Asignado automáticamente como creador
-                    </p>
+                    <p className="text-sm text-gray-400 mt-1">Asignado automáticamente como creador</p>
+                  </div>
+                ) : idLugar ? (
+                  <div 
+                    className="flex items-center justify-between bg-black/50 border border-yellow-600/30 rounded-xl px-4 py-3 cursor-pointer hover:border-yellow-500/50 transition"
+                    onClick={() => setMostrarModalLugar(true)}
+                  >
+                    <div>
+                      <p className="text-white font-medium">{lugaresVisibles.find(l => l.id === idLugar)?.nombre || nombreLugar || 'Lugar seleccionado'}</p>
+                      <p className="text-xs text-gray-400 mt-1 truncate">{direccionLugar || 'Sin dirección registrada'}</p>
+                    </div>
+                    <span className="text-xs text-yellow-400">Cambiar</span>
+                  </div>
+                ) : nombreLugar ? (
+                  <div 
+                    className="flex items-center justify-between bg-black/50 border border-yellow-600/30 rounded-xl px-4 py-3 cursor-pointer hover:border-yellow-500/50 transition"
+                    onClick={() => setMostrarModalLugar(true)}
+                  >
+                    <div>
+                      <p className="text-white font-medium">{nombreLugar}</p>
+                      <p className="text-xs text-gray-400 mt-1 truncate">{direccionLugar || 'Lugar no registrado'}</p>
+                    </div>
+                    <span className="text-xs text-yellow-400">Editar</span>
                   </div>
                 ) : (
-                  <>
-                    <select
-                      value={idLugar || (showCustomLugar ? 'custom' : '')}
-                      onChange={handleSelectLugar}
-                      className="w-full px-4 py-2.5 bg-neutral-700 border border-neutral-600 rounded-lg text-white mb-3"
-                    >
-                      <option value="">— Seleccionar lugar —</option>
-                      {lugaresVisibles.map((l) => (
-                        <option key={l.id} value={l.id}>
-                          {l.nombre}
-                        </option>
-                      ))}
-                      <option value="custom">Otro lugar (especificar)</option>
-                    </select>
-
-                    {showCustomLugar && (
-                      <div className="space-y-3 mt-2">
-                        <input
-                          type="text"
-                          placeholder="Nombre del lugar"
-                          value={nombreLugarCustom}
-                          onChange={(e) => setNombreLugarCustom(e.target.value)}
-                          className="w-full px-4 py-2.5 bg-neutral-700 border border-neutral-600 rounded-lg text-white"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Dirección completa"
-                          value={direccionLugarCustom}
-                          onChange={(e) => setDireccionLugarCustom(e.target.value)}
-                          className="w-full px-4 py-2.5 bg-neutral-700 border border-neutral-600 rounded-lg text-white"
-                        />
-                      </div>
-                    )}
-                  </>
+                  <button
+                    type="button"
+                    onClick={() => setMostrarModalLugar(true)}
+                    className="w-full px-4 py-2.5 border-2 border-dashed border-neutral-600 hover:border-yellow-500 text-gray-400 hover:text-yellow-400 rounded-lg transition flex items-center justify-center gap-2 text-sm"
+                  >
+                    <HiMap size={18} />
+                    Buscar o agregar lugar
+                  </button>
                 )}
               </div>
 
@@ -544,29 +595,14 @@ export default function EditarEventoModal({
                 </div>
 
                 <div className="flex gap-2 mt-4">
-                  <select
-                    value={selectedParticipante}
-                    onChange={(e) => setSelectedParticipante(e.target.value)}
-                    className="flex-1 px-4 py-2.5 bg-neutral-700 border border-neutral-600 rounded-lg text-white"
-                  >
-                    <option value="">Agregar participante...</option>
-                    {perfilesVisibles
-                      .filter((p) => !participantes.some((part) => part.id_perfil === p.id))
-                      .map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.nombre} · {p.tipo}
-                        </option>
-                      ))}
-                  </select>
-
-                  <button
-                    type="button"
-                    onClick={agregarParticipante}
-                    disabled={!selectedParticipante}
-                    className="px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800/50 disabled:text-gray-400 text-white rounded-lg transition"
-                  >
-                    +
-                  </button>
+                   <button
+                  type="button"
+                  onClick={() => setMostrarModalParticipantes(true)}
+                  className="w-full mt-4 px-4 py-2.5 border-2 border-dashed border-neutral-600 hover:border-yellow-500 text-gray-400 hover:text-yellow-400 rounded-lg transition flex items-center justify-center gap-2 text-sm"
+                >
+                  <HiUserGroup size={18} />
+                  Buscar y agregar participantes
+                </button>
                 </div>
 
                 {/* Nota importante sobre integrantes */}
@@ -665,6 +701,22 @@ export default function EditarEventoModal({
         esExito={modalState.esExito}
         onClose={() => setModalState((p) => ({ ...p, isOpen: false }))}
         onAceptar={modalState.esExito ? handleCloseSuccess : undefined}
+      />
+
+       <ModalSeleccionarParticipantesEdicion
+        isOpen={mostrarModalParticipantes}
+        onClose={() => setMostrarModalParticipantes(false)}
+        perfilesDisponibles={perfilesVisibles}
+        participantesActuales={participantes.map(p => p.id_perfil)}
+        onAgregar={handleAgregarDesdeModal}
+      />
+
+      <ModalSeleccionarLugarEdicion
+        isOpen={mostrarModalLugar}
+        onClose={() => setMostrarModalLugar(false)}
+        lugaresDisponibles={lugaresVisibles}
+        lugarActual={{ id: idLugar, nombre: nombreLugar, direccion: direccionLugar }}
+        onSeleccionar={handleSeleccionarLugar}
       />
     </>
   );

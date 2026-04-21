@@ -351,7 +351,7 @@ export async function getEventsByProfile(profileId: string, estadoEvento:string 
          p_estado_filtro: estadoEvento
       });
        if (error) {
-      console.error('❌ Error en la función PostgreSQL:', error);
+      console.error(' Error en la función PostgreSQL:', error);
       console.error('Detalles del error:', {
         code: error.code,
         message: error.message,
@@ -1014,7 +1014,7 @@ async function crearSolicitudEvento(
     return null;
   }
   
-  console.log(`✅ Solicitud creada para ${invitadoId}`);
+  console.log(` Solicitud creada para ${invitadoId}`);
   return data;
 }
 
@@ -1930,6 +1930,24 @@ export async function updateEventov2(data: EventoActualizar) {
       // Si es banda, invitar integrantes
       if (participante.tipo === 'banda') {
         await invitarIntegrantesBanda(data.id, idCreador, idPerfil);
+      }
+
+      // ==========================================
+      // ENVIO DE CORREO DE INVITACION
+      // ==========================================
+      const datosParticipante = await obtenerDatosPerfil(participante.id_perfil);
+      const datosCreador = await obtenerDatosPerfil(idCreador);
+      
+      if (datosParticipante?.email) {
+        enviarEmailInvitacionEvento({
+          emailInvitado: datosParticipante.email,
+          nombreInvitado: datosParticipante.nombre,
+          tituloEvento: data.titulo,
+          fechaEvento: fechaInicio.toLocaleString(),
+          nombreCreador: datosCreador?.nombre || 'Organizador',
+        }).catch(err => {
+          console.error('Error enviando email de invitacion:', err);
+        });
       }
     }
 

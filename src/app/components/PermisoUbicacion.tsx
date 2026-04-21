@@ -60,11 +60,11 @@ export default function PermisoUbicacion() {
   }, []);
 
   const imprimirUbicacion = (ubicacion: {latitud: number, longitud: number}) => {
-    console.log('📍 === UBICACIÓN OBTENIDA ===');
-    console.log('📱 Latitud:', ubicacion.latitud);
-    console.log('📱 Longitud:', ubicacion.longitud);
-    console.log('📍 Coordenadas:', ubicacion);
-    console.log('✅ Permiso de ubicación: OTORGADO');
+    console.log(' === UBICACIÓN OBTENIDA ===');
+    console.log(' Latitud:', ubicacion.latitud);
+    console.log(' Longitud:', ubicacion.longitud);
+    console.log(' Coordenadas:', ubicacion);
+    console.log(' Permiso de ubicación: OTORGADO');
   };
 
   const solicitarUbicacion = async () => {
@@ -105,7 +105,7 @@ export default function PermisoUbicacion() {
     navigator.geolocation.getCurrentPosition(
       (posicion) => {
         setCargando(false);
-        console.log('✅ Ubicación obtenida exitosamente');
+        console.log(' Ubicación obtenida exitosamente');
         
         const ubicacion = {
           latitud: posicion.coords.latitude,
@@ -116,12 +116,12 @@ export default function PermisoUbicacion() {
         setUbicacionObtenida(ubicacion);
         setMostrarModal(false);
         
-             // 🔥 AQUÍ EL CAMBIO CRÍTICO:
+             //  AQUÍ EL CAMBIO CRÍTICO:
       // Guardar en localStorage
       localStorage.setItem('permisoUbicacion', 'otorgado');
       localStorage.setItem('ubicacionUsuario', JSON.stringify(ubicacion));
       
-      // 🔥 IMPORTANTE: Disparar evento personalizado
+      //  IMPORTANTE: Disparar evento personalizado
       const event = new CustomEvent('storage-local', {
         detail: { ubicacion }
       });
@@ -144,7 +144,7 @@ export default function PermisoUbicacion() {
       },
       (error) => {
         setCargando(false);
-        console.error("❌ Error obteniendo ubicación:", error);
+        console.error(" Error obteniendo ubicación:", error);
         
         let mensajeError = 'No se pudo obtener la ubicación';
         
@@ -155,7 +155,7 @@ export default function PermisoUbicacion() {
             localStorage.setItem('permisoUbicacion', 'denegado');
             setErrorUbicacion(mensajeError);
             setMostrarInstrucciones(true);
-            console.log('❌ Permiso DENEGADO por el usuario');
+            console.log('Permiso DENEGADO por el usuario');
             break;
             
           case 2: // POSITION_UNAVAILABLE
@@ -174,7 +174,7 @@ export default function PermisoUbicacion() {
             setErrorUbicacion(mensajeError);
         }
         
-        console.log(`❌ Error de ubicación:`, mensajeError);
+        console.log(` Error de ubicación:`, mensajeError);
       },
       opciones
     );
@@ -184,7 +184,7 @@ export default function PermisoUbicacion() {
     setEstadoPermiso('denegado');
     setMostrarModal(false);
     localStorage.setItem('permisoUbicacion', 'denegado');
-    console.log('❌ Permiso de ubicación: DENEGADO manualmente');
+    console.log(' Permiso de ubicación: DENEGADO manualmente');
   };
 
   const manejarMasTarde = () => {

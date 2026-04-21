@@ -500,7 +500,7 @@ export async function getEventosConfirmados(): Promise<EventoCalendario[]> {
       };
     });
 
-    console.log(`✅ ${eventosCalendario.length} eventos confirmados cargados`);
+    console.log(` ${eventosCalendario.length} eventos confirmados cargados`);
     return eventosCalendario;
     
   } catch (error: any) {
