@@ -70,7 +70,7 @@ export default function Footer() {
         <p>
           Developed with <span className="text-red-500">❤</span> by{' '}
           <a
-            href="https://babm-zeta.vercel.app/es"
+            href="https://barriosweb.cl/es"
             target="_blank"
             rel="noopener noreferrer"
             className="cursor-pointer underline hover:text-white transition"

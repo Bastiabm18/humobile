@@ -1,4 +1,6 @@
 // app/eventos/[slug]/page.tsx
+//revalida la pagina cada 1 hora 
+export const revalidate = 3600;
 import Parser from 'rss-parser';
 import { 
   FaCalendarAlt, 
