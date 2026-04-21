@@ -80,7 +80,7 @@ export default function Footer() {
         </p>
         
         {/* SELLO DE PAGO SEGURO */}
-        <div className="mt-6 flex items-center justify-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
+        <div className="mt-6 flex items-center justify-center gap-2 md:opacity-60 md:hover:opacity-100 transition-opacity">
           <span className="text-gray-400 text-[10px] uppercase tracking-widest">Pagos seguros con</span>
           <Image 
            src="/2.WebpayPlus_FN_300px.png" 
