@@ -131,7 +131,7 @@ console.log('¿El permiso de perfil visible está activo?', esVisible);
   
   useEffect(() => {
     getCategoriasPerfilActivas(formData.tipo_perfil).then(categorias => {
-      //console.log('Categorías activas:', categorias);
+      console.log('Categorías activas:', categorias);
       setCategoriasPerfil(categorias);
     });
   },[formData.tipo_perfil]);
@@ -762,12 +762,12 @@ console.log('¿El permiso de perfil visible está activo?', esVisible);
                 </div>
               )}
 
-              {(formData.tipo_perfil === 'banda' || formData.tipo_perfil === 'representante') && (
+             {/** {(formData.tipo_perfil === 'banda' || formData.tipo_perfil === 'representante') && (
                 <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
                   <h2 className="text-xl font-semibold text-white mb-5">{formData.tipo_perfil === 'banda' ? 'Integrantes' : 'Artistas Representados'}</h2>
-                  {renderCamposAdicionales()}
+                   {renderCamposAdicionales()} 
                 </div>
-              )}
+              )} */}
 
               {/* Contacto */}
               <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
