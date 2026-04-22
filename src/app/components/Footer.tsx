@@ -3,8 +3,11 @@
 
 import Image from 'next/image';
 import NeonSign from './NeonSign';
+import PoliticaPrivacidadModal from './PoliticaPrivacidadModal';
+import { useState } from 'react';
 
 export default function Footer() {
+    const [showPolitica, setShowPolitica] = useState(false);// state para modal de politica de privacidad
   return (
     <footer className="py-12 px-6 md:px-8 lg:px-12 w-full">
       {/* CONTENIDO PRINCIPAL */}
@@ -45,17 +48,20 @@ export default function Footer() {
           </div>
 
           {/* CONTACTO */}
-          <div className="flex flex-col items-center md:items-start">
+          <div className="flex flex-col items-center  md:items-start">
             <h3 className="font-semibold text-gray-400 mb-3">Contacto</h3>
-            <ul className="space-y-2 text-sm text-center md:text-left">
-              <li className="flex items-center gap-2">
-                <span>celular</span> +56 9 1234 5678
+            <ul className="space-y-2 text-sm items-center justify-center md:text-left">
+              <li className="flex items-center justify-center md:justify-start gap-2">
+                <span>celular</span> +569 8420 1584
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center md:justify-start gap-2">
                 <span>Email</span> contacto@humobile.cl
               </li>
-              <li className="flex items-center gap-2">
-                <span>Horarios</span> Lun - Vie: 9:00 - 18:00
+              <li className="flex items-center justify-center md:justify-start gap-2">
+                <span>Horarios</span> Lun - Vie: 9:00 AM - 18:00 PM
+              </li>
+              <li className="flex items-center justify-center md:justify-start gap-2">
+                <span>Dirección</span> Angol 436 of. 1004, Concepción, Chile
               </li>
             </ul>
           </div>
@@ -63,10 +69,32 @@ export default function Footer() {
       </div>
 
       {/* LÍNEA SEPARADORA */}
-      <div className="mt-10 pt-6 border-t border-gray-600"></div>
+      <div className="mt-10 mx-auto pt-6 border-t border-dashed md:w-7xl border-gray-600"></div>
+      
+       {/* COPYRIGHT + POLÍTICAS */}
+      <div className="flex flex-col justify-center items-center mt-4 gap-4 text-sm">
+        <p className="text-gray-400 text-center md:text-left">
+          © {new Date().getFullYear()} HUMOBILE SpA. Todos los derechos reservados{' '}
+          <span className="inline-block w-3 h-3 rounded-full border border-gray-400 text-center text-[10px] leading-3">
+            ®
+          </span>
+        </p>
+        <button 
+          onClick={() => setShowPolitica(true)}
+          className="text-gray-500 hover:text-sky-400 transition cursor-pointer"
+        >
+          <a className='text-lg'>
+            Política de Protección de Datos Personales
+            </a>
+        </button>
+      </div>
+
+      {/* LÍNEA SEPARADORA INFERIOR */}
+      <div className="mt-6 mx-auto pt-6 border-t border-gray-600"></div>
+      
 
       {/* FRASE FINAL - ABAJO DE TODO */}
-  <div className="mt-6 text-center text-xs text-gray-200">
+  <div className="mt-6  text-center text-xs text-gray-200">
         <p>
           Developed with <span className="text-red-500">❤</span> by{' '}
           <a
@@ -91,6 +119,12 @@ export default function Footer() {
           />
         </div>
       </div>
+
+           {/* MODAL POLÍTICA DE PRIVACIDAD */}
+      <PoliticaPrivacidadModal 
+        isOpen={showPolitica} 
+        onClose={() => setShowPolitica(false)} 
+      />
     </footer>
   );
 }

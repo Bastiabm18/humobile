@@ -7,10 +7,14 @@ import { obtenerMembresiasDisponibles } from '../dashboard/serPremium/actions/ac
 import { MembresiaConPermisos } from '@/types/profile';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import TerminosContratoModal from '../dashboard/serPremium/components/TerminosContratoModal';
+import PoliticaPrivacidadModal from './PoliticaPrivacidadModal';
 
 export default function Planes() {
   const [planes, setPlanes] = useState<MembresiaConPermisos[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<MembresiaConPermisos | null>(null);
+      const [showTermsModal, setShowTermsModal] = useState(false);
+    const [showPoliticaModal, setShowPoliticaModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -118,7 +122,36 @@ export default function Planes() {
             className="h-8 w-auto object-contain "
           />
         </div>
-      </div>
+        <div className="mt-10 max-w-lg mx-auto">
+                <div className="border-t border-gray-700 mb-6"></div>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
+                  <button 
+                    onClick={() => setShowTermsModal(true)}
+                    className="text-gray-500 hover:text-white transition underline underline-offset-4"
+                  >
+                    Términos y Condiciones
+                  </button>
+                  <span className="hidden sm:block text-gray-700">|</span>
+                  <button 
+                    onClick={() => setShowPoliticaModal(true)}
+                    className="text-gray-500 hover:text-white transition underline underline-offset-4"
+                  >
+                    Política de Privacidad
+                  </button>
+                </div>
+              </div>
+      
+            </div>
+      
+            {/* MODALES LEGALES */}
+            <TerminosContratoModal 
+              isOpen={showTermsModal} 
+              onClose={() => setShowTermsModal(false)} 
+            />
+            <PoliticaPrivacidadModal 
+              isOpen={showPoliticaModal} 
+              onClose={() => setShowPoliticaModal(false)} 
+            />
     </div>
   );
 }

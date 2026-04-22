@@ -18,7 +18,7 @@ import { GiPayMoney } from 'react-icons/gi';
 
 import { iniciarTransaccionWebpay } from '@/app/actions/transbank';
 import Image from 'next/image';
-
+import TerminosContratoModal from './TerminosContratoModal';
 export default function PremiumContent({ userData }: { userData: UserData }) {
   const [planes, setPlanes] = useState<MembresiaConPermisos[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<MembresiaConPermisos | null>(null);
@@ -29,6 +29,10 @@ export default function PremiumContent({ userData }: { userData: UserData }) {
   const pagoSuccess = searchParams.get('success') === 'true';
   const pagoError = searchParams.get('error');
   const pagoErrorCode = searchParams.get('code');
+
+    // states para modal de términos y condiciones
+   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const cerrarAlerta = () => {
     router.replace('/dashboard/serPremium');
@@ -285,7 +289,9 @@ export default function PremiumContent({ userData }: { userData: UserData }) {
             {planes.map((plan) => (
               <div
                 key={plan.id_membership}
-                onClick={() => setSelectedPlan(plan)}
+                onClick={() => {setSelectedPlan(plan)
+                                setAcceptedTerms(false)
+                }}
                 className={`p-8 rounded-3xl border-2 transition-all cursor-pointer ${
                   selectedPlan?.id_membership === plan.id_membership 
                   ? 'border-blue-600 bg-blue-900/10' 
@@ -337,6 +343,27 @@ export default function PremiumContent({ userData }: { userData: UserData }) {
                     <span className="text-blue-500">${(Number(selectedPlan.precio_mensual) * 1.19).toLocaleString('es-CL')}</span>
                   </div>
                 </div>
+                 {/* CHECK DE TÉRMINOS */}
+                <div className="flex items-start gap-3 mt-4 mb-2">
+                  <input 
+                    type="checkbox" 
+                    id="termsCheck"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="mt-1 w-4 h-4 accent-purple-600 cursor-pointer"
+                  />
+                  <label htmlFor="termsCheck" className="text-xs text-neutral-400 cursor-pointer leading-relaxed">
+                    He leído y acepto los{' '}
+                    <button 
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setShowTermsModal(true); }} 
+                      className="text-purple-400 underline hover:text-purple-300 font-semibold"
+                    >
+                      Términos, Condiciones y Políticas
+                    </button> 
+                    de contratación de HUMOBILE SpA.
+                  </label>
+                </div>
 
                 <button
                   onClick={handleWebPayPayment} disabled={loading}
@@ -363,6 +390,13 @@ export default function PremiumContent({ userData }: { userData: UserData }) {
       )}
       
     </div>
+
+      {/* MODAL TÉRMINOS Y CONDICIONES */}
+      <TerminosContratoModal
+        isOpen={showTermsModal} 
+        onClose={() => setShowTermsModal(false)} 
+      />
+
     </>
   );
 }
