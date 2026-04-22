@@ -1514,6 +1514,10 @@ export async function crearPerfil(perfilData: any) {
     const perfilParaInsertar = { ...perfilData };
     delete perfilParaInsertar.integrantes_perfil;
     delete perfilParaInsertar.representados_perfil;
+       // LIMPIAR CAMPOS VACÍOS QUE ESPERAN INTEGERS O UUIDS
+    if (!perfilParaInsertar.id_categoria || perfilParaInsertar.id_categoria === '') {
+      delete perfilParaInsertar.id_categoria;
+    }
 
     const { data: perfilCreado, error: errorPerfil } = await supabaseAdmin
       .from('perfil')

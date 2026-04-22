@@ -92,6 +92,7 @@ export default function ModalMensaje({
 
                   {/* Mensaje */}
                   <p className={`
+                    whitespace-pre-line text-left
                     text-lg font-medium
                     ${currentConfig.color}
                     mb-8

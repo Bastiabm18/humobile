@@ -97,6 +97,10 @@ export default function PerfilContent({
   // Función para cerrar modal
   const cerrarModal = () => {
     setShowModal(false);
+ 
+        //window.location.reload()
+    
+
   };
 
   const loadPerfiles = async () => {
@@ -190,16 +194,31 @@ const handleCrearPerfil = async (nuevoPerfilData: Omit<Perfil, 'id_perfil' | 'cr
     const resultado = await crearPerfil(nuevoPerfilData);
     
     if (resultado.exito && resultado.datos) {
-      mostrarMensaje('Perfil creado exitosamente', 'exito');
+   
       await loadPerfiles();
       setCreandoPerfil(false);
-
-      if (membresiaEstado != process.env.NEXT_PUBLIC_SUPERADMIN) {
-        
-        setTimeout(() => {
-          router.push('/dashboard/serPremium');
-        }, 3000);
+       const tipo = nuevoPerfilData.tipo_perfil === 'local' ? 'espacio' : nuevoPerfilData.tipo_perfil;
+      let pasos = '';
+      
+      if (tipo === 'artista') {
+        pasos = `\n\n• Desde la edición de tu perfil puedes pedir ser integrante de bandas.\n• También puedes agregar un representante si lo necesitas.`;
+      } else if (tipo === 'banda') {
+        pasos = `\n\n• Desde la edición de tu perfil puedes buscar y agregar integrantes.\n• Puedes gestionar representantes para tu banda.\n• También puedes gestionar administradores externos para tu banda.`;
+      } else if (tipo === 'representante') {
+        pasos = `\n\n• Desde la edición de tu perfil puedes buscar y agregar artistas o bandas para representar.`;
+      } else {
+        pasos = `\n\n• Puedes completar los datos adicionales de tu perfil en cualquier momento desde la edición.`;
       }
+
+      mostrarMensaje(
+        `¡Perfil de ${tipo} creado con éxito!${pasos}`, 
+        'info'
+      );
+
+  
+        
+       
+      
     } else {
       mostrarMensaje(resultado.mensaje || 'Error al crear el perfil', 'error');
     }

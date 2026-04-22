@@ -31,6 +31,11 @@ import { FiUploadCloud, FiX, FiGlobe } from 'react-icons/fi';
 import LocationPickerMap from './LocationPickerMap';
 import { getCategoriasPerfilActivas, getGeoData, getPerfilesArtistaVisibles, getPerfilesRepresentanteVisibles, getPerfilesTodoUso } from '../actions/actions';
 import { GeoData } from '@/types/profile';
+import BuscarBandaModal from './BuscarBandaModal';
+import BuscarIntegrantesBandaModal from './BuscarIntegrantesBandaModal';
+import BuscarRepresentanteModal from './BuscarRepresentanteModal';
+import BuscarRepresentadosModal from './BuscarRepresentadosModal';
+import GestionarAdministradoresModal from './GestionarAdministradoresModal';
 
 interface EditarPerfilProps {
   perfil: Perfil;
@@ -88,6 +93,13 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
   const [cargandoPerfiles, setCargandoPerfiles] = useState(false);
   
   const supabase = getSupabaseBrowser();
+
+  // Estados para los modales de relaciones
+  const [showBuscarBandaModal, setShowBuscarBandaModal] = useState(false);
+  const [showBuscarIntegrantesModal, setShowBuscarIntegrantesModal] = useState(false);
+  const [showBuscarRepresentanteModal, setShowBuscarRepresentanteModal] = useState(false);
+  const [showBuscarRepresentadosModal, setShowBuscarRepresentadosModal] = useState(false);
+  const [showGestionarAdminsModal, setShowGestionarAdminsModal] = useState(false);
 
 // categorias
   useEffect(() => {
@@ -426,44 +438,19 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
         </h2>
         
         <div className="space-y-4">
-          <div className="flex gap-2 mb-4">
-            {cargandoPerfiles ? (
-              <div className="flex-1 bg-neutral-800/50 border border-purple-600/30 rounded-xl px-4 py-3 flex items-center gap-3">
-                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-purple-500"></div>
-                <span className="text-gray-400">Cargando artistas...</span>
-              </div>
-            ) : (
-              <select
-                value={nuevoIntegrante}
-                onChange={(e) => setNuevoIntegrante(e.target.value)}
-                className="flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 text-white"
-                disabled={perfilesDisponibles.length === 0}
-              >
-                <option value="">Seleccionar artista</option>
-                {perfilesDisponibles
-                  .filter(p => p.tipo_perfil === 'artista')
-                  .map((artista) => (
-                    <option key={artista.id_perfil} value={artista.id_perfil}>
-                      {artista.nombre}
-                    </option>
-                  ))}
-              </select>
-            )}
-            
-            <button
-              type="button"
-              onClick={agregarIntegrante}
-              disabled={!nuevoIntegrante}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/30 disabled:cursor-not-allowed text-white rounded-lg flex items-center gap-2"
-            >
-              <FaPlus className="w-4 h-4" />
-              Agregar
-            </button>
-          </div>
+          {/* Botón para abrir el modal de búsqueda */}
+          <button
+            type="button"
+            onClick={() => setShowBuscarIntegrantesModal(true)}
+            className="w-full px-4 py-3 bg-purple-900/30 border border-dashed border-purple-500/50 hover:bg-purple-900/50 text-purple-300 rounded-lg flex items-center justify-center gap-2 transition-colors"
+          >
+            <FaPlus className="w-4 h-4" />
+            Buscar y Agregar Integrante
+          </button>
 
           {integrantesSeleccionados.length > 0 && (
             <div className="mt-4">
-              <h4 className="text-sm font-medium text-neutral-400 mb-2">Integrantes seleccionados:</h4>
+              <h4 className="text-sm font-medium text-neutral-400 mb-2">Integrantes actuales:</h4>
               <div className="space-y-2">
                 {integrantesSeleccionados.map(id => {
                   const artista = perfilesDisponibles.find(a => a.id_perfil === id);
@@ -471,13 +458,9 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
                     <div key={id} className="flex items-center justify-between bg-neutral-800/50 border border-neutral-700 rounded-lg p-3">
                       <div className="flex items-center gap-3">
                         <FaUser className="text-purple-400" />
-                        <span className="text-white">{artista?.nombre || 'Artista'}</span>
+                        <span className="text-white">{artista?.nombre || 'Cargando nombre...'}</span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => eliminarIntegrante(id)}
-                        className="p-1 text-red-400 hover:text-red-300"
-                      >
+                      <button type="button" onClick={() => eliminarIntegrante(id)} className="p-1 text-red-400 hover:text-red-300">
                         <FaTrash className="w-4 h-4" />
                       </button>
                     </div>
@@ -486,6 +469,18 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
               </div>
             </div>
           )}
+
+          {/* Gestión de Administradores Externos */}
+          <div className="mt-6 pt-4 border-t border-neutral-700">
+             <button
+              type="button"
+              onClick={() => setShowGestionarAdminsModal(true)}
+              className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-600 hover:bg-neutral-700 text-neutral-300 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm"
+            >
+              <FaUserCheck className="w-4 h-4" />
+              Gestionar Administradores Externos
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -500,28 +495,31 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
           <div className="p-2 bg-purple-500/10 rounded-lg">
             <FaUsers className="w-5 h-5 text-purple-400" />
           </div>
-          <span>Miembro En</span>
+          <span>Soy Miembro De</span>
         </h2>
         
         <div className="space-y-4">
-       
+          <button
+            type="button"
+            onClick={() => setShowBuscarBandaModal(true)}
+            className="w-full px-4 py-3 bg-purple-900/30 border border-dashed border-purple-500/50 hover:bg-purple-900/50 text-purple-300 rounded-lg flex items-center justify-center gap-2 transition-colors"
+          >
+            <FaPlus className="w-4 h-4" />
+            Buscar y Agregar Banda
+          </button>
 
           {intengranteEn.length > 0 && (
             <div className="mt-4">
               <div className="space-y-2">
                 {intengranteEn.map(id => {
-                  const artista = perfilesDisponibles.find(a => a.id_perfil === id);
+                  const banda = perfilesDisponibles.find(a => a.id_perfil === id);
                   return (
                     <div key={id} className="flex items-center justify-between bg-neutral-800/50 border border-neutral-700 rounded-lg p-3">
                       <div className="flex items-center gap-3">
-                        <FaUser className="text-purple-400" />
-                        <span className="text-white">{artista?.nombre || 'Artista'}</span>
+                        <FaUsers className="text-purple-400" />
+                        <span className="text-white">{banda?.nombre || 'Cargando nombre...'}</span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => eliminarIntegranteEn(id)}
-                        className="p-1 text-red-400 hover:text-red-300"
-                      >
+                      <button type="button" onClick={() => eliminarIntegranteEn(id)} className="p-1 text-red-400 hover:text-red-300">
                         <FaTrash className="w-4 h-4" />
                       </button>
                     </div>
@@ -549,75 +547,28 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
         </h2>
         
         <div className="space-y-4">
-          <div className="flex gap-2 mb-4">
-            {cargandoPerfiles ? (
-              <div className="flex-1 bg-neutral-800/50 border border-red-600/30 rounded-xl px-4 py-3 flex items-center gap-3">
-                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-red-500"></div>
-                <span className="text-gray-400">Cargando perfiles...</span>
-              </div>
-            ) : (
-              <select
-                value={nuevoRepresentado}
-                onChange={(e) => setNuevoRepresentado(e.target.value)}
-                className="flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 text-white"
-                disabled={perfilesDisponibles.length === 0}
-              >
-                <option value="">Seleccionar perfil</option>
-                <optgroup label="Artistas">
-                  {perfilesDisponibles
-                    .filter(p => p.tipo_perfil === 'artista')
-                    .map((artista) => (
-                      <option key={artista.id_perfil} value={artista.id_perfil}>
-                        {artista.nombre}
-                      </option>
-                    ))}
-                </optgroup>
-                <optgroup label="Bandas">
-                  {perfilesDisponibles
-                    .filter(p => p.tipo_perfil === 'banda')
-                    .map((banda) => (
-                      <option key={banda.id_perfil} value={banda.id_perfil}>
-                        {banda.nombre}
-                      </option>
-                    ))}
-                </optgroup>
-              </select>
-            )}
-            
-            <button
-              type="button"
-              onClick={agregarRepresentado}
-              disabled={!nuevoRepresentado}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-600/30 disabled:cursor-not-allowed text-white rounded-lg flex items-center gap-2"
-            >
-              <FaPlus className="w-4 h-4" />
-              Agregar
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowBuscarRepresentadosModal(true)}
+            className="w-full px-4 py-3 bg-red-900/30 border border-dashed border-red-500/50 hover:bg-red-900/50 text-red-300 rounded-lg flex items-center justify-center gap-2 transition-colors"
+          >
+            <FaPlus className="w-4 h-4" />
+            Buscar y Agregar Representado
+          </button>
 
           {representadosSeleccionados.length > 0 && (
             <div className="mt-4">
-              <h4 className="text-sm font-medium text-neutral-400 mb-2">Representados seleccionados:</h4>
+              <h4 className="text-sm font-medium text-neutral-400 mb-2">Representados actuales:</h4>
               <div className="space-y-2">
                 {representadosSeleccionados.map(id => {
                   const perfil = perfilesDisponibles.find(p => p.id_perfil === id);
                   return (
                     <div key={id} className="flex items-center justify-between bg-neutral-800/50 border border-neutral-700 rounded-lg p-3">
                       <div className="flex items-center gap-3">
-                        {perfil?.tipo_perfil === 'artista' ? 
-                          <FaUser className="text-blue-400" /> : 
-                          <FaUsers className="text-purple-400" />
-                        }
-                        <div>
-                          <span className="text-white">{perfil?.nombre || 'Perfil'}</span>
-                          <span className="text-xs text-neutral-500 ml-2">({perfil?.tipo_perfil})</span>
-                        </div>
+                        {perfil?.tipo_perfil === 'artista' ? <FaUser className="text-blue-400" /> : <FaUsers className="text-purple-400" />}
+                        <span className="text-white">{perfil?.nombre || 'Cargando...'}</span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => eliminarRepresentado(id)}
-                        className="p-1 text-red-400 hover:text-red-300"
-                      >
+                      <button type="button" onClick={() => eliminarRepresentado(id)} className="p-1 text-red-400 hover:text-red-300">
                         <FaTrash className="w-4 h-4" />
                       </button>
                     </div>
@@ -639,40 +590,40 @@ export default function EditarPerfil({ perfil, onSave, onCancel, geoData }: Edit
           <div className="p-2 bg-red-500/10 rounded-lg">
             <FaUserCheck className="w-5 h-5 text-red-400" />
           </div>
-          <span>Representante</span>
+          <span>Mi Representante</span>
         </h2>
         
         <div className="space-y-4">
-    
+          <button
+            type="button"
+            onClick={() => setShowBuscarRepresentanteModal(true)}
+            className="w-full px-4 py-3 bg-red-900/30 border border-dashed border-red-500/50 hover:bg-red-900/50 text-red-300 rounded-lg flex items-center justify-center gap-2 transition-colors"
+          >
+            <FaPlus className="w-4 h-4" />
+            Buscar y Agregar Representante
+          </button>
 
-{representadoPor.length > 0 ? (
-  <div className="mt-4">
-    <h4 className="text-sm font-medium text-neutral-400 mb-2">Representantes actuales:</h4>
-    <div className="space-y-2">
-      {representadoPor.map(id => {
-        // Buscamos en perfilesDisponibles el perfil que coincida con el ID
-        const perfilEncontrado = perfilesDisponibles.find(p => p.id_perfil === id);
-        return (
-          <div key={id} className="flex items-center justify-between bg-neutral-800/50 border border-neutral-700 rounded-lg p-3">
-            <div className="flex items-center gap-3">
-              <FaUserCheck className="text-blue-400" />
-              <div>
-                <span className="text-white">{perfilEncontrado?.nombre || 'Cargando...'}</span>
+          {representadoPor.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-sm font-medium text-neutral-400 mb-2">Representantes actuales:</h4>
+              <div className="space-y-2">
+                {representadoPor.map(id => {
+                  const perfilEncontrado = perfilesDisponibles.find(p => p.id_perfil === id);
+                  return (
+                    <div key={id} className="flex items-center justify-between bg-neutral-800/50 border border-neutral-700 rounded-lg p-3">
+                      <div className="flex items-center gap-3">
+                        <FaUserCheck className="text-blue-400" />
+                        <span className="text-white">{perfilEncontrado?.nombre || 'Cargando...'}</span>
+                      </div>
+                      <button type="button" onClick={() => eliminarRepresentanteDeEstePerfil(id)} className="p-1 text-red-400 hover:text-red-300">
+                        <FaTrash className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => eliminarRepresentanteDeEstePerfil(id)} // Función corregida abajo
-              className="p-1 text-red-400 hover:text-red-300"
-            >
-              <FaTrash className="w-4 h-4" />
-            </button>
-          </div>
-        );
-      })}
-    </div>
-  </div>
-) : null}
+          )}
         </div>
       </div>
     );
@@ -905,15 +856,15 @@ const renderCamposcategoria = () => {
               </div>
             )}
               {/* Sección de Integrantes (solo para banda) */}
-              {/*renderIntegrantesSection()}
+              {renderIntegrantesSection()}
               {/* Sección de Integrante en banda (solo para artista) */}
-              {/*renderIntegranteDeBandaSection()}
+              {renderIntegranteDeBandaSection()}
 
 
               {/* Sección de Representados (solo para representante) */}
-              {/*renderRepresentadosSection()}
+              {renderRepresentadosSection()}
               {/* Sección de Representados (solo para representante) */}
-              {/*renderRepresentanteSection()}
+              {renderRepresentanteSection()}
 
               {/* Ubicación - País, Región, Comuna */}
               <div className="bg-neutral-900/50 border border-neutral-700 rounded-xl p-5">
@@ -1138,6 +1089,38 @@ const renderCamposcategoria = () => {
           onClose={() => setShowMapModal(false)}
         />
       )}
+
+        {/* Modales de Relaciones */}
+      <BuscarBandaModal
+        isOpen={showBuscarBandaModal}
+        onClose={() => setShowBuscarBandaModal(false)}
+        id_perfil_artista={perfil.id_perfil}
+      />
+
+      <BuscarIntegrantesBandaModal
+        isOpen={showBuscarIntegrantesModal}
+        onClose={() => setShowBuscarIntegrantesModal(false)}
+        id_perfil_banda={perfil.id_perfil}
+        nombre_banda={perfil.nombre}
+      />
+
+      <BuscarRepresentanteModal
+        isOpen={showBuscarRepresentanteModal}
+        onClose={() => setShowBuscarRepresentanteModal(false)}
+        id_perfil={perfil.id_perfil}
+      />
+
+      <BuscarRepresentadosModal
+        isOpen={showBuscarRepresentadosModal}
+        onClose={() => setShowBuscarRepresentadosModal(false)}
+        id_representante={perfil.id_perfil}
+      />
+
+      <GestionarAdministradoresModal
+        isOpen={showGestionarAdminsModal}
+        onClose={() => setShowGestionarAdminsModal(false)}
+        id_banda={perfil.id_perfil}
+      />
     </>
   );
 }

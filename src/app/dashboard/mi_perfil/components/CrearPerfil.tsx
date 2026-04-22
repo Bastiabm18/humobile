@@ -636,7 +636,7 @@ console.log('¿El permiso de perfil visible está activo?', esVisible);
            {/* Contenido principal */}
         <div className="p-6">
           
-          {/* 🆕 BANNER DE LÍMITE ALCANZADO */}
+          {/*  BANNER DE LÍMITE ALCANZADO */}
           {!puedeCrearPerfil && (
             <div className="mb-6 p-5 bg-gradient-to-r from-red-900/30 to-red-800/20 border border-red-500/30 rounded-xl">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -665,7 +665,7 @@ console.log('¿El permiso de perfil visible está activo?', esVisible);
             </div>
           )}
 
-          {/* 🆕 Se agrega opacity y pointer-events-none si no puede crear */}
+          {/*  Se agrega opacity y pointer-events-none si no puede crear */}
           <div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 transition-opacity duration-300 ${!puedeCrearPerfil ? 'opacity-50 pointer-events-none' : ''}`}>
             {/* Columna izquierda */}
             <div className="space-y-6">
@@ -870,7 +870,7 @@ console.log('¿El permiso de perfil visible está activo?', esVisible);
                 </div>
               </div>
             </div>
-          </div> {/* 🆕 Cierre del grid con la clase dinámica */}
+          </div> {/*  Cierre del grid con la clase dinámica */}
 
           {/* Botones de acción */}
           <div className="mt-8 pt-8 border-t border-neutral-700/50 flex justify-end gap-4">
@@ -885,7 +885,7 @@ console.log('¿El permiso de perfil visible está activo?', esVisible);
                   ? 'bg-neutral-600/50 text-neutral-500 cursor-not-allowed' 
                   : 'bg-green-600 hover:bg-green-700 text-white'
               }`}
-              disabled={uploading || !puedeCrearPerfil} // 🆕 SE BLOQUEA SI ALCANZA LÍMITE
+              disabled={uploading || !puedeCrearPerfil} //  SE BLOQUEA SI ALCANZA LÍMITE
             >
               {uploading ? (
                 <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> Creando...</>

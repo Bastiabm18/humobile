@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { FcGoogle } from 'react-icons/fc'; 
 import { motion } from 'framer-motion';
-// 🚨 CAMBIO CRÍTICO AQUÍ: Importar la función getSupabaseBrowser
+//  CAMBIO CRÍTICO AQUÍ: Importar la función getSupabaseBrowser
 import { getSupabaseBrowser } from '@/lib/supabase/supabase-client'; 
 import { useEffect } from 'react'; 
 import { useRouter } from 'next/navigation'; 
@@ -15,10 +15,10 @@ const [password, setPassword] = useState('');
 const [loading, setLoading] = useState(false);
 const [error, setError] = useState('');
  
-  // 🚨 INICIALIZACIÓN CRÍTICA: Llama a la función para obtener la instancia
+  //  INICIALIZACIÓN CRÍTICA: Llama a la función para obtener la instancia
   const supabase = getSupabaseBrowser(); 
 
-    // 🆕 Manejador para login con email/password
+    //  Manejador para login con email/password
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevenir recarga de página
     setLoading(true);

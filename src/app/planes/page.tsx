@@ -13,7 +13,7 @@ import PoliticaPrivacidadModal from '../components/PoliticaPrivacidadModal';
 export default function PlanesPage() {
   const [planes, setPlanes] = useState<MembresiaConPermisos[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<MembresiaConPermisos | null>(null);
-    const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPoliticaModal, setShowPoliticaModal] = useState(false);
 
   const router = useRouter();
