@@ -68,7 +68,7 @@ export default function QuienesSomos() {
       {/* 3. PILARES ESTRATÉGICOS                   */}
       {/* ========================================= */}
       <div className="space-y-10">
-        <motion.h2 {...fadeInUp(0)} className="text-3xl md:text-4xl font-bold text-center text-yellow-500 uppercase tracking-wider flex items-center justify-center gap-3">
+        <motion.h2 {...fadeInUp(0)} className="text-3xl md:text-4xl font-bold text-center text-green-500 uppercase tracking-wider flex items-center justify-center gap-3">
           <MdStars size={36} />
           {pilares.titulo}
         </motion.h2>
@@ -81,7 +81,7 @@ export default function QuienesSomos() {
               // El último item (Valores) ocupa todo el ancho si quieres, o queda en grid. Aquí lo dejamos en grid normal.
               className="bg-gradient-to-br from-neutral-900 to-black border border-neutral-800 rounded-2xl p-8 shadow-lg"
             >
-              <h3 className="text-2xl font-bold text-yellow-400 mb-4 border-b border-neutral-800 pb-2">
+              <h3 className="text-2xl font-bold text-green-400 mb-4 border-b border-neutral-800 pb-2">
                 {item.nombre}
               </h3>
               
@@ -90,7 +90,7 @@ export default function QuienesSomos() {
                 <ul className="space-y-3">
                   {item.lista.map((valor, i) => (
                     <li key={i} className="flex items-start text-gray-300">
-                      <span className="text-yellow-500 mr-3 mt-1">•</span>
+                      <span className="text-green-500 mr-3 mt-1">•</span>
                       <span className="leading-relaxed">{valor}</span>
                     </li>
                   ))}

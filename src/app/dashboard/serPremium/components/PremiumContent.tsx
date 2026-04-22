@@ -366,7 +366,7 @@ export default function PremiumContent({ userData }: { userData: UserData }) {
                 </div>
 
                 <button
-                  onClick={handleWebPayPayment} disabled={loading}
+                onClick={handleWebPayPayment} disabled={loading || !acceptedTerms}
                   className="w-full py-4 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 disabled:opacity-50 text-white rounded-xl font-black flex items-center justify-center gap-3 transition-colors"
                 >
                   {loading ? (
