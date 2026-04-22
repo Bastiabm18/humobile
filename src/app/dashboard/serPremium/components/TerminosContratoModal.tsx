@@ -1,6 +1,7 @@
 'use client';
 
 import { HiX } from 'react-icons/hi';
+import { useState, useRef } from 'react';
 import { terminosContratoData } from '@/app/constants/terminosContratoData';
 
 interface TerminosContratoModalProps {
@@ -9,6 +10,19 @@ interface TerminosContratoModalProps {
 }
 
 export default function TerminosContratoModal({ isOpen, onClose }: TerminosContratoModalProps) {
+ const scrollRef = useRef<HTMLDivElement>(null);
+  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+
+  const handleScroll = () => {
+    if (!scrollRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+    // Le restamos 10px de margen para que no tenga que pegarse exactamente al pixel final
+    if (scrollTop + clientHeight >= scrollHeight - 10) {
+      setHasScrolledToBottom(true);
+    }
+  };
+
+  // Resetear el estado si se abre de nuevo
   if (!isOpen) return null;
 
   return (
@@ -24,7 +38,10 @@ export default function TerminosContratoModal({ isOpen, onClose }: TerminosContr
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-8 text-gray-300 leading-relaxed text-sm">
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+        className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-8 text-gray-300 leading-relaxed text-sm">
           
           {/* Info Prestador */}
           <div className="bg-neutral-800/60 p-4 rounded-xl border border-neutral-700">
@@ -72,9 +89,22 @@ export default function TerminosContratoModal({ isOpen, onClose }: TerminosContr
           ))}
         </div>
 
-        <div className="p-4 border-t border-neutral-700 bg-neutral-950 rounded-b-2xl">
-          <button onClick={onClose} className="w-full py-3 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold transition-colors">
-            Cerrar y Continuar
+    <div className="p-4 border-t border-neutral-700 bg-neutral-950 rounded-b-2xl">
+          {!hasScrolledToBottom && (
+            <p className="text-center text-xs text-gray-500 mb-2 animate-pulse">
+              Por favor, lee los términos completos antes de continuar
+            </p>
+          )}
+          <button 
+            onClick={onClose} 
+            disabled={!hasScrolledToBottom}
+            className={`w-full py-3 rounded-xl font-bold transition-colors ${
+              hasScrolledToBottom 
+                ? 'bg-sky-600 hover:bg-sky-500 text-white cursor-pointer' 
+                : 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
+            }`}
+          >
+            {hasScrolledToBottom ? 'Cerrar y Continuar' : 'Debes leer los términos completos'}
           </button>
         </div>
       </div>
