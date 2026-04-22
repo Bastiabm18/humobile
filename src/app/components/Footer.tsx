@@ -5,9 +5,11 @@ import Image from 'next/image';
 import NeonSign from './NeonSign';
 import PoliticaPrivacidadModal from './PoliticaPrivacidadModal';
 import { useState } from 'react';
+import TerminosContratoModal from '../dashboard/serPremium/components/TerminosContratoModal';
 
 export default function Footer() {
     const [showPolitica, setShowPolitica] = useState(false);// state para modal de politica de privacidad
+        const [showTermsModal, setShowTermsModal] = useState(false);
   return (
     <footer className="py-12 px-6 md:px-8 lg:px-12 w-full">
       {/* CONTENIDO PRINCIPAL */}
@@ -68,8 +70,8 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* LÍNEA SEPARADORA */}
-      <div className="mt-10 mx-auto pt-6 border-t border-dashed md:w-7xl border-gray-600"></div>
+      {/* LÍNEA SEPARADORA le quite el border-t que hacia la linea  */}
+      <div className="mt-10 mx-auto pt-6 md:w-7xl border-gray-600"></div>
       
        {/* COPYRIGHT + POLÍTICAS */}
       <div className="flex flex-col justify-center items-center mt-4 gap-4 text-sm">
@@ -79,23 +81,48 @@ export default function Footer() {
             ®
           </span>
         </p>
-        <button 
+      <div className=' flex flex-col md:flex-row md:gap-8 items-center justify-center'>
+                <button 
           onClick={() => setShowPolitica(true)}
           className="text-gray-500 hover:text-sky-400 transition cursor-pointer"
         >
-          <a className='text-lg'>
-            Política de Protección de Datos Personales
+          <a className='text-lg underline underline-offset-4'>
+            Política de Privacidad
             </a>
         </button>
+        <button 
+          onClick={() => setShowTermsModal(true)}
+          className="text-gray-500 hover:text-sky-400 transition cursor-pointer"
+        >
+          <a className='text-lg underline underline-offset-4'>
+            Terminos y Condiciones
+            </a>
+        </button>
+
+      </div>
       </div>
 
       {/* LÍNEA SEPARADORA INFERIOR */}
       <div className="mt-6 mx-auto pt-6 border-t border-gray-600"></div>
       
 
+  <div className="mt-6  text-center text-sm text-gray-200">
+       
+        
+        {/* SELLO DE PAGO SEGURO */}
+        <div className="mt-6 mb-6 flex items-center justify-center gap-2 md:opacity-60 md:hover:opacity-100 transition-opacity">
+          <span className="text-gray-400 text-[10px] uppercase tracking-widest">Pagos seguros con</span>
+          <Image 
+           src="/2.WebpayPlus_FN_300px.png" 
+            alt="Webpay Plus" 
+            width={80} 
+            height={30} 
+            className="h-8 w-auto object-contain "
+          />
+        </div>
+
       {/* FRASE FINAL - ABAJO DE TODO */}
-  <div className="mt-6  text-center text-xs text-gray-200">
-        <p>
+         <p>
           Developed with <span className="text-red-500">❤</span> by{' '}
           <a
             href="https://barriosweb.cl/es"
@@ -106,18 +133,6 @@ export default function Footer() {
             BABM
           </a>
         </p>
-        
-        {/* SELLO DE PAGO SEGURO */}
-        <div className="mt-6 flex items-center justify-center gap-2 md:opacity-60 md:hover:opacity-100 transition-opacity">
-          <span className="text-gray-400 text-[10px] uppercase tracking-widest">Pagos seguros con</span>
-          <Image 
-           src="/2.WebpayPlus_FN_300px.png" 
-            alt="Webpay Plus" 
-            width={80} 
-            height={30} 
-            className="h-8 w-auto object-contain "
-          />
-        </div>
       </div>
 
            {/* MODAL POLÍTICA DE PRIVACIDAD */}
@@ -125,6 +140,10 @@ export default function Footer() {
         isOpen={showPolitica} 
         onClose={() => setShowPolitica(false)} 
       />
+        <TerminosContratoModal
+                    isOpen={showTermsModal} 
+                    onClose={() => setShowTermsModal(false)} 
+                  />
     </footer>
   );
 }
