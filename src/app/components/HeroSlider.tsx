@@ -240,7 +240,8 @@ export default function HeroSlider() {
         {razones[index].description}
       </p>
       
-      {/* Botón ÚNETE */}
+      {/* Botón ÚNETE y explorar */}
+      <div className='flex flex-col items-center justify-center gap-5'>
       <Link href="/login">  {/* Cambiá a /dashboard si es para usuarios logueados */}
         <motion.button
           whileHover={{ scale: 1.05 }}  
@@ -250,6 +251,16 @@ export default function HeroSlider() {
           SE PARTE DE HUMOBILE
         </motion.button>
       </Link>
+      <Link href="/busqueda">  {/* Cambiá a /dashboard si es para usuarios logueados */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}  
+          whileTap={{ scale: 0.95 }}
+          className="px-6 py-3 bg-sky-500/70 text-black font-bold rounded-full hover:bg-sky-500/90 transition"
+        >
+          EXPLORAR
+        </motion.button>
+      </Link>
+      </div>
     </motion.div>
   </AnimatePresence>
 </div>

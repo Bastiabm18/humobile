@@ -160,7 +160,8 @@ export const getProfile = async (id_perfil: string, tipo?: string): Promise<Prof
       lon: p.lon,
       direccion: p.direccion,
       // Asignamos el array mapeado
-      pertenece_a_grupo: pertenece_a_grupo
+      pertenece_a_grupo: pertenece_a_grupo,
+      descripcion_perfil: p.descripcion_perfil || '',
     };
   });
 

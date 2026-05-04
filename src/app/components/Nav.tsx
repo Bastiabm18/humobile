@@ -107,6 +107,39 @@ const handleLogout = async () => {
                   )}
               </div>
             </div>
+                 {user? 
+                 (
+                 <>
+                 <div>
+              <Link href="/dashboard" className="hidden md:flex">
+                <motion.button
+                   whileHover={{ scale: 1.05 }}  
+                   whileTap={{ scale: 0.95 }}
+                   className="px-6 py-3 bg-green-500/70 text-black font-bold rounded-full hover:bg-green-500/90 transition"
+                 >
+                   MI HUMOBILE
+                 </motion.button>
+              </Link>
+              </div>
+                 
+                 </>
+                
+                  ):(
+                  <>
+                  <div>
+              <Link href="/login" className="hidden md:flex">
+                <motion.button
+                   whileHover={{ scale: 1.05 }}  
+                   whileTap={{ scale: 0.95 }}
+                   className="px-6 py-3 bg-sky-500/70 text-black font-bold rounded-full hover:bg-sky-500/90 transition"
+                 >
+                   ZONA PRIVADA
+                 </motion.button>
+              </Link>
+              </div>
+                  </>
+                  )} 
+                  
 
             {/* MOBILE TOGGLE */}
             <motion.button

@@ -28,7 +28,7 @@ import {
   FaUserFriends,
   FaUserShield
 } from 'react-icons/fa';
-import { FaUser, FaLocationDot, FaClock, FaIdCardClip, FaFilm, FaPlus } from 'react-icons/fa6';
+import { FaUser, FaLocationDot, FaClock, FaIdCardClip, FaFilm, FaPlus, FaPerson } from 'react-icons/fa6';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -163,10 +163,10 @@ const getYouTubeId = (url:string) => {
               <h1 className="text-4xl font-bold text-white mb-2">
                 {perfil.nombre}
               </h1>
-              {perfil.email && (
+              {perfil.descripcion_perfil && (
                 <p className="text-neutral-300 flex items-center gap-2">
-                  <FaEnvelope className="w-4 h-4" />
-                  {perfil.email}
+                  <FaUserTag className="w-4 h-4" />
+                  {perfil.descripcion_perfil.length > 100 ? perfil.descripcion_perfil.slice(0, 100) + '...' : perfil.descripcion_perfil}
                 </p>
               )}
             </div>

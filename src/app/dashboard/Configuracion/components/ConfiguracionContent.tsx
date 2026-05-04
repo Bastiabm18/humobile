@@ -54,91 +54,91 @@ export default function ConfiguracionContent({
       titulo: 'Preguntas Frecuentes',
       icono: <FaQuestionCircle />,
       colorIcono: 'text-red-600 hover:text-red-700',
-      colorFondo: 'hover:bg-red-50 dark:hover:bg-red-900/20'
+      colorFondo: 'hover:bg-red-900/20'
     },
     {
       id: 'gestor_perfil' as TipoSeccion,
       titulo: 'Gestor Categorias',
       icono: <FaUserAstronaut />,
       colorIcono: 'text-orange-600 hover:text-orange-700',
-      colorFondo: 'hover:bg-orange-50 dark:hover:bg-orange-900/20'
+      colorFondo: 'hover:bg-orange-900/20'
     },
     {
       id: 'gestor_permisos' as TipoSeccion,
       titulo: 'Gestor Permisos',
       icono: <RiPassValidLine />,
       colorIcono: 'text-purple-600 hover:text-purple-700',
-      colorFondo: 'hover:bg-purple-50 dark:hover:bg-purple-900/20'
+      colorFondo: 'hover:bg-purple-900/20'
     },
     {
       id: 'tablas_configuracion' as TipoSeccion,
       titulo: 'Tablas Configuración',
       icono: <FaTable />,
       colorIcono: 'text-blue-600 hover:text-blue-700',
-      colorFondo: 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
+      colorFondo: 'hover:bg-blue-900/20'
     },
     {
       id: 'gestion_usuarios' as TipoSeccion,
       titulo: 'Gestión Usuarios',
       icono: <FaUsers />,
       colorIcono: 'text-sky-600 hover:text-sky-700',
-      colorFondo: 'hover:bg-sky-50 dark:hover:bg-sky-900/20'
+      colorFondo: 'hover:bg-sky-900/20'
     },
     {
       id: 'notificaciones' as TipoSeccion,
       titulo: 'Notificaciones',
       icono: <FaBell />,
       colorIcono: 'text-yellow-600 hover:text-yellow-700',
-      colorFondo: 'hover:bg-yellow-50 dark:hover:bg-yellow-900/20'
+      colorFondo: 'hover:bg-yellow-900/20'
     },
     {
       id: 'apariencia' as TipoSeccion,
       titulo: 'Apariencia',
       icono: <FaPalette />,
       colorIcono: 'text-purple-600 hover:text-purple-700',
-      colorFondo: 'hover:bg-purple-50 dark:hover:bg-purple-900/20'
+      colorFondo: 'hover:bg-purple-900/20'
     },
     {
       id: 'configuracion_general' as TipoSeccion,
       titulo: 'Configuración General',
       icono: <FaCog />,
       colorIcono: 'text-green-600 hover:text-green-700',
-      colorFondo: 'hover:bg-green-50 dark:hover:bg-green-900/20'
+      colorFondo: 'hover:bg-green-900/20'
     },
     {
       id: 'respaldo_datos' as TipoSeccion,
       titulo: 'Respaldo Datos',
       icono: <FaDatabase />,
       colorIcono: 'text-amber-600 hover:text-amber-700',
-      colorFondo: 'hover:bg-amber-50 dark:hover:bg-amber-900/20'
+      colorFondo: 'hover:bg-amber-900/20'
     },
     {
       id: 'calendario' as TipoSeccion,
       titulo: 'Configuración Calendario',
       icono: <FaCalendarAlt />,
       colorIcono: 'text-pink-600 hover:text-pink-700',
-      colorFondo: 'hover:bg-pink-50 dark:hover:bg-pink-900/20'
+      colorFondo: 'hover:bg-pink-900/20'
     },
     {
       id: 'reportes' as TipoSeccion,
       titulo: 'Reportes',
       icono: <FaFileAlt />,
       colorIcono: 'text-indigo-600 hover:text-indigo-700',
-      colorFondo: 'hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+      colorFondo: 'hover:bg-indigo-900/20'
     },
     {
       id: 'seguridad' as TipoSeccion,
       titulo: 'Seguridad',
       icono: <FaShieldAlt />,
       colorIcono: 'text-cyan-600 hover:text-cyan-700',
-      colorFondo: 'hover:bg-cyan-50 dark:hover:bg-cyan-900/20'
+      colorFondo: 'hover:bg-cyan-900/20'
     },
     {
       id: 'pagos' as TipoSeccion,
       titulo: 'Configuración Pagos',
       icono: <FaCreditCard />,
       colorIcono: 'text-lime-600 hover:text-lime-700',
-      colorFondo: 'hover:bg-lime-50 dark:hover:bg-lime-900/20'
+      colorFondo: 'hover:bg-lime-900/20'
     }
   ];
 

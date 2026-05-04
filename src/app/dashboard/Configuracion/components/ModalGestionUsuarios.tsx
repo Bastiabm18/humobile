@@ -22,6 +22,11 @@ import { activarUsuario, bloquearUsuario, eliminarUsuario, getUsuarios } from '.
 import { User} from '@/types/profile';
 import ModalConfirmacionUsuario from './ModalConfirmacionUsuario';
 
+import ModalGestionMembresia from './ModalGestionMembresia'; // NUEVO
+import ModalDetalleUsuario from './ModalDetalleUsuario';
+import ModalGestionPerfiles from './ModalGestionPerfiles';
+import { FaCrown } from 'react-icons/fa6';
+
 interface PropsModalGestionUsuarios {
   estaAbierto: boolean;
   alCerrar: () => void;
@@ -64,9 +69,19 @@ export default function ModalGestionUsuarios({
   
   // Estado para usuario seleccionado
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<User | null>(null);
+
   
   // Estado para mostrar/ocultar filtros
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
+
+  // NUEVOS ESTADOS
+  const [mostrarModalDetalle, setMostrarModalDetalle] = useState(false);
+  const [mostrarModalMembresia, setMostrarModalMembresia] = useState(false);
+
+const [mostrarModalPerfiles, setMostrarModalPerfiles] = useState(false);
+  const [usuarioParaMembresia, setUsuarioParaMembresia] = useState<User | null>(null);
+  const [usuarioParaPerfiles, setUsuarioParaPerfiles] = useState<User | null>(null);
+
 
   // Cargar usuarios cuando se abre el modal
   useEffect(() => {
@@ -178,6 +193,30 @@ export default function ModalGestionUsuarios({
     });
   };
 
+    const abrirModalDetalle = (usuario: User) => {
+    setUsuarioSeleccionado(usuario);
+    setMostrarModalDetalle(true);
+  };
+
+  const cerrarModalDetalle = () => {
+    setMostrarModalDetalle(false);
+    setUsuarioSeleccionado(null);
+  };
+
+  const abrirModalMembresia = (usuario: User) => {
+    setUsuarioParaMembresia(usuario);
+    setMostrarModalMembresia(true);
+  };
+
+  const cerrarModalMembresia = () => {
+    setMostrarModalMembresia(false);
+    setUsuarioParaMembresia(null);
+  };
+
+const abrirModalPerfiles = (u: User) => { setUsuarioParaPerfiles(u); setMostrarModalPerfiles(true); };
+const cerrarModalPerfiles = () => { setMostrarModalPerfiles(false); setUsuarioParaPerfiles(null); };
+
+
   // Obtener opciones únicas para filtros
   const opcionesRoles = Array.from(new Set(usuarios.map(u => u.role)));
   const opcionesMembresias = Array.from(new Set(usuarios.map(u => u.membresia).filter(Boolean)));
@@ -187,8 +226,9 @@ export default function ModalGestionUsuarios({
   const usuariosActivos = usuarios.filter(u => u.estado === 'activo').length;
   const usuariosBloqueados = usuarios.filter(u => u.estado === 'bloqueado').length;
 
-  const totalPerfiles = usuarios.reduce((total, usuario) => 
-  total + usuario.perfil_artista + usuario.perfil_banda + usuario.perfil_lugar, 0
+const totalPerfiles = usuarios.reduce((total, usuario) => 
+  total + usuario.perfil_artista + usuario.perfil_banda + usuario.perfil_lugar + 
+  usuario.perfil_representante + usuario.perfil_productor, 0
 );
 
   return (
@@ -371,7 +411,7 @@ export default function ModalGestionUsuarios({
                 )}
 
                 {/* Tabla de usuarios */}
-                <div className="flex-1 overflow-auto p-4">
+                <div className="flex-1 overflow-x-scroll custom-scrollbar p-4">
                   {cargando && usuarios.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -386,7 +426,7 @@ export default function ModalGestionUsuarios({
                       </p>
                     </div>
                   ) : (
-                    <div className="overflow-x-auto custom-scrollbar">
+                    <div className="overflow-x-scroll overflow-y-scroll custom-scrollbar">
                   <table className="w-full min-w-full">
   <thead>
     <tr className="border-b border-neutral-700">
@@ -399,6 +439,8 @@ export default function ModalGestionUsuarios({
       <th className="text-left py-3 px-4 text-neutral-300 font-semibold">Artista</th>
       <th className="text-left py-3 px-4 text-neutral-300 font-semibold">Banda</th>
       <th className="text-left py-3 px-4 text-neutral-300 font-semibold">Lugar</th>
+      <th className="text-center py-3 px-3 text-neutral-300 font-semibold">Rep</th>
+      <th className="text-center py-3 px-3 text-neutral-300 font-semibold">Prod</th>
       <th className="text-left py-3 px-4 text-neutral-300 font-semibold">Estado</th>
       <th className="text-left py-3 px-4 text-neutral-300 font-semibold">Registro</th>
       <th className="text-left py-3 px-4 text-neutral-300 font-semibold">Acciones</th>
@@ -468,55 +510,53 @@ export default function ModalGestionUsuarios({
           </div>
         </td>
         
-        {/* Total Perfiles */}
-        <td className="py-3 px-4">
-          <div className="flex flex-col items-center">
-            <span className={`text-lg font-bold ${
-              usuario.perfil_artista + usuario.perfil_banda + usuario.perfil_lugar > 0
-                ? 'text-emerald-400'
-                : 'text-neutral-500'
-            }`}>
-              {usuario.perfil_artista + usuario.perfil_banda + usuario.perfil_lugar}
-            </span>
-            <span className="text-xs text-neutral-400">total</span>
-          </div>
-        </td>
-        
-        {/* Perfil Artista */}
-        <td className="py-3 px-4">
-          <div className="flex flex-col items-center">
-            <span className={`text-lg font-bold ${
-              usuario.perfil_artista > 0 ? 'text-blue-400' : 'text-neutral-500'
-            }`}>
-              {usuario.perfil_artista}
-            </span>
-            <span className="text-xs text-neutral-400">artista</span>
-          </div>
-        </td>
-        
-        {/* Perfil Banda */}
-        <td className="py-3 px-4">
-          <div className="flex flex-col items-center">
-            <span className={`text-lg font-bold ${
-              usuario.perfil_banda > 0 ? 'text-purple-400' : 'text-neutral-500'
-            }`}>
-              {usuario.perfil_banda}
-            </span>
-            <span className="text-xs text-neutral-400">banda</span>
-          </div>
-        </td>
-        
-        {/* Perfil Lugar */}
-        <td className="py-3 px-4">
-          <div className="flex flex-col items-center">
-            <span className={`text-lg font-bold ${
-              usuario.perfil_lugar > 0 ? 'text-amber-400' : 'text-neutral-500'
-            }`}>
-              {usuario.perfil_lugar}
-            </span>
-            <span className="text-xs text-neutral-400">lugar</span>
-          </div>
-        </td>
+                 {/* Total Perfiles */}
+              <td className="py-3 px-3 text-center">
+                <span className={`text-lg font-bold ${
+                  (usuario.perfil_artista + usuario.perfil_banda + usuario.perfil_lugar + 
+                   usuario.perfil_representante + usuario.perfil_productor) > 0
+                    ? 'text-emerald-400'
+                    : 'text-neutral-500'
+                }`}>
+                  {usuario.perfil_artista + usuario.perfil_banda + usuario.perfil_lugar + 
+                   usuario.perfil_representante + usuario.perfil_productor}
+                </span>
+              </td>
+                  
+              {/* Perfil Artista */}
+              <td className="py-3 px-3 text-center">
+                <span className={`font-bold ${usuario.perfil_artista > 0 ? 'text-blue-400' : 'text-neutral-600'}`}>
+                  {usuario.perfil_artista}
+                </span>
+              </td>
+                  
+              {/* Perfil Banda */}
+              <td className="py-3 px-3 text-center">
+                <span className={`font-bold ${usuario.perfil_banda > 0 ? 'text-purple-400' : 'text-neutral-600'}`}>
+                  {usuario.perfil_banda}
+                </span>
+              </td>
+                  
+              {/* Perfil Lugar */}
+              <td className="py-3 px-3 text-center">
+                <span className={`font-bold ${usuario.perfil_lugar > 0 ? 'text-amber-400' : 'text-neutral-600'}`}>
+                  {usuario.perfil_lugar}
+                </span>
+              </td>
+                  
+              {/* Perfil Representante - NUEVO */}
+              <td className="py-3 px-3 text-center">
+                <span className={`font-bold ${usuario.perfil_representante > 0 ? 'text-pink-400' : 'text-neutral-600'}`}>
+                  {usuario.perfil_representante}
+                </span>
+              </td>
+                  
+              {/* Perfil Productor - NUEVO */}
+              <td className="py-3 px-3 text-center">
+                <span className={`font-bold ${usuario.perfil_productor > 0 ? 'text-cyan-400' : 'text-neutral-600'}`}>
+                  {usuario.perfil_productor}
+                </span>
+              </td>
         
         {/* Estado */}
         <td className="py-3 px-4">
@@ -545,66 +585,25 @@ export default function ModalGestionUsuarios({
           </div>
         </td>
         
-        {/* Acciones */}
-        <td className="py-3 px-4">
-          <div className="flex gap-2">
-            {/* Botón Ver Detalles */}
-            <button
-              onClick={() => setUsuarioSeleccionado(usuario)}
-              className=" border p-3 bg-blue-900/50  text-blue-400 hover:text-blue-300 hover:bg-blue-900/30 rounded-xl"
-              title="Ver detalles completos"
-            >
-              <FaEye />
-            </button>
-            
-
-            
-            {/* Botón Gestionar Perfiles */}
-            <button
-              onClick={() =>{
-               
-                console.log(usuario);
-              } }
-              className=" border p-3 bg-indigo-900/50 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 rounded-xl"
-              title="Gestionar perfiles"
-            >
-              <FaUserCog />
-            </button>
-            
-            {/* Botón Bloquear/Activar */}
-            {usuario.estado === 'activo' ? (
-              <button
-                onClick={() => abrirModalConfirmacion(usuario, 'bloquear')}
-                className=" border p-3 bg-amber-900/50 text-amber-400 hover:text-amber-300 hover:bg-amber-900/30 rounded-xl"
-                title="Bloquear usuario"
-              >
-                <FaBan />
-              </button>
-            ) : (
-              <button
-                onClick={() => abrirModalConfirmacion(usuario, 'activar')}
-                className=" border p-3 bg-emerald-900/50  text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/30 rounded-xl"
-                title="Activar usuario"
-              >
-                <FaUserCheck />
-              </button>
-            )}
-            
-            {/* Botón Eliminar */}
-            <button
-              onClick={() => abrirModalConfirmacion(usuario, 'eliminar')}
-              className=" border p-3 bg-red-900/50  text-red-400 hover:text-red-300 hover:bg-red-900/30 rounded-xl"
-              title="Eliminar usuario permanentemente"
-            >
-              <FaTrash />
-            </button>
-          </div>
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
+            {/* Acciones */}
+                  <td className="py-3 px-4">
+                    <div className="flex gap-1.5">
+                      <button onClick={() => abrirModalDetalle(usuario)} className="border p-2.5 bg-blue-900/50 text-blue-400 hover:text-blue-300 hover:bg-blue-900/30 rounded-lg" title="Ver detalles"><FaEye size={14} /></button>
+                      <button onClick={() => abrirModalPerfiles(usuario)} className="border p-2.5 bg-indigo-900/50 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 rounded-lg" title="Gestionar perfiles"><FaUserCog size={14} /></button>
+                      <button onClick={() => abrirModalMembresia(usuario)} className="border p-2.5 bg-purple-900/50 text-purple-400 hover:text-purple-300 hover:bg-purple-900/30 rounded-lg" title="Gestionar membresía"><FaCrown size={14} /></button>
+                      {usuario.estado === 'activo' ? (
+                        <button onClick={() => abrirModalConfirmacion(usuario, 'bloquear')} className="border p-2.5 bg-amber-900/50 text-amber-400 hover:text-amber-300 hover:bg-amber-900/30 rounded-lg" title="Bloquear"><FaBan size={14} /></button>
+                      ) : (
+                        <button onClick={() => abrirModalConfirmacion(usuario, 'activar')} className="border p-2.5 bg-emerald-900/50 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/30 rounded-lg" title="Activar"><FaCheckCircle size={14} /></button>
+                      )}
+                      <button onClick={() => abrirModalConfirmacion(usuario, 'eliminar')} className="border p-2.5 bg-red-900/50 text-red-400 hover:text-red-300 hover:bg-red-900/30 rounded-lg" title="Eliminar"><FaTrash size={14} /></button>
                     </div>
+                  </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                      </div>
                   )}
                 </div>
 
@@ -634,6 +633,22 @@ export default function ModalGestionUsuarios({
         alConfirmar={manejarConfirmacion}
       />
 
+
+      {/* NUEVO: Modal de Detalle del Usuario */}
+      <ModalDetalleUsuario
+        estaAbierto={mostrarModalDetalle}
+        alCerrar={cerrarModalDetalle}
+        usuario={usuarioSeleccionado}
+      />
+
+      {/* NUEVO: Modal de Gestión de Membresía */}
+      <ModalGestionMembresia
+        estaAbierto={mostrarModalMembresia}
+        alCerrar={cerrarModalMembresia}
+        usuario={usuarioParaMembresia}
+        alActualizar={cargarUsuarios}
+      />
+<ModalGestionPerfiles estaAbierto={mostrarModalPerfiles} alCerrar={cerrarModalPerfiles} usuario={usuarioParaPerfiles} alActualizar={cargarUsuarios} />
       {/* Modal de detalles del usuario (pendiente de implementar) */}
       {usuarioSeleccionado && (
         // Aquí puedes agregar otro modal para mostrar detalles completos

@@ -734,6 +734,18 @@ const renderCamposcategoria = () => {
                   className="text-4xl font-bold text-white mb-2 bg-transparent border-none outline-none w-full"
                   placeholder="Nombre del perfil"
                 />
+                <textarea
+               
+                value={formData.descripcion_perfil}
+                onChange={(e) => setFormData({...formData, descripcion_perfil: e.target.value})}
+                className="text-xl font-bold text-white mb-4 bg-transparent border-none outline-none text-center w-full max-w-md mx-auto"
+                placeholder="Descripción del perfil (200 caracteres máximo)"
+                cols={15}
+                rows={3}
+                maxLength={200}
+                
+                >
+                </textarea>
                 
                 <input
                   type="email"

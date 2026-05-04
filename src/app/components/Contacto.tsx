@@ -38,10 +38,10 @@ export default function Contacto({}: ContactoProps) {
   const router = useRouter();
 
   const contactInfo = {
-    phone: '+1 (555) 123-4567',
-    email: 'Humobile@gmail.com',
-    hours: 'Lun-Vie: 9:00 AM - 6:00 PM\nSáb: 10:00 AM - 2:00 PM',
-    address: 'Av. Principal 123, Concepcion, Chile'
+    phone: '+569 8420 1584',
+    email: 'contacto@humobile.cl',
+    hours: 'Lun-Vie: 9:00 AM - 6:00 PM',
+    address: 'Angol 436 OF 1004, Concepcion, Chile'
   };
 
   const socialMedia = [

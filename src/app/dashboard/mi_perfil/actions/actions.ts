@@ -475,7 +475,7 @@ export async function updateRepresentativeProfile(profileId: string, data: any) 
 export const getProfiles = async (userId: string): Promise<PerfilConIntegrantes[]> => {
   const supabaseAdmin = getSupabaseAdmin();
   
-  const { data, error } = await supabaseAdmin.rpc('get_perfiles_con_integrantes_v4', {
+  const { data, error } = await supabaseAdmin.rpc('get_perfiles_con_integrantes_v5', {
     p_user_id: userId
   });
 
@@ -526,6 +526,7 @@ export const getProfiles = async (userId: string): Promise<PerfilConIntegrantes[
     admin_externo_ids:p.admin_externo_ids || [],
     admin_externo_nombres:p.admin_externo_nombres || [],
     admin_externo_emails:p.admin_externo_emails || [],
+    descripcion_perfil:p.descripcion_perfil,
 
   }));
 
@@ -921,7 +922,8 @@ export const actualizarPerfil = async (
       id_region: perfil.id_region,
       id_pais: perfil.id_pais,
       id_categoria: perfil.id_categoria,
-      actualizado_en: new Date().toISOString()
+      actualizado_en: new Date().toISOString(),
+      descripcion_perfil: perfil.descripcion_perfil
     };
 
     // Agregar datos específicos según tipo de perfil

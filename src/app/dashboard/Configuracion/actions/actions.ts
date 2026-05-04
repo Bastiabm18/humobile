@@ -1,7 +1,7 @@
 'use server'; 
 
 import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
-import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, CalendarEvent, User, categoria_perfil, MembresiaConPermisos } from '@/types/profile'; 
+import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, CalendarEvent, User, categoria_perfil, MembresiaConPermisos, Perfil } from '@/types/profile'; 
 import { pregunta_frecuente } from '@/types/externo';
 import { create } from 'domain';
 
@@ -147,7 +147,7 @@ export async function getUsuarios(): Promise<User[]> {
     
     // Llamar a la función PostgreSQL
     const { data: usuariosData, error } = await supabaseAdmin
-      .rpc('get_usuarios_master');
+      .rpc('get_usuarios_master_v2');
 
     if (error) {
       console.error(' Error en la función PostgreSQL get_usuarios_master:', error);
@@ -209,6 +209,8 @@ export async function getUsuarios(): Promise<User[]> {
         perfil_artista: usuario.perfiles_artista || 0,
         perfil_banda: usuario.perfiles_banda || 0,
         perfil_lugar: usuario.perfiles_lugar || 0,
+         perfil_representante: usuario.perfiles_representante || 0,  // NUEVO
+        perfil_productor: usuario.perfiles_productor || 0,          // NUEVO
         membership_precio: usuario.membership_precio || 0,
         membership_inicio: usuario.membership_inicio,
         membership_fin: usuario.membership_fin,
@@ -273,7 +275,7 @@ export async function activarUsuario(id: string): Promise<void> {
     const { error } = await supabaseAdmin
       .from('User')
       .update({ 
-        estado: 'activo',
+        estado: 'ACTIVO',
         "updatedAt": new Date().toISOString()
       })
       .eq('id', id);
@@ -687,3 +689,274 @@ export async function obtenerMembresiasDisponibles() {
   }
 }
 //fin permisos
+
+// ============================================
+// MEMBRESÍAS - Version corregida
+// ============================================
+
+export async function getMembresiasDisponibles() {
+  try {
+    const supabase = getSupabaseAdmin();
+    
+    const { data, error } = await supabase
+      .from('Membership')
+      .select('*')
+      .order('precio_mensual', { ascending: true });
+
+    if (error) throw new Error(error.message);
+
+    if (!data) return [];
+
+    // Convertir precio_mensual de string a number
+    return data.map((m: any) => ({
+      id_membership: m.id_membership,
+      nombre: m.nombre,
+      precio_mensual: parseFloat(m.precio_mensual) || 0,
+      duracion_dias: m.duracion_dias
+    }));
+    
+  } catch (error: any) {
+    console.error('Error getMembresiasDisponibles:', error.message);
+    throw error;
+  }
+}
+
+export async function getHistorialMembresiaUsuario(supabase_id: string) {
+  try {
+    const supabase = getSupabaseAdmin();
+    
+    // Consulta 1: Estados del usuario
+    const { data: estados, error: err1 } = await supabase
+      .from('MembershipState')
+      .select('*')
+      .eq('user_id', supabase_id)
+      .order('fecha_inicio', { ascending: false });
+
+    if (err1) throw new Error(err1.message);
+    if (!estados || estados.length === 0) return [];
+
+    // Consulta 2: Detalles de membresías (separado para evitar error de relación)
+    const idsMembresia = [...new Set(estados.map((e: any) => e.membership_id))];
+    
+    const { data: membresias, error: err2 } = await supabase
+      .from('Membership')
+      .select('id_membership, nombre, precio_mensual, duracion_dias')
+      .in('id_membership', idsMembresia);
+
+    if (err2) throw new Error(err2.message);
+
+    // Crear mapa
+    const mapa = new Map(
+      (membresias || []).map((m: any) => [m.id_membership, {
+        id_membership: m.id_membership,
+        nombre: m.nombre,
+        precio_mensual: parseFloat(m.precio_mensual) || 0,
+        duracion_dias: m.duracion_dias
+      }])
+    );
+
+    // Combinar
+    return estados.map((e: any) => ({
+      id_state: e.id_state,
+      user_id: e.user_id,
+      membership_id: e.membership_id,
+      fecha_inicio: e.fecha_inicio,
+      fecha_fin: e.fecha_fin,
+      estado: e.estado,
+      Membership: mapa.get(e.membership_id) || null
+    }));
+    
+  } catch (error: any) {
+    console.error('Error getHistorialMembresiaUsuario:', error.message);
+    throw error;
+  }
+}
+
+export async function asignarMembresiaAUsuario(
+  supabase_id: string,
+  membership_id: string,
+  duracion_dias: number | null
+) {
+  try {
+    const supabase = getSupabaseAdmin();
+    
+    // Calcular fecha fin
+    let fechaFin: string | null = null;
+    if (duracion_dias && duracion_dias > 0) {
+      const fecha = new Date();
+      fecha.setDate(fecha.getDate() + duracion_dias);
+      fechaFin = fecha.toISOString();
+    }
+    
+    // Crear el estado de membresía
+    const { error: err1 } = await supabase
+      .from('MembershipState')
+      .insert({
+        user_id: supabase_id,
+        membership_id: membership_id,
+        fecha_inicio: new Date().toISOString(),
+        fecha_fin: fechaFin,
+        estado: 'ACTIVO'
+      });
+
+    if (err1) throw new Error(err1.message);
+
+    return { success: true };
+    
+  } catch (error: any) {
+    console.error('Error asignarMembresiaAUsuario:', error.message);
+    throw error;
+  }
+}
+
+export async function cancelarMembresiaUsuario(supabase_id: string) {
+  try {
+    const supabase = getSupabaseAdmin();
+    
+    // Buscar membresía activa directamente por user_id
+    const { data: membresiaActiva, error: err1 } = await supabase
+      .from('MembershipState')
+      .select('id_state')
+      .eq('user_id', supabase_id)
+      .eq('estado', 'ACTIVO')
+      .limit(1)
+      .maybeSingle();
+
+    if (err1) throw new Error(err1.message);
+    
+    if (!membresiaActiva) {
+      throw new Error('El usuario no tiene membresía activa');
+    }
+
+    // Cancelar el estado
+    const { error: err2 } = await supabase
+      .from('MembershipState')
+      .update({ estado: 'CANCELADO' })
+      .eq('id_state', membresiaActiva.id_state);
+
+    if (err2) throw new Error(err2.message);
+
+    return { success: true };
+    
+  } catch (error: any) {
+    console.error('Error cancelarMembresiaUsuario:', error.message);
+    throw error;
+  }
+}
+
+export async function extenderMembresiaUsuario(
+  supabase_id: string,
+  diasAdicionales: number
+) {
+  try {
+    const supabase = getSupabaseAdmin();
+    
+    // Buscar membresía activa por user_id
+    const { data: membresiaActiva, error: err1 } = await supabase
+      .from('MembershipState')
+      .select('id_state, fecha_fin')
+      .eq('user_id', supabase_id)
+      .eq('estado', 'ACTIVO')
+      .limit(1)
+      .maybeSingle();
+
+    if (err1) throw new Error(err1.message);
+    
+    if (!membresiaActiva) {
+      throw new Error('El usuario no tiene membresía activa');
+    }
+
+    // Calcular nueva fecha
+    const fechaBase = membresiaActiva.fecha_fin ? new Date(membresiaActiva.fecha_fin) : new Date();
+    fechaBase.setDate(fechaBase.getDate() + diasAdicionales);
+
+    // Actualizar
+    const { error: err2 } = await supabase
+      .from('MembershipState')
+      .update({ fecha_fin: fechaBase.toISOString() })
+      .eq('id_state', membresiaActiva.id_state);
+
+    if (err2) throw new Error(err2.message);
+
+    return { success: true, nuevaFechaFin: fechaBase.toISOString() };
+    
+  } catch (error: any) {
+    console.error('Error extenderMembresiaUsuario:', error.message);
+    throw error;
+  }
+}
+
+// ============================================
+// GESTIÓN DE PERFILES POR USUARIO
+// ============================================
+
+export async function getPerfilesByUsuario(supabase_id: string) {
+  try {
+    const supabase = getSupabaseAdmin();
+    
+    const { data, error } = await supabase
+      .from('perfil')
+      .select('id_perfil, tipo_perfil, nombre, perfil_visible, creado_en, id_categoria')
+      .eq('usuario_id', supabase_id)
+      .order('creado_en', { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data || [];
+    
+  } catch (error: any) {
+    console.error('Error getPerfilesByUsuario:', error.message);
+    throw error;
+  }
+}
+
+export async function eliminarPerfil(id_perfil: string) {
+  try {
+    const supabase = getSupabaseAdmin();
+    
+    const { error } = await supabase
+      .from('perfil')
+      .delete()
+      .eq('id_perfil', id_perfil);
+
+    // Si falla, probablemente es por restricciones de llave foránea (eventos, solicitudes, etc)
+    if (error) {
+      if (error.message.includes('foreign key') || error.message.includes('violates foreign key')) {
+        throw new Error('No se puede eliminar el perfil porque tiene eventos, solicitudes o datos asociados. Elimina esas dependencias primero.');
+      }
+      throw new Error(error.message);
+    }
+
+    return { success: true };
+    
+  } catch (error: any) {
+    console.error('Error eliminarPerfil:', error.message);
+    throw error;
+  }
+}
+export async function getPerfilesByUsuario_2(supabase_id: string): Promise<Perfil[]> {
+  try {
+    const supabase = getSupabaseAdmin();
+    
+    const { data, error } = await supabase
+      .from('perfil')
+      .select('*')
+      .eq('usuario_id', supabase_id)
+      .order('creado_en', { ascending: false });
+
+    if (error) throw new Error(error.message);
+    
+    // Asegurar que los JSONB no vengan null
+    return (data || []).map((p: any) => ({
+      ...p,
+      artista_data: p.artista_data || {},
+      banda_data: p.banda_data || {},
+      local_data: p.local_data || {},
+      productor_data: p.productor_data || {},
+      representante_data: p.representante_data || {},
+    })) as Perfil[];
+    
+  } catch (error: any) {
+    console.error('Error getPerfilesByUsuario:', error.message);
+    throw error;
+  }
+}

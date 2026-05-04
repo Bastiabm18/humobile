@@ -512,12 +512,12 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
 
   return (
     <>
-      <div className="h-[750px] md:h-[1050px] lg:h-[1050px] mt-10 bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70 relative">
+      <div className="h-[750px] md:h-[1050px] lg:h-[1050px] mt-10 text-neutral-300 bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70 relative">
         
         {/* FloatingDateSelector completo */}
         <button 
         onClick={() => setVerModalInformativo(true)}
-        className="absolute top-2 left-[5%] md:left-4 z-40 flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded-lg border border-neutral-700 shadow-lg transition-all"
+        className="absolute top-2 left-[5%] md:left-4 z-40 flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded-lg border border-neutral-700 shadow-lg"
         >
           <BsFillInfoSquareFill size={16} />Info
         </button>

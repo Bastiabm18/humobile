@@ -247,6 +247,7 @@ export interface Profile {
   perfil_visible?:boolean;
   id_categoria?: string;
   nombre_categoria_perfil?: string;
+  descripcion_perfil?: string;
 
 }
 
@@ -420,13 +421,14 @@ export interface Perfil {
   representantes_nombres?: string[]; // Nombres de los representantes asociados (si aplica)
   id_categoria?: string; // ID de la categoría del perfil (don derek pidio apellido para el tipo de perfil)
   nombre_categoria_perfil?: string; // Nombre de la categoría del perfil (opcional, para facilitar el acceso)
+  descripcion_perfil?: string; // Descripción del perfil (opcional)
 }
 export interface PerfilConIntegrantes {
   // IDENTIFICACIÓN
   id_perfil: string;
   usuario_id: string;
   tipo_perfil: 'artista' | 'banda' | 'local' | 'productor' | 'representante';
-  
+   descripcion_perfil?: string; // Descripción del perfil (opcional)
   // DATOS BÁSICOS COMUNES
   nombre: string;
   email: string | null;
@@ -510,6 +512,8 @@ export interface User{
   perfil_artista: number;
   perfil_banda: number;
   perfil_lugar: number;
+   perfil_representante: number;  // NUEVO
+  perfil_productor: number;      // NUEVO
   estado: string;
   membership_precio: number;
   membership_inicio: string | null;

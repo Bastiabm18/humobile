@@ -240,7 +240,7 @@ export default function LugareCercanosMap() {
         longitud: posicion.coords.longitude
       };
       
-      console.log('📍 Nueva ubicación obtenida:', nuevaUbicacion);
+      console.log(' Nueva ubicación obtenida:', nuevaUbicacion);
       
       // Guardar en localStorage
       localStorage.setItem('ubicacionUsuario', JSON.stringify(nuevaUbicacion));

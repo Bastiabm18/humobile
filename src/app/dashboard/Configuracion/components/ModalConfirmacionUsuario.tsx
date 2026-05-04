@@ -43,7 +43,7 @@ export default function ModalConfirmacionUsuario({
       titulo: 'Bloquear Usuario',
       mensaje: '¿Estás seguro de que deseas bloquear este usuario?',
       descripcion: 'El usuario no podrá acceder al sistema hasta que sea activado nuevamente.',
-      color: 'amber',
+      color: 'red',
       icono: <FaUserLock className="text-amber-400 text-2xl" />,
       botonAccion: 'Bloquear Usuario',
       iconoAccion: <FaUserLock />

@@ -85,7 +85,8 @@ console.log('¿El permiso de perfil visible está activo?', esVisible);
     representante_data: {},
     integrantes_perfil: [],
     representados_perfil: [],
-    id_categoria: ''
+    id_categoria: '',
+    descripcion_perfil: ''
   });
 
   // Estados para selección dinámica
@@ -574,7 +575,7 @@ console.log('¿El permiso de perfil visible está activo?', esVisible);
         className="bg-neutral-800 border border-neutral-700 rounded-2xl overflow-hidden shadow-xl"
       >
         {/* Header con selector de tipo y nombre */}
-        <div className="relative h-56 overflow-hidden bg-gradient-to-br from-neutral-900 to-neutral-800">
+        <div className="relative md:h-[50vh] h-[40vh] overflow-hidden bg-neutral-800">
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="flex flex-col items justify-center text-center">
               {preview ? (
@@ -605,6 +606,21 @@ console.log('¿El permiso de perfil visible está activo?', esVisible);
                 placeholder="Nombre del perfil"
                 required
               />
+              <div className='w-full flex items-center justify-center border-t border-b border-neutral-400'>
+
+              <textarea
+               
+                value={formData.descripcion_perfil}
+                onChange={(e) => setFormData({...formData, descripcion_perfil: e.target.value})}
+                className="text-xl font-bold text-white mb-4 bg-transparent border-none outline-none text-center w-full max-w-md mx-auto"
+                placeholder="Reseña del perfil (200 caracteres máximo)"
+                cols={15}
+                rows={3}
+                maxLength={200}
+                
+                >
+                </textarea>
+              </div>
             </div>
           </div>
           
