@@ -577,7 +577,7 @@ console.log('¿El permiso de perfil visible está activo?', esVisible);
         {/* Header con selector de tipo y nombre */}
         <div className="relative md:h-[50vh] h-[40vh] overflow-hidden bg-neutral-800">
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex flex-col items justify-center text-center">
+            <div className="flex flex-col items justify-center text-center gap-5">
               {preview ? (
                 <div className="mb-6">
                   <img

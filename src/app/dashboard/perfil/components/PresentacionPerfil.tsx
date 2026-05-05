@@ -153,7 +153,7 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
             </div>
           <div className='flex items-start gap-3'>
             {perfil.descripcion_perfil && (
-              <div className="flex items-start gap-2 px-4 py-2 bg-neutral-700/30 rounded-sm backdrop-blur-sm border border-neutral-600/30 text-xs md:text-sm w-full">
+              <div className="flex items-start gap-2 px-4 py-2 bg-neutral-700/30 rounded-sm backdrop-blur-sm border border-neutral-600/30 text-md md:text-lg w-auto min-w-[50vw]">
                 <HiUser className="w-4 h-4 text-neutral-400 mt-0.5 shrink-0" />
                 <span className="text-neutral-300 wrap-break-words">{perfil.descripcion_perfil}</span>
               </div>
