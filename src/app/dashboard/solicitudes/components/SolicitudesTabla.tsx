@@ -2,7 +2,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { format, formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow, subDays } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   HiUserGroup,
@@ -18,6 +18,7 @@ import { Profile, SolicitudRespuesta } from "@/types/profile";
 import { useState } from "react";
 import { FaCheck } from "react-icons/fa6";
 import { IoBanSharp } from "react-icons/io5";
+
 
 interface SolicitudesTablaProps {
   perfil:Profile;
@@ -193,7 +194,15 @@ export default function SolicitudesTabla({
                 const estado = getEstadoConfig(s.estado);
                 const IconTipo = tipo.icon;
                 const IconEstado = estado.icon;
-                const expirada = isExpirada(s);
+                 // Calculamos la fecha de expiración real según el tipo
+                const fechaExpiracionReal = 
+                  (s.tipo_solicitud === "Invitación a evento" && s.evento_fecha_inicio)
+                    ? subDays(new Date(s.evento_fecha_inicio), 2)
+                    : (s.fecha_expiracion ? new Date(s.fecha_expiracion) : null);
+
+                // Evaluamos si está expirada usando la fecha calculada
+                const expirada = s.estado === "expirada" || 
+                  (fechaExpiracionReal && new Date(fechaExpiracionReal) < new Date());
 
                 return (
                   <motion.tr
@@ -263,20 +272,20 @@ export default function SolicitudesTabla({
                       </p>
                     </td>
 
-                    <td className="p-6">
+                                       <td className="p-6">
                       <div className="flex items-center gap-2">
                         <HiClock className={`w-5 h-5 ${expirada ? 'text-red-400' : 'text-yellow-400'}`} />
                         <span className={expirada ? "text-red-400" : "text-yellow-400"}>
                           {expirada
                             ? "Expirada"
-                            : s.fecha_expiracion 
-                              ? formatDistanceToNow(s.fecha_expiracion, { addSuffix: true, locale: es })
+                            : fechaExpiracionReal 
+                              ? formatDistanceToNow(fechaExpiracionReal, { addSuffix: true, locale: es })
                               : "Sin fecha"}
                         </span>
                       </div>
-                      {s.fecha_expiracion && (
+                      {fechaExpiracionReal && (
                         <p className="text-gray-400 text-xs mt-1">
-                          Vence: {format(s.fecha_expiracion, "dd/MM HH:mm", { locale: es })}
+                          Vence: {format(fechaExpiracionReal, "dd/MM HH:mm", { locale: es })}
                         </p>
                       )}
                     </td>

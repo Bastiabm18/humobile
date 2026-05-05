@@ -57,7 +57,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         // === 2. BUSCAR USUARIO EN DB ===
         let { data: userRecord, error: dbError } = await supabaseAdmin
             .from('User')
-            .select('id, role') 
+            .select('id, role,estado') 
             .eq('supabase_id', uid)
             .single();
 
@@ -115,6 +115,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 }
             }
         } else if (userRecord) {
+
+            // VERIFICAR SI ESTÁ BLOQUEADO ANTES DE DARLE ACCESO
+            if (userRecord.estado === 'BLOQUEADO' || userRecord.estado === 'bloqueado') {
+                console.warn("POST: USUARIO BLOQUEADO INTENTÓ LOGUEARSE → DENEGADO");
+                return NextResponse.json({ success: false, message: "User blocked" }, { status: 403 });
+            }
             userRole = userRecord.role;
             userId = userRecord.id;
             console.log("POST: Usuario encontrado → Rol:", userRole);
@@ -170,12 +176,22 @@ export async function GET(): Promise<NextResponse> {
     const supabaseAdmin = getSupabaseAdmin();
 
     const { data: userRecord, error } = await supabaseAdmin
-      .rpc('get_user_membresia', { user_uid: uid })
+      .rpc('get_user_membresia_v2', { user_uid: uid })
       .single() as {data: UserWithMembership | null; error:any} ;
 
     if (error || !userRecord) {
       console.error("GET: Error DB →", error?.message);
       return NextResponse.json({ user: null });
+    }
+
+        // VERIFICACIÓN DE USUARIO BLOQUEADO
+    if (userRecord.estado === 'BLOQUEADO' || userRecord.estado === 'bloqueado') {
+      console.log("GET: USUARIO BLOQUEADO DETECTADO → Cerrando sesión.");
+      
+      // Forzar el borrado de la cookie para sacarlo del sistema inmediatamente
+      const response = NextResponse.json({ user: null, blocked: true });
+      response.cookies.delete(SESSION_COOKIE_NAME);
+      return response;
     }
 
         //console.log("DEBUG userRecord:", {

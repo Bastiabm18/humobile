@@ -525,6 +525,7 @@ export type UserWithMembership = {
  
   role: string;
   email: string;
+  estado?:string;
   supabase_id: string;
   membership_id: string;
   membership_nombre: string;
