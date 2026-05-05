@@ -114,7 +114,7 @@ const menuItems = MENU_ITEMS.filter(item => {
                     <b>H</b>
                   </div>
                   <h1 className="text-3xl text-gray-300 font-bold ">
-                    HUMOBILE
+                    <NeonSign/>
                   </h1>
                 </div>
                 <p className="text-xs text-neutral-400 mt-1 ml-11"></p>
@@ -262,12 +262,12 @@ const menuItems = MENU_ITEMS.filter(item => {
             {!collapsed ? (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center shadow-lg">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-500 flex items-center justify-center shadow-lg">
                     <FaUserCircle className="text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-200">Usuario</p>
-                    <p className="text-xs text-neutral-400">Online</p>
+                    <p className="text-sm font-medium text-neutral-200">usuario</p>
+                    <p className="text-xs text-neutral-400">{usuarioMembresia}</p>
                   </div>
                 </div>
                 <button
@@ -278,7 +278,7 @@ const menuItems = MENU_ITEMS.filter(item => {
               </div>
             ) : (
               <div className="flex justify-center">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-500 flex items-center justify-center shadow-lg">
                   <FaUserCircle className="text-white" />
                 </div>
               </div>
@@ -307,8 +307,8 @@ const menuItems = MENU_ITEMS.filter(item => {
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center shadow-lg">
                        <b>H</b>
                       </div>
-                      <h1 className="text-xl font-bold bg-gradient-to-r from-blue-200 via-sky-200 to-cyan-200 bg-clip-text text-transparent">
-                        HUMOBILE 
+                      <h1 className="text-xl font-bold  bg-clip-text text-transparent">
+                        <NeonSign/> 
                       </h1>
                     </div>
                     <p className="text-xs text-neutral-400 mt-1 ml-11"></p>
@@ -423,12 +423,12 @@ const menuItems = MENU_ITEMS.filter(item => {
                 <div className="p-4 border-t border-neutral-700/50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center shadow-lg">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-500 flex items-center justify-center shadow-lg">
                         <FaUserCircle className="text-white" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-neutral-200">Usuario</p>
-                        <p className="text-xs text-neutral-400">Online</p>
+                        <p className="text-xs text-neutral-400">{usuarioMembresia}</p>
                       </div>
                     </div>
                     <button
