@@ -215,14 +215,13 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
               <div  className="h-6 cursor-pointer w-[1px] bg-gradient-to-b from-transparent via-neutral-500 to-transparent" />
            
             </div>
-              <div className='flex items-center gap-3'>
+              <div className='flex items-start gap-3'>
                 {perfil.descripcion_perfil && (
-                  <div className="flex items-center gap-2 px-4 py-2 bg-neutral-700/30 rounded-sm backdrop-blur-sm border border-neutral-600/30 text-xs md:text-sm">
-                    <HiUser className="w-4 h-4 text-neutral-400" />
-                    <span className="text-neutral-300">{perfil.descripcion_perfil.length > 100 ? perfil.descripcion_perfil.slice(0, 100) + '...' : perfil.descripcion_perfil}</span>
+                  <div className="flex items-start gap-2 px-4 py-2 bg-neutral-700/30 rounded-sm backdrop-blur-sm border border-neutral-600/30 text-xs md:text-sm w-full">
+                    <HiUser className="w-4 h-4 text-neutral-400 mt-0.5 shrink-0" />
+                    <span className="text-neutral-300 wrap-break-words">{perfil.descripcion_perfil}</span>
                   </div>
                 )}
-
               </div>
 
             <div className='w-full mt-4 grid-cols-1 md:grid-cols-3'>

@@ -151,24 +151,23 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
               </div>
 
             </div>
-              <div className='flex items-center gap-3'>
-                {perfil.descripcion_perfil && (
-                  <div className="flex items-center gap-2 px-4 py-2 bg-neutral-700/30 rounded-sm backdrop-blur-sm border border-neutral-600/30 text-xs md:text-sm">
-                    <HiUser className="w-4 h-4 text-neutral-400" />
-                    <span className="text-neutral-300">{perfil.descripcion_perfil.length > 100 ? perfil.descripcion_perfil.slice(0, 100) + '...' : perfil.descripcion_perfil}</span>
-                  </div>
-                )}
-
+          <div className='flex items-start gap-3'>
+            {perfil.descripcion_perfil && (
+              <div className="flex items-start gap-2 px-4 py-2 bg-neutral-700/30 rounded-sm backdrop-blur-sm border border-neutral-600/30 text-xs md:text-sm w-full">
+                <HiUser className="w-4 h-4 text-neutral-400 mt-0.5 shrink-0" />
+                <span className="text-neutral-300 wrap-break-words">{perfil.descripcion_perfil}</span>
               </div>
+            )}
+          </div>
 
             {/* Oculto en mobile: Pertenece a grupo */}
             <div className='hidden md:grid w-full mt-4 grid-cols-1 md:grid-cols-3'>
               {perfil.pertenece_a_grupo && perfil.pertenece_a_grupo.length > 0 && (
-                <div className="flex flex-row gap-3">
+                <div className="flex flex-col md:flex-row gap-3">
                   {perfil.pertenece_a_grupo.map((participacion, index) => (
                     <div 
                       key={`${participacion.id_banda}-${index}`}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-700/30 hover:bg-blue-700/50 rounded-full backdrop-blur-sm border border-blue-600/30 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-700/30 hover:bg-blue-700/50 rounded-sm backdrop-blur-sm border border-blue-600/30 transition-colors"
                     >
                       <HiOutlineUserGroup className="w-5 h-5 text-blue-400" />
                       <span className="text-sm text-blue-200">

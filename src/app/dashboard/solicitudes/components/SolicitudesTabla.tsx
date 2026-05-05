@@ -272,7 +272,7 @@ export default function SolicitudesTabla({
                       </p>
                     </td>
 
-                                       <td className="p-6">
+                    <td className="p-6">
                       <div className="flex items-center gap-2">
                         <HiClock className={`w-5 h-5 ${expirada ? 'text-red-400' : 'text-yellow-400'}`} />
                         <span className={expirada ? "text-red-400" : "text-yellow-400"}>
