@@ -84,51 +84,38 @@ if (event.estado_participacion === 'confirmado' &&
   };
 
 const calculateEventPosition = (event: EventoCalendario) => {
-  // 1. Obtenemos el objeto Date (que ya viene corregido desde el action)
-  const eStart = new Date(event.inicio);
-  const eEnd = event.fin ? new Date(event.fin) : eStart;
+  // String() fuerza la conversión evitando el error de TypeScript
+  const cleanStart = String(event.inicio).replace(/([+-]\d{2}:\d{2}|Z)$/, '');
+  const eStart = new Date(cleanStart);
 
-  // 2. Calculamos cuántos minutos han pasado desde las 00:00
-  // Usamos getHours() y getMinutes() normales porque el "hachazo" del 
-  // replace('+00', '') hizo que la hora de la DB se vuelva la hora local.
+  const cleanEnd = event.fin ? String(event.fin).replace(/([+-]\d{2}:\d{2}|Z)$/, '') : cleanStart;
+  const eEnd = new Date(cleanEnd);
+
   const startMinutes = eStart.getHours() * 60 + eStart.getMinutes();
-  
-  // Calculamos la duración en minutos
   let endMinutes = eEnd.getHours() * 60 + eEnd.getMinutes();
   
-  // Caso borde: si el evento termina el día siguiente o a las 00:00
   if (endMinutes <= startMinutes && event.fin) {
-     endMinutes = 24 * 60; // Lo dibujamos hasta el final del día
+     endMinutes = 24 * 60; 
   }
 
   const totalMinutesInDay = 24 * 60;
-  
-  // 3. Calculamos posición (usando tu escala de 120)
   const top = (startMinutes / totalMinutesInDay) * 120;
   let duration = endMinutes - startMinutes;
   
-  // Si no tiene duración o es muy corta, le damos 30 min mínimo para que se vea la caja
   if (duration <= 0) duration = 30; 
-
   const height = (duration / totalMinutesInDay) * 120;
   
-  return { 
-    top: `${top}%`, 
-    height: `${height}%`,
-    position: 'absolute' // Asegúrate de que esto se mantenga
-  };
+  return { top: `${top}%`, height: `${height}%`, position: 'absolute' };
 };
 
 const formatTime = (dateInput: string | Date) => {
-  const d = new Date(dateInput);
-  // Usamos getHours/Minutes normales porque ya "engañamos" al sistema 
-  // en el action.ts quitando el +00
+  const str = String(dateInput).replace(/([+-]\d{2}:\d{2}|Z)$/, '');
+  const d = new Date(str);
   const hours = d.getHours().toString().padStart(2, '0');
   const minutes = d.getMinutes().toString().padStart(2, '0');
   
   return `${hours}:${minutes}`;
 };
-
 
   const formatFullDate = (date: Date) => format(date, "EEEE d 'de' MMMM 'de' yyyy", { locale: es });
 
