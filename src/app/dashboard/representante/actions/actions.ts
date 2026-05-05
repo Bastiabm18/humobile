@@ -240,7 +240,7 @@ export async function getEventosByPerfilParticipacion(
     }
 
     const { data: eventosDB, error } = await supabaseAdmin
-      .rpc('get_eventos_perfil_estados_v5', params);
+      .rpc('get_eventos_perfil_v8', params);
 
     if (error) {
       console.error(' Error al llamar a get_eventos_perfil_estados:', error);
@@ -252,22 +252,43 @@ export async function getEventosByPerfilParticipacion(
     }
 
     // Opcional: log para depuración
-    // console.log('📊 Primer evento recibido:', Object.keys(eventosDB[0]));
+    // console.log(' Primer evento recibido:', Object.keys(eventosDB[0]));
 
     const eventosMapeados: EventoCalendario[] = eventosDB.map((evento: any) => {
       // Participantes ya vienen en el formato que necesitamos
       const participantes: IntegranteBandaEvento[] = evento.participantes || [];
+      
+      
+      
+      const cleanDateString = (str: string) => {
+          return str.replace(/[+-]\d{2}:?\d{2}$|Z$/, '').replace('T', ' ');
+        };
+
 
       // Convertimos lat/lon a string (como espera tu interfaz)
       const latStr = evento.lat_lugar != null ? String(evento.lat_lugar) : '';
       const lonStr = evento.lon_lugar != null ? String(evento.lon_lugar) : '';
+const rawInicio = evento.fecha_hora_ini || evento.inicio;
+  const rawFin = evento.fecha_hora_fin || evento.fin;
 
+  // 2. EL HACHAZO PARA EL DESFASE DE 3 HORAS
+  // Convertimos el string a Date quitando el "+00" para que el navegador 
+  // NO aplique el ajuste de Chile/Argentina.
+  const parseSinDesfase = (str: string | null) => {
+    if (!str) return null;
+    // Quitamos la Z o el +00:00 del final para que sea "Hora Local Fija"
+    const limpio = str.replace(/[+-]\d{2}:?\d{2}$|Z$/, '');
+    return new Date(limpio);
+  };
+
+  const inicioDate = parseSinDesfase(rawInicio) || new Date();
+  const finDate = parseSinDesfase(rawFin);
       return {
         id: evento.id,
         titulo: evento.titulo,
         descripcion: evento.descripcion || '',
-        inicio: evento.inicio,
-        fin:  evento.fin , // fallback si no hay fin
+        inicio: inicioDate,
+        fin:  finDate , // fallback si no hay fin
         id_categoria: evento.id_categoria || '',
         nombre_categoria: evento.nombre_categoria || '',
         flyer_url: evento.flyer_url,
@@ -604,7 +625,7 @@ export async function getEventsByDiaYPerfilId(
     const fechaStr = format(fecha, 'yyyy-MM-dd');
 
     const { data: eventosDB, error } = await supabaseAdmin
-      .rpc('obtener_eventos_por_dia_v2', {
+      .rpc('obtener_eventos_por_dia_v3', {
         p_fecha: fechaStr,
         p_perfil_id: perfilId
       });

@@ -166,7 +166,7 @@ export default function IntegrantesEventoModal({
                                 )}
                               </div>
                             </div>
-                            <div className="flex-shrink-0 ml-4">
+                            <div className="flex-shrink-0 -ml-6 md:ml-4">
                               {getEstadoBadge(integrante.estado_participacion)}
                             </div>
                           </div>

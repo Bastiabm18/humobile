@@ -6,6 +6,7 @@ import { FaCheckCircle } from 'react-icons/fa';
 import { HiCalendar, HiLockClosed } from 'react-icons/hi';
 import { EventoCalendario } from '@/types/profile';
 import { FaCalendar } from 'react-icons/fa6';
+import moment from 'moment';
 
 interface EventBadgeProps {
   events: EventoCalendario[];
@@ -32,7 +33,7 @@ export default function EventBadge({
   onBlockClick,
   esColumnaHora = false,
 }: EventBadgeProps) {
- // console.log(profile);
+ // console.log(events);
  // ¡NO RENDERIZAR NADA EN LA COLUMNA DE HORAS!
   if (esColumnaHora) {
     return null;
@@ -61,13 +62,9 @@ export default function EventBadge({
 
 
   // Helper para formatear hora (sin cambios)
-const formatTime = (dateString: string | Date) => {
-  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-  const hours = date.getUTCHours().toString().padStart(2, '0');
-  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-  return `${hours}:${minutes}`;
+const formatTime = (date: Date) => {
+  return date.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
 };
-
  const getEventoClassName1 = (estado?: string, es_de_integrante:boolean = false, es_de_banda:boolean = false) => {
  
    if (es_de_integrante) {
@@ -613,49 +610,48 @@ if (!slotTime || !date) return false;
         </div>
       )}
 
-        {hasBlocked && !relevantBlockedEvents[0].es_evento_integrante && (
-            
-               <div className="absolute inset-0 flex items-center justify-center rounded-lg w-[99%] h-[99%] bg-red-900/50 hover:bg-red-950 border-2 border-red-700 pointer-events-auto cursor-pointer"
-                 onClick={(e) => {
-                   e.stopPropagation();
-                   if (onBlockClick && relevantBlockedEvents[0]) {
-                     onBlockClick(relevantBlockedEvents[0],relevantBlockedEvents[0].es_evento_integrante);
-                     console.log(relevantBlockedEvents[0].es_evento_integrante);
-                   }
-                 }}
-               >
-                 <div className="absolute inset-0 flex items-center justify-center">
-                   <div className="text-center">
-                     <HiLockClosed size={view === 'day' ? 24 : 18} className="text-red-300 mx-auto" />
-                   </div>
-                 </div>
-               </div>
-          
-           )}
+      {hasBlocked && !relevantBlockedEvents[0].es_evento_integrante && (
+       
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg w-[99%] h-[99%] bg-red-900/50 hover:bg-red-950 border-2 border-red-700 pointer-events-auto cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onBlockClick && relevantBlockedEvents[0]) {
+                onBlockClick(relevantBlockedEvents[0],relevantBlockedEvents[0].es_evento_integrante);
+                console.log(relevantBlockedEvents[0].es_evento_integrante);
+              }
+            }}
+          >
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <HiLockClosed size={view === 'day' ? 24 : 18} className="text-red-300 mx-auto" />
+              </div>
+            </div>
+          </div>
      
-           {hasBlocked && relevantBlockedEvents[0].es_evento_integrante && (
-            
-               <div className="absolute inset-0 flex items-center justify-center rounded-lg w-[99%] h-[99%] bg-gray-900/50 hover:bg-gray-950 border-2 border-gray-700 pointer-events-auto cursor-pointer"
-                 onClick={(e) => {
-                   e.stopPropagation();
-                   if (onBlockClick && relevantBlockedEvents[0]) {
-                     onBlockClick(relevantBlockedEvents[0],relevantBlockedEvents[0].es_evento_integrante);
-                     console.log(relevantBlockedEvents[0].es_evento_integrante);
-                   }
-                 }}
-               >
-                 <div className="absolute inset-0 flex items-center justify-center">
-                   <div className="text-center">
-                     <FaCalendar size={view === 'day' ? 24 : 18} className="text-gray-300 mx-auto" />
-                     <span>
-                       Agenda Integrante
-                     </span>
-                   </div>
-                 </div>
-               </div>
-          
-           )}
+      )}
+
+      {hasBlocked && relevantBlockedEvents[0].es_evento_integrante && (
+       
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg w-[99%] h-[99%] bg-gray-900/50 hover:bg-gray-950 border-2 border-gray-700 pointer-events-auto cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onBlockClick && relevantBlockedEvents[0]) {
+                onBlockClick(relevantBlockedEvents[0],relevantBlockedEvents[0].es_evento_integrante);
+                console.log(relevantBlockedEvents[0].es_evento_integrante);
+              }
+            }}
+          >
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <FaCalendar size={view === 'day' ? 24 : 18} className="text-gray-300 mx-auto" />
+                <span>
+                  Agenda Integrante
+                </span>
+              </div>
+            </div>
+          </div>
      
+      )}
 
       { relevantNormalEvents.length > 0 && totalRelevantEvents === 1 && (
         <>

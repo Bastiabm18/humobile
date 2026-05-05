@@ -680,13 +680,43 @@ const endDateTime = form.fecha_hora_fin ? new Date(form.fecha_hora_fin + 'Z') : 
               </div>
 
 
-              {/* Información del creador */}
-              <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-4">
-                <p className="text-xs text-gray-400 mb-1">Creador del evento:</p>
-                <p className="text-white font-medium text-sm capitalize">{profile.nombre || `Perfil ${profile.tipo}`}</p>
-                <p className="text-xs text-gray-400 mt-2"> {profile.tipo} Humobile</p>
-                <p className="text-xs text-gray-400">Fecha seleccionada: {format(selectedDate, 'dd/MM/yyyy')}</p>
+         {/* Información del creador */}
+<div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-4 space-y-3">
+  <div>
+    <p className="text-xs text-gray-400 mb-1">Creador del evento:</p>
+    <p className="text-white font-medium text-sm capitalize">{profile.nombre || `Perfil ${profile.tipo}`}</p>
+    <p className="text-xs text-gray-400 mt-2">{profile.tipo} Humobile</p>
+    <p className="text-xs text-gray-400">Fecha seleccionada: {format(selectedDate, 'dd/MM/yyyy')}</p>
+  </div>
+
+  {/* Switch de Evento Público */}
+              <div className="pt-3 border-t border-neutral-700">
+                <label className="flex items-center justify-between cursor-pointer group">
+                  <div className="flex items-center gap-3">
+                    <span className={`text-sm font-medium transition-colors ${form.es_publico ? 'text-green-400' : 'text-neutral-400'}`}>
+                      Evento Público
+                    </span>
+                    {form.es_publico && <FaCheck className="text-green-500 text-xs" />}
+                  </div>
+                        
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={form.es_publico ?? false}
+                      onChange={(e) => handleChange('es_publico', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-neutral-600 rounded-full peer peer-checked:bg-green-600 transition-colors"></div>
+                    <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-5 shadow"></div>
+                  </div>
+                </label>
+                <p className="text-xs text-neutral-500 mt-2">
+                  {form.es_publico 
+                    ? 'Visible para todos en la agenda pública.'
+                    : 'Solo los participantes podrán ver este evento.'}
+                </p>
               </div>
+            </div>
             </div>
           </div>
 

@@ -9,7 +9,7 @@ import { HiChevronDown, HiCalendar, HiPlus, HiLockClosed, HiCog } from 'react-ic
 import { es } from 'date-fns/locale';
 import { FiCalendar, FiCheckCircle, FiClock, FiXCircle } from 'react-icons/fi';
 import { addHours } from 'date-fns';
-
+import { useRouter } from 'next/navigation';
 import BlockDateModal from './BlockDateModal';
 import CrearEventoModal from './CrearEventoModal';
 import { Profile } from '@/types/profile'; 
@@ -21,6 +21,10 @@ import DesbloquearModal from './DesbloquearModal';
 import { getEventosByPerfilParticipacion } from '../actions/actions';
 import { EventoCalendario } from '@/types/profile';
 import IntegrantesEventoModal from './IntegrantesEventoModal';
+import ModalInformativoCalendario from './ModalInformativoCalendario';
+import { BsFillInfoSquareFill } from 'react-icons/bs';
+import { usePermisos } from '@/app/hooks/usePermisos';
+import { FaCrown } from 'react-icons/fa';
 const localizer = dateFnsLocalizer({
   format,
   parse: (str: string) => new Date(str),
@@ -30,6 +34,7 @@ const localizer = dateFnsLocalizer({
 });
 
 export default function CalendarView({ profileId, perfil }: { profileId: string; perfil: Profile }) {
+
   // PARTIMOS EN VISTA SEMANA??
   const [view, setView] = useState<View>(Views.WEEK);
   const [date, setDate] = useState(new Date());
@@ -71,7 +76,12 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
   const [showHorasMultiplesModal, setShowHorasMultiplesModal] = useState(false);
   const [isButtonClick, setIsButtonClick] = useState(false);
 
-
+  const [verModalInformativo, setVerModalInformativo] = useState(false);
+  const router = useRouter();
+  
+   const eventosRealesCount = events.filter(e => !e.es_bloqueo).length;
+const { activo } = usePermisos({});
+const puedeCrearEvento = activo('CREAR_EVENTO');
   useEffect(() => {
   // Resetear isButtonClick después de cierto tiempo por si acaso MNO CAMBIA EL ESTADO A FALSE
   // IMPORTANTE PARA QUE FUNCIONE SELECTABLE EN VISTA SEMANA Y DIA
@@ -101,6 +111,7 @@ export default function CalendarView({ profileId, perfil }: { profileId: string;
       );
 
       setEvents(fetchedEvents);
+      console.log(fetchedEvents)
     } catch (err: any) {
       console.error('Error cargando eventos:', err);
       setError(err.message || 'Error al cargar eventos');
@@ -117,14 +128,13 @@ const handleSelectSlot = (slotInfo: { start: Date; end: Date; slots: Date[] }) =
     return;
   }
 
-  // Tu lógica original sigue aquí SIN CAMBIOS:
   const hasExistingEvent = events.some(event => {
-    const eventStart = new Date(event.inicio).getTime();
-    const eventEnd = event.fin ? new Date(event.fin).getTime() : eventStart + 3600000;
+    const eventStart = event.inicio.getTime();
+    const eventEnd = event.fin ? event.fin.getTime() : eventStart + 3600000;
     const slotStart = slotInfo.start.getTime();
     const slotEnd = slotInfo.end.getTime();
 
-    return subHours(slotStart,3) < subHours(eventEnd ,0)&& subHours(slotEnd,3) > subHours(eventStart,0);
+    return slotStart < eventEnd && slotEnd > eventStart; // Sin subHours
   });
 
   if (hasExistingEvent) {
@@ -190,30 +200,14 @@ const handleSelectEvent = (event: EventoCalendario) => {
   };
 
 const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
-  // 1. Convertimos la fecha de la celda del calendario a un string "2026-01-03"
   const targetString = format(targetDate, 'yyyy-MM-dd');
-
   return events.filter(event => {
-    // 2. Extraemos solo la parte de la fecha de los strings de la base de datos
-    // event.inicio suele ser "2026-01-03T00:00:00+00:00" -> tomamos los primeros 10 caracteres
-    const startString = event.inicio.toString().substring(0, 10);
-    const endString = (event.fin || event.inicio).toString().substring(0, 10);
-
-    // 3. Caso simple: ¿Es el mismo día de inicio o fin?
-    if (startString === targetString || endString === targetString) {
-      return true;
-    }
-
-    // 4. Caso rango: Si el evento dura varios días, verificamos si target está al medio
-    // Aquí sí usamos Date pero sin horas para que la comparación sea pura de fechas nos ahorramos el utc 
-    const dTarget = new Date(targetString);
-    const dStart = new Date(startString);
-    const dEnd = new Date(endString);
-
-    return dTarget >= dStart && dTarget <= dEnd;
+    const startString = format(event.inicio, 'yyyy-MM-dd');
+    const endString = event.fin ? format(event.fin, 'yyyy-MM-dd') : startString;
+    return startString === targetString || endString === targetString ||
+           (event.inicio < targetDate && event.fin > targetDate);
   });
 };
-
   const defaultScrollTime = new Date();
     defaultScrollTime.setHours(8, 0, 0);
 
@@ -271,37 +265,59 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
             </div>
 
               {view == Views.MONTH && (
-                <>
-                            <div className="hidden md:flex gap-2 z-40">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                 setIsButtonClick(true); 
-                                setSelectedEventDate(value);
-                                setCreateEventModalOpen(true);
-                              }}
-                              className="bg-green-600/70  hover:bg-green-700/80 text-green-100/80 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
-                              title="Agregar evento"
-                            >
-                              <HiPlus size={18} />
-                            </button>
-                            
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                 setIsButtonClick(true); 
-                                setBlockModalOpen(true);
-                                setBlockInitialDate(value);
-                              }}
-                              className="bg-red-600/70 hover:bg-red-800/80 text-red-100 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
-                              title="Bloquear día"
-                            >
-                              <HiLockClosed size={18} />
-                            </button>
-                          </div>
-                </>
+            <>
+              <div className={`hidden md:flex gap-2 z-40 relative`}>
+                {/* Contenedor de botones (este se apaga) */}
+                <div className={`flex gap-2 ${!puedeCrearEvento ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setIsButtonClick(true); 
+                      setSelectedEventDate(value);
+                      setCreateEventModalOpen(true);
+                    }}
+                    className="bg-green-600/70 hover:bg-green-700/80 text-green-100/80 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
+                    title="Agregar evento"
+                  >
+                    <HiPlus size={18} />
+                  </button>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setIsButtonClick(true); 
+                      setBlockModalOpen(true);
+                      setBlockInitialDate(value);
+                    }}
+                    className="bg-red-600/70 hover:bg-red-800/80 text-red-100 p-2 rounded-full shadow-xl hover:scale-110 transition-all duration-200"
+                    title="Bloquear día"
+                  >
+                    <HiLockClosed size={18} />
+                  </button>
+                </div>
+
+                {/* Tooltip FUERA del contenedor apagado (este SI responde al clic) */}
+                {!puedeCrearEvento && (
+                  <div 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push('/dashboard/serPremium');
+                    }}
+                    className="absolute -bottom-1/2 left-1/2 transform -translate-x-1/2 z-[9999] bg-neutral-900/60 border border-neutral-700 rounded-lg p-3 shadow-xl whitespace-nowrap hover:bg-red-900/90 hover:scale-105 transition-all duration-200 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 text-yellow-400 font-medium text-xs flex-col">
+                      <span className='text-center flex '>Mejora tu plan <br /> para gestionar Agenda</span>
+                      <div className="flex items-center gap-1 mt-2">
+                        <FaCrown className='text-yellow-400'/>
+                        <span className="text-green-400 hover:text-green-300 text-sm font-medium">Mejoorar Plan</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
               )}
               
           </div>
@@ -313,17 +329,13 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
   const CustomTimeSlotWrapper = ({ children, value,resource }: any) => {
      // 'resource' indica la columna (undefined = columna de horas, 0 = Lunes, etc.)
   const esColumnaHora = resource === undefined || resource === 'timeGutter';
-   const slotDate = subHours(value, 3); // ajuste de horas para el utc de la shit!!!
-
-  const slotMs = slotDate.getTime()
+  const slotDate = value; // sin subHours
+  const slotMs = slotDate.getTime();
+  //console.log('Renderizando slot:', slotDate, 'Columna hora:', esColumnaHora);
   
   const eventsAtThisSlot = events.filter(event => {
-
-    const inicioMs = Date.parse(event.inicio as unknown as string);
-    const finMs = event.fin 
-      ? Date.parse(event.fin as unknown as string)
-      : inicioMs + 3600000;
-    
+    const inicioMs = event.inicio.getTime();
+    const finMs = event.fin ? event.fin.getTime() : inicioMs + 3600000;
     return slotMs >= inicioMs && slotMs < finMs;
   });
     const isBlockedAtThisSlot = eventsAtThisSlot.some(event => event.es_bloqueo);
@@ -500,12 +512,19 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
 
   return (
     <>
-      <div className="h-[750px] md:h-[1050px] lg:h-[1050px] mt-10 bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70 relative">
+      <div className="h-[750px] md:h-[1050px] lg:h-[1050px] mt-10 text-neutral-300 bg-neutral-900/20 rounded-2xl md:p-2 overflow-hidden md:border-4 border-neutral-800/70 relative">
         
         {/* FloatingDateSelector completo */}
+        <button 
+        onClick={() => setVerModalInformativo(true)}
+        className="absolute top-2 left-[5%] md:left-4 z-40 flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded-lg border border-neutral-700 shadow-lg"
+        >
+          <BsFillInfoSquareFill size={16} />Info
+        </button>
+        
         <button
-          onClick={() => setShowDateSelectors(!showDateSelectors)}
-          className="absolute top-2 right-[30%] md:right-4 z-40 flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded-lg border border-neutral-700 shadow-lg transition-all"
+        onClick={() => setShowDateSelectors(!showDateSelectors)}
+          className="absolute top-2 right-[5%] md:right-4 z-40 flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded-lg border border-neutral-700 shadow-lg transition-all"
         >
           <HiCalendar size={16} />
           <span className="hidden sm:inline">
@@ -588,7 +607,7 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
           views={['month', 'week', 'day']}
           culture="es"
           selectable       
-  onSelectSlot={handleSelectSlot} // ← AÑADE ESTO
+         onSelectSlot={handleSelectSlot} // ← AÑADE ESTO
   
           popup
           step={60}
@@ -620,8 +639,24 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
             <h3 className="text-white text-lg font-bold mb-4">
               Gestionar    {format(selectedDate, 'dd/MM/yyyy')}
              </h3>
-            
-            <div className="flex gap-3 mb-4">
+
+         
+            {/* Mensaje si no tiene permiso */}
+            {!puedeCrearEvento && (
+              <div 
+                onClick={() => router.push('/dashboard/serPremium')}
+                className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-3 text-center mb-4 cursor-pointer hover:bg-yellow-900/40 transition-colors"
+              >
+                <div className="flex items-center justify-center gap-2 text-yellow-400 font-medium text-sm">
+                  <FaCrown className="w-4 h-4" />
+                  <span>Tu plan no permite gestionar Agenda
+                        <br/><a className="text-green-600 hover:text-green-900">Mejorar plan</a>
+                  </span>
+              
+                </div>
+              </div>
+            )}
+            <div className={`flex gap-3 mb-4 ${!puedeCrearEvento ? 'opacity-50 pointer-events-none' : ''}`}>
               <button
                 onClick={() => {
                   setSelectedEventDate(selectedDate);
@@ -667,8 +702,23 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
             Periodo: {selectedFechaIni ? format(selectedFechaIni, 'HH:mm:ss') : ''} - {selectedFechaFin ? format(selectedFechaFin, 'HH:mm:ss') : ''}
             </h4>
     
-            
-            <div className="flex gap-3 mb-4">
+            {/* Mensaje si no tiene permiso */}
+      {!puedeCrearEvento && (
+              <div 
+                onClick={() => router.push('/dashboard/serPremium')}
+                className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-3 text-center mb-4 cursor-pointer hover:bg-yellow-900/40 transition-colors"
+              >
+                <div className="flex items-center justify-center gap-2 text-yellow-400 font-medium text-sm">
+                  <FaCrown className="w-4 h-4" />
+                  <span>Tu plan no permite gestionar Agenda
+                        <br/><a className="text-green-600 hover:text-green-900">Mejorar plan</a>
+                  </span>
+              
+                </div>
+              </div>
+            )}
+
+            <div className={`flex gap-3 mb-4 ${!puedeCrearEvento ? 'opacity-50 pointer-events-none' : ''}`}>
               <button
                 onClick={() => {
                   setSelectedEventDate(selectedFechaIni);
@@ -684,7 +734,7 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
               <button
                 onClick={() => {
                   setBlockModalOpen(true);
-                  setBlockInitialDate(selectedDate);
+                  setBlockInitialDate(selectedFechaIni);
                   setShowHorasMultiplesModal(false);
                 }}
                 className="flex-1 bg-red-600 hover:bg-red-800 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
@@ -789,6 +839,16 @@ const getEventsForDate = (targetDate: Date): EventoCalendario[] => {
         />
 
       )}
+
+      {verModalInformativo && (
+        <ModalInformativoCalendario
+        isOpen={verModalInformativo}
+        onClose={() => {
+          setVerModalInformativo(false);
+        }}/>
+      )
+      
+      }
     </>
   );
 }

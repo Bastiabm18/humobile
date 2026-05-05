@@ -4,13 +4,14 @@
 import { useState, useEffect } from 'react';
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { FaCheckCircle, FaLock, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUser, FaEnvelope, FaLink, FaImage, FaChevronRight } from 'react-icons/fa';
+import { FaCheckCircle, FaLock, FaCalendarAlt,FaCrown, FaClock, FaMapMarkerAlt, FaUser, FaEnvelope, FaLink, FaImage, FaChevronRight } from 'react-icons/fa';
 import { HiCalendar, HiChevronRight, HiX } from 'react-icons/hi';
 import EventModal from './EventModal';
 import CrearEventoModal from './CrearEventoModal';
 import BlockDateModal from './BlockDateModal';
 import { getEventsByDiaYPerfilId } from '../actions/actions';
 import { EventoCalendario } from '@/types/profile';
+import { usePermisos } from '@/app/hooks/usePermisos';
 
 interface DayTimelineModalProps {
   profile: any;
@@ -31,7 +32,8 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
   const [showCrearEventoModal, setShowCrearEventoModal] = useState(false);
   const [showBloquearPeriodoModal, setShowBloquearPeriodoModal] = useState(false);
   const [newEventDate, setNewEventDate] = useState<Date | null>(null);
-
+  const { activo } = usePermisos({});
+  const puedeCrearEvento = activo('CREAR_EVENTO');
   useEffect(() => {
     if (isOpen && profile?.id) {
       fetchEventosParaElDia();
@@ -63,15 +65,17 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
   );
 
   const getEventColor = (event: EventoCalendario) => {
-    if (event.es_evento_integrante) {
-
-      return 'bg-gray-600/40'
-
-    } else {
-      if (event.es_bloqueo) return 'bg-red-600/40 border-red-500';
-      return 'bg-sky-600/40 '; 
-      
-    }
+  if (event.estado_participacion === 'rechazado') return 'bg-red-500/70';
+  if ( event.estado_participacion === 'pendiente') return 'bg-orange-500/70';
+  if ( event.estado_participacion === 'confirmado' && event.es_bloqueo) return 'bg-red-500/70 border-red-500';
+  if ( event.estado_participacion === 'confirmado' && event.es_evento_banda) return 'bg-green-500/70 border-green-500';
+  if ( event.estado_participacion === 'confirmado' && event.es_evento_integrante) return 'bg-gray-500/70 border-gray-500';
+if (event.estado_participacion === 'confirmado' &&
+   !event.es_bloqueo && 
+   !event.es_evento_banda && 
+   !event.es_evento_integrante) return 'bg-sky-500/70 border-sky-500';
+    
+  
   };
 
   const getEventIcon = (event: EventoCalendario) => {
@@ -80,57 +84,38 @@ export default function DayTimelineModal({ profile, date, isOpen, onClose, onEve
   };
 
 const calculateEventPosition = (event: EventoCalendario) => {
-  // 1. Parsear las fechas SIN que JavaScript las convierta
-  const inicioString = typeof event.inicio === 'string' ? event.inicio : event.inicio.toISOString();
-  const finString = event.fin ? (typeof event.fin === 'string' ? event.fin : event.fin.toISOString()) : inicioString;
-  const eventStart = new Date(inicioString.replace('+00:00', 'Z'));
-  const eventEnd = event.fin ? new Date(finString.replace('+00:00', 'Z')) : new Date(inicioString.replace('+00:00', 'Z'));
-  
-  // 2. Crear día base usando el MISMO método que usa el evento
-  const dayStart = new Date(Date.UTC(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    0, 0, 0, 0
-  ));
-  
-  const dayEnd = new Date(Date.UTC(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    24, 0, 0, 0
-  ));
+  // String() fuerza la conversión evitando el error de TypeScript
+  const cleanStart = String(event.inicio).replace(/([+-]\d{2}:\d{2}|Z)$/, '');
+  const eStart = new Date(cleanStart);
 
-  // 3. Comparar timestamps (todos en UTC internamente)
-  const eventStartTime = eventStart.getTime();
-  const eventEndTime = eventEnd.getTime();
-  const dayStartTime = dayStart.getTime();
-  const dayEndTime = dayEnd.getTime();
+  const cleanEnd = event.fin ? String(event.fin).replace(/([+-]\d{2}:\d{2}|Z)$/, '') : cleanStart;
+  const eEnd = new Date(cleanEnd);
 
-  const start = Math.max(eventStartTime, dayStartTime);
-  const end = Math.min(eventEndTime, dayEndTime);
+  const startMinutes = eStart.getHours() * 60 + eStart.getMinutes();
+  let endMinutes = eEnd.getHours() * 60 + eEnd.getMinutes();
   
-  const totalDayDuration = 24 * 60 * 60 * 1000;
-  const startOffset = start - dayStartTime;
-  const duration = end - start;
+  if (endMinutes <= startMinutes && event.fin) {
+     endMinutes = 24 * 60; 
+  }
+
+  const totalMinutesInDay = 24 * 60;
+  const top = (startMinutes / totalMinutesInDay) * 120;
+  let duration = endMinutes - startMinutes;
   
-  const top = (startOffset / totalDayDuration) * 120;
-  const height = (duration / totalDayDuration) * 120;
+  if (duration <= 0) duration = 30; 
+  const height = (duration / totalMinutesInDay) * 120;
   
-  return { top: `${top}%`, height: `${height}%` };
+  return { top: `${top}%`, height: `${height}%`, position: 'absolute' };
 };
 
-const formatTime = (dateString: string | Date) => {
-  // MOSTRAR LA HORA EXACTA DEL EVENTO (19:00, no 16:00)
-  const date = new Date(dateString);
-  
-  // Usar UTC para mostrar lo que realmente está guardado
-  const hours = date.getUTCHours().toString().padStart(2, '0');
-  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+const formatTime = (dateInput: string | Date) => {
+  const str = String(dateInput).replace(/([+-]\d{2}:\d{2}|Z)$/, '');
+  const d = new Date(str);
+  const hours = d.getHours().toString().padStart(2, '0');
+  const minutes = d.getMinutes().toString().padStart(2, '0');
   
   return `${hours}:${minutes}`;
 };
-
 
   const formatFullDate = (date: Date) => format(date, "EEEE d 'de' MMMM 'de' yyyy", { locale: es });
 
@@ -168,7 +153,7 @@ const formatTime = (dateString: string | Date) => {
                 <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
                   <FaClock className="text-xs" />
                   <span>
-                    {formatTime(new Date(event.inicio))} - {event.fin ? formatTime(new Date(event.fin)) : 'Sin fin'}
+                    {formatTime((event.inicio))} - {event.fin ? formatTime((event.fin)) : 'Sin fin'}
                   </span>
                 </div>
               </div>
@@ -192,7 +177,7 @@ const formatTime = (dateString: string | Date) => {
                 <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
                   <FaClock className="text-xs" />
                   <span>
-                    {formatTime(new Date(event.inicio))} - {event.fin ? formatTime(new Date(event.fin)) : 'Sin fin'}
+                    {formatTime((event.inicio))} - {event.fin ? formatTime((event.fin)) : 'Sin fin'}
                   </span>
                 </div>
               </div>
@@ -309,7 +294,7 @@ const formatTime = (dateString: string | Date) => {
                                     )}
                                   </h4>
                                   <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
-                                    {formatTime(new Date(event.inicio))} - {event.fin ? formatTime(new Date(event.fin)) : 'Sin fin'}
+                                    {formatTime(event.inicio)} - {event.fin ? formatTime(event.fin) : 'Sin fin'}
                                   </span>
                                 </div>
                                 {isBlocked && !esEventoDeIntegrante && event.motivo_bloqueo && (
@@ -376,7 +361,7 @@ const formatTime = (dateString: string | Date) => {
                             <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
                               <FaClock className="text-xs" />
                               <span>
-                                {formatTime(new Date(event.inicio))} - {event.fin ? formatTime(new Date(event.fin)) : 'Sin fin'}
+                                {formatTime(event.inicio)} - {event.fin ? formatTime(event.fin) : 'Sin fin'}
                               </span>
                             </div>
                           </div>
@@ -391,40 +376,54 @@ const formatTime = (dateString: string | Date) => {
 
           {/* Footer */}
           <div className="sticky bottom-0 p-4 border-t border-neutral-700 bg-neutral-900">
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-400">
-                <span className="text-gray-300">
-                  {sortedEvents.filter(e => e.es_bloqueo).length > 0 && 
-                    `${sortedEvents.filter(e => e.es_bloqueo).length} bloqueos • `}
-                  {sortedEvents.filter(e => !e.es_bloqueo).length} eventos activos
-                </span>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={onClose}
-                  className="px-5 py-2.5 text-gray-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors font-medium"
-                >
-                  Cerrar
-                </button>
-                <button
-                  onClick={() => {
-                    setNewEventDate(date);
-                    console.log(date);
-                    setShowCrearEventoModal(true);
-                  }}
-                  className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
-                >
-                  Agregar Evento
-                </button>
-                <button
-                  onClick={() => {
-                    setNewEventDate(date);
-                    setShowBloquearPeriodoModal(true);
-                  }}
-                  className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
-                >
-                  Bloquear Periodo
-                </button>
+            <div className="flex flex-col gap-2">
+              {/* Mensaje si no tiene permiso */}
+              {!puedeCrearEvento && (
+                <div className="text-right text-xs text-yellow-400 flex items-center justify-end gap-1.5 pr-1">
+                  <FaCrown className="w-3 h-3" />
+                  <span>Mejora tu plan para gestionar agenda</span>
+                </div>
+              )}
+              
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-gray-400">
+                  <span className="text-gray-300">
+                    {sortedEvents.filter(e => e.es_bloqueo).length > 0 && 
+                      `${sortedEvents.filter(e => e.es_bloqueo).length} bloqueos • `}
+                    {sortedEvents.filter(e => !e.es_bloqueo).length} eventos activo (s)
+                  </span>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={onClose}
+                    className="px-5 py-2.5 text-gray-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors font-medium"
+                  >
+                    Cerrar
+                  </button>
+                  
+                  {/* Contenedor de botones que se bloquea */}
+                  <div className={`flex gap-3 ${!puedeCrearEvento ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <button
+                      onClick={() => {
+                        setNewEventDate(date);
+                        console.log(date);
+                        setShowCrearEventoModal(true);
+                      }}
+                      className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+                    >
+                      Agregar Evento
+                    </button>
+                    <button
+                      onClick={() => {
+                        setNewEventDate(date);
+                        setShowBloquearPeriodoModal(true);
+                      }}
+                      className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+                    >
+                      Bloquear Periodo
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -10,6 +10,10 @@ import { FiUploadCloud, FiX, FiTrash2 } from 'react-icons/fi';
 import RespuestaModal from './RespuestaModal';
 import { categoriaEvento, EventoGuardar, ParticipanteEvento, Profile } from '@/types/profile';
 import { FaCheck } from 'react-icons/fa6';
+import { usePermisos } from '@/app/hooks/usePermisos';
+import { FaCrown } from 'react-icons/fa';
+import ModalSeleccionarParticipantes from './ModalSeleccionarParticipantes';
+import ModalSeleccionarLugar from './ModalSeleccionarLugar';
 
 // Interfaces
 
@@ -20,16 +24,20 @@ interface CrearEventoModalProps {
   profile: Profile;
   selectedDate: Date;
   selectedEndDate?:Date;
+    invitadoPreCargado?: Profile;
 }
 
 
 
 
-export default function CrearEventoModal({ open, onClose, profile, selectedDate, selectedEndDate }: CrearEventoModalProps) {
+export default function CrearEventoModal({ open, onClose, profile, selectedDate, selectedEndDate,invitadoPreCargado }: CrearEventoModalProps) {
   // browser para subir imagen
   const supabase = getSupabaseBrowser();
  // console.log('crear eventos en fecha:' ,selectedDate, 'hasta: ',selectedEndDate);
   // ========== ESTADOS DEL FORMULARIO ==========
+    const { activo } = usePermisos({});
+  // OJO: Usa 'AGREGAR_PARTICIPAMNTES' tal cual está en tu base de datos
+  const puedeAgregarParticipantes = activo('AGREGAR_PARTICIPANTES');
   const [form, setForm] = useState<EventoGuardar>({
     titulo: '',
     descripcion: '',
@@ -72,6 +80,13 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate,
   const [showCustomLugar, setShowCustomLugar] = useState(false);
   const [customArtistName, setCustomArtistName] = useState('');
   const [customPlaceName, setCustomPlaceName] = useState('');
+
+  // nueva version para agregar participantes
+  const [selectedParticipante, setSelectedParticipante] = useState<string>('');
+  const [mostrarModalParticipantes, setMostrarModalParticipantes] = useState(false);
+
+    // ´para nuevo modal de seleccionar lugar
+  const [mostrarModalLugar, setMostrarModalLugar] = useState(false);
   
   // ========== ESTADO PARA PARTICIPANTES ==========
   const [participantes, setParticipantes] = useState<ParticipanteEvento[]>([
@@ -83,7 +98,6 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate,
     }] : [])
   ]);
   const [categorias, setCategorias] = useState<categoriaEvento[]>([]);
-  const [selectedParticipante, setSelectedParticipante] = useState<string>('');
   const [selectedCategoria, setSelectedcategoria] = useState<string>('');
   
   // ========== ESTADO PARA MODAL DE RESPUESTA ==========
@@ -120,6 +134,36 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate,
         fecha_hora_ini: `${dateStr}`,
         fecha_hora_fin: `${tomorrowStr}`
       }));
+
+      // =============================================
+      //  BLOQUE NUEVO: Invitado pre-cargado
+      // =============================================
+      if (invitadoPreCargado && invitadoPreCargado.id !== profile.id) {
+        // Agregar como participante
+        setParticipantes(prev => {
+          if (prev.some(p => p.id_perfil === invitadoPreCargado.id)) {
+            return prev;
+          }
+          return [...prev, {
+            id_perfil: invitadoPreCargado.id,
+            nombre: invitadoPreCargado.nombre || '',
+            tipo: invitadoPreCargado.tipo
+          }];
+        });
+
+        // Si es lugar, setearlo como lugar del evento
+        if (invitadoPreCargado.tipo === 'lugar') {
+          setForm(prev => ({
+            ...prev,
+            id_lugar: invitadoPreCargado.id,
+            nombre_lugar: invitadoPreCargado.nombre || '',
+            direccion_lugar: invitadoPreCargado.direccion || '',
+            lat_lugar: invitadoPreCargado.lat || null,
+            lon_lugar: invitadoPreCargado.lon || null
+          }));
+        }
+      }
+      // =============================================
     }
   }, [open]);
 
@@ -164,6 +208,16 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate,
   const handleChange = (field: keyof EventoGuardar, value: any) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
+
+  // Manejador para agregar participantes desde el modal de selección
+  const handleAgregarDesdeModal = (nuevosPerfiles: Profile[]) => {
+  const nuevosParticipantes = nuevosPerfiles.map(p => ({
+    id_perfil: p.id,
+    nombre: p.nombre || '',
+    tipo: p.tipo
+  }));
+  setParticipantes(prev => [...prev, ...nuevosParticipantes]);
+};
 
   // ========== MANEJO DE PARTICIPANTES ==========
   const agregarParticipante = () => {
@@ -252,6 +306,41 @@ export default function CrearEventoModal({ open, onClose, profile, selectedDate,
 
   const eliminarLugarComoParticipante = (lugarId: string) => {
   setParticipantes(prev => prev.filter(p => p.id_perfil !== lugarId));
+};
+
+const handleSeleccionarLugar = (lugarSeleccionado: { id: string | null, nombre: string, direccion: string | null, tipo: string }) => {
+  if (lugarSeleccionado.id) {
+    // Es un lugar registrado de la base de datos
+    setForm(prev => ({
+      ...prev,
+      id_lugar: lugarSeleccionado.id,
+      nombre_lugar: lugarSeleccionado.nombre,
+      direccion_lugar: lugarSeleccionado.direccion,
+    }));
+
+    // Agregar el lugar a la lista de participantes
+    // Se usa el operador '!' para asegurar a TypeScript que aquí el ID no es nulo
+    const lugarIdSeguro = lugarSeleccionado.id; 
+    
+    const yaExiste = participantes.some(p => p.id_perfil === lugarIdSeguro);
+    if (!yaExiste) {
+      setParticipantes(prev => [...prev, {
+        id_perfil: lugarIdSeguro, // Ahora TypeScript sabe que es string
+        nombre: lugarSeleccionado.nombre,
+        tipo: 'lugar'
+      }]);
+    }
+  } else {
+    // Es un lugar personalizado (no existe en la BD)
+    // Solo guardamos los datos de texto en el formulario, NO se agrega a participantes
+    // porque no tiene ID en la base de datos para recibir notificaciones.
+    setForm(prev => ({
+      ...prev,
+      id_lugar: null,
+      nombre_lugar: lugarSeleccionado.nombre,
+      direccion_lugar: lugarSeleccionado.direccion,
+    }));
+  }
 };
 
 
@@ -429,160 +518,90 @@ const endDateTime = form.fecha_hora_fin ? new Date(form.fecha_hora_fin + 'Z') : 
                 </div>
               </div>
 
-                  {/* Lugar */}  
-           <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
-            <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
-              <HiMap size={16} /> Lugar
-            </h3>
-            <div className="space-y-3">
-              {/* Si es LOCAL, mostrar info fija SIN posibilidad de cambiar */}
-              {profile.tipo === 'lugar' ? (
-                <div className="space-y-2">
-                  <div className="bg-black/50 border border-green-600/30 rounded-xl px-4 py-3">
-                    <p className="text-white font-medium">
-                      {profile?.nombre || 'Este lugar'}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">Local - Sede del evento (asignado automáticamente)</p>
-                  </div>
-                  <p className="text-xs text-yellow-500">
-                    ⚠️ Como eres un local, este será el lugar del evento
-                  </p>
-                </div>
-              ) : (
-                /* Si NO es local, mostrar selector de lugares */
-                <>
-                  {loadingLugares ? (
-                    <div className="bg-black/50 border border-green-600/30 rounded-xl px-4 py-3 flex items-center gap-3">
-                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-green-500"></div>
-                      <span className="text-gray-400">Cargando lugares...</span>
+              {/* Lugar */}  
+              <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
+                <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
+                  <HiMap size={16} /> Lugar
+                </h3>
+
+                {/* Si es LOCAL, mostrar info fija */}
+                {profile.tipo === 'lugar' ? (
+                  <div className="space-y-2">
+                    <div className="bg-black/50 border border-green-600/30 rounded-xl px-4 py-3">
+                      <p className="text-white font-medium">{profile?.nombre || 'Este lugar'}</p>
+                      <p className="text-xs text-gray-400 mt-1">Local - Sede del evento (asignado automáticamente)</p>
                     </div>
-                  ) : (
-                    <>
-                      <select
-                          value={form.id_lugar || ''}
-                          onChange={(e) => {
-                            const lugarId = e.target.value;
-                            console.log('Lugar seleccionado:', lugarId);
-
-                            if (lugarId === '') {
-                              // Si selecciona "Otro lugar"
-                              setShowCustomLugar(true);
-                              setForm(prev => ({
-                                ...prev,
-                                id_lugar: null,
-                                nombre_lugar: null,
-                                direccion_lugar: null,
-                                lat_lugar: null,
-                                lon_lugar: null
-                              }));
-
-                              // Remover cualquier lugar que haya sido agregado como participante
-                              setParticipantes(prev => prev.filter(p => 
-                                lugaresVisibles.findIndex(l => l.id === p.id_perfil) === -1
-                              ));
-                            } else {
-                              // Si selecciona un lugar de la lista
-                              setShowCustomLugar(false);
-                              const lugar = lugaresVisibles.find(l => l.id === lugarId);
-
-                              if (lugar) {
-                                setForm(prev => ({
-                                  ...prev,
-                                  id_lugar: lugarId,
-                                  nombre_lugar: lugar.nombre || '',
-                                  direccion_lugar: lugar.direccion || '',
-                                  lat_lugar: lugar.lat || null,
-                                  lon_lugar: lugar.lon || null
-                                }));
-
-                                // Agregar el lugar como participante
-                                const lugarComoParticipante = {
-                                  id_perfil: lugarId,
-                                  nombre: lugar.nombre || '',
-                                  tipo: lugar.tipo
-                                };
-
-                                // Verificar si ya está en la lista
-                                const yaExiste = participantes.some(p => p.id_perfil === lugarId);
-
-                                if (!yaExiste) {
-                                  setParticipantes(prev => [...prev, lugarComoParticipante]);
-                                }
-                              }
-                            }
-                          }}
-                          className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition text-sm"
-                          disabled={form.id_lugar !== null && form.id_lugar !== ''}
-                        >
-                          <option value="">Seleccionar un lugar</option>
-                          {lugaresVisibles.map((lugar) => (
-                            <option 
-                              key={lugar.id} 
-                              value={lugar.id}  
-                              disabled={form.id_lugar === lugar.id}
-                            >
-                              {lugar.nombre || 'Sin nombre'}
-                            </option>
-                          ))}
-                          <option value="">Otro lugar (especificar)</option>
-                        </select>
-                      
-                      {/* Si ya seleccionó un lugar, mostrar info y opción para cambiar */}
-                      {form.id_lugar && !showCustomLugar && (
-                        <div className="mt-3">
-                          <div className="flex items-center justify-between bg-black/50 border border-green-600/30 rounded-xl px-4 py-3">
-                            <div>
-                              <p className="text-white font-medium">
-                                {lugaresVisibles.find(l => l.id === form.id_lugar)?.nombre || 'Lugar seleccionado'}
-                              </p>
-                              <p className="text-xs text-gray-400 mt-1">Lugar asignado al evento</p>
+                  </div>
+                ) : (
+                  /* Si NO es local */
+                  <>
+                    {loadingLugares ? (
+                      <div className="bg-black/50 border border-green-600/30 rounded-xl px-4 py-3 flex items-center gap-3">
+                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-green-500"></div>
+                        <span className="text-gray-400">Cargando lugares...</span>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Botón para abrir el modal de lugares o tarjeta del lugar ya seleccionado */}
+                        {form.id_lugar && !form.id_lugar.includes('custom') ? (
+                          <div className="mt-3">
+                            <div className="flex items-center justify-between bg-black/50 border border-green-600/30 rounded-xl px-4 py-3">
+                              <div>
+                                <p className="text-white font-medium">
+                                  {lugaresVisibles.find(l => l.id === form.id_lugar)?.nombre || form.nombre_lugar || 'Lugar seleccionado'}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1 truncate">{form.direccion_lugar || 'Sin dirección'}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setForm(prev => ({ ...prev, id_lugar: null, nombre_lugar: null, direccion_lugar: null }));
+                                }}
+                                className="p-1 text-red-400 hover:text-red-300"
+                              >
+                                <FiX size={16} />
+                              </button>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setForm(prev => ({
-                                  ...prev,
-                                  id_lugar: null,
-                                  nombre_lugar: null,
-                                  direccion_lugar: null
-                                }));
-                                setShowCustomLugar(false);
-                              }}
-                              className="p-1 text-red-400 hover:text-red-300"
-                            >
-                              <FiX size={16} />
-                            </button>
                           </div>
-                        </div>
-                      )}
-
-                      {/* Campos para lugar personalizado */}
-                      {showCustomLugar && (
-                        <div className="space-y-2 mt-3 animate-fadeIn">
-                          <input
-                            type="text"
-                            value={form.nombre_lugar || ''}
-                            onChange={(e) => handleChange('nombre_lugar', e.target.value)}
-                            placeholder="Nombre del lugar..."
-                            className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm"
-                          />
-                          <input
-                            type="text"
-                            value={form.direccion_lugar || ''}
-                            onChange={(e) => handleChange('direccion_lugar', e.target.value)}
-                            placeholder="Dirección completa..."
-                            className="w-full px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition text-sm"
-                          />
-                        </div>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-
+                        ) : form.nombre_lugar && !form.id_lugar ? (
+                          /* Tarjeta para lugar personalizado ya ingresado */
+                           <div className="mt-3">
+                            <div className="flex items-center justify-between bg-black/50 border border-yellow-600/30 rounded-xl px-4 py-3">
+                              <div>
+                                <p className="text-white font-medium">{form.nombre_lugar}</p>
+                                <p className="text-xs text-gray-400 mt-1 truncate">{form.direccion_lugar || 'Lugar no registrado'}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setForm(prev => ({ ...prev, nombre_lugar: null, direccion_lugar: null }));
+                                }}
+                                className="p-1 text-red-400 hover:text-red-300"
+                              >
+                                <FiX size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Botón principal para abrir el modal */
+                          <button
+                            type="button"
+                            onClick={() => setMostrarModalLugar(true)}
+                            className="w-full px-4 py-2.5 border-2 border-dashed border-neutral-600 hover:border-green-500 text-gray-400 hover:text-green-400 rounded-lg transition flex items-center justify-center gap-2 text-sm"
+                          >
+                            <HiMap size={18} />
+                            Buscar o agregar lugar
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+              
               {/* Participantes */}
+         {puedeAgregarParticipantes && (
+          
               <div className="bg-neutral-800/40 border border-neutral-700 rounded-xl p-4">
                 <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-1">
                   <HiUserGroup size={16} /> Participantes
@@ -611,22 +630,14 @@ const endDateTime = form.fecha_hora_fin ? new Date(form.fecha_hora_fin + 'Z') : 
                   )}
 
                   {/* Agregar nuevo participante */}
-                  <div className="flex gap-2">
-                    <select value={selectedParticipante} onChange={(e) => setSelectedParticipante(e.target.value)} className="flex-1 px-3 py-2 bg-neutral-600 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-green-500 transition text-sm">
-                      <option value="">Agregar participante</option>
-                      {perfilesVisibles
-                        .filter(p => !participantes.some(part => part.id_perfil === p.id))
-                        .map((perfil) => (
-                          <option key={perfil.id} value={perfil.id}>
-                            {perfil.nombre || 'Sin nombre'} | {perfil.tipo.toUpperCase()}
-                          </option>
-                        ))
-                      }
-                    </select>
-                    <button type="button" onClick={agregarParticipante} disabled={!selectedParticipante} className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-600/30 disabled:cursor-not-allowed text-white rounded-lg">
-                      <HiPlus size={20} />
+                    <button
+                      type="button"
+                      onClick={() => setMostrarModalParticipantes(true)}
+                      className="w-full px-4 py-2.5 border-2 border-dashed border-neutral-600 hover:border-green-500 text-gray-400 hover:text-green-400 rounded-lg transition flex items-center justify-center gap-2 text-sm"
+                    >
+                      <HiUserGroup size={18} />
+                      Buscar y agregar participantes
                     </button>
-                  </div>
 
                   {/* Opción para artista personalizado */}
                   {(profile.tipo === 'lugar' || showCustomArtist) && (
@@ -637,6 +648,16 @@ const endDateTime = form.fecha_hora_fin ? new Date(form.fecha_hora_fin + 'Z') : 
                   )}
                 </div>
               </div>
+                )}
+                   {/* Mensaje si no tiene permiso */}
+              {!puedeAgregarParticipantes && (
+                <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-3 text-center">
+                  <p className="text-yellow-400 text-xs font-medium">Tu plan no permite agregar participantes a eventos.</p>
+                   <a href="/SerPremium" className="text-green-400 hover:text-green-300 text-sm font-medium flex-col items-center justify-center mt-2 inline-flex gap-1">
+                    Actualizar plan <FaCrown className='text-yellow-400'/>
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Columna 3: Información adicional */}
@@ -659,13 +680,43 @@ const endDateTime = form.fecha_hora_fin ? new Date(form.fecha_hora_fin + 'Z') : 
               </div>
 
 
-              {/* Información del creador */}
-              <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-4">
-                <p className="text-xs text-gray-400 mb-1">Creador del evento:</p>
-                <p className="text-white font-medium text-sm capitalize">{profile.nombre || `Perfil ${profile.tipo}`}</p>
-                <p className="text-xs text-gray-400 mt-2"> {profile.tipo} Humobile</p>
-                <p className="text-xs text-gray-400">Fecha seleccionada: {format(selectedDate, 'dd/MM/yyyy')}</p>
+         {/* Información del creador */}
+<div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-4 space-y-3">
+  <div>
+    <p className="text-xs text-gray-400 mb-1">Creador del evento:</p>
+    <p className="text-white font-medium text-sm capitalize">{profile.nombre || `Perfil ${profile.tipo}`}</p>
+    <p className="text-xs text-gray-400 mt-2">{profile.tipo} Humobile</p>
+    <p className="text-xs text-gray-400">Fecha seleccionada: {format(selectedDate, 'dd/MM/yyyy')}</p>
+  </div>
+
+  {/* Switch de Evento Público */}
+              <div className="pt-3 border-t border-neutral-700">
+                <label className="flex items-center justify-between cursor-pointer group">
+                  <div className="flex items-center gap-3">
+                    <span className={`text-sm font-medium transition-colors ${form.es_publico ? 'text-green-400' : 'text-neutral-400'}`}>
+                      Evento Público
+                    </span>
+                    {form.es_publico && <FaCheck className="text-green-500 text-xs" />}
+                  </div>
+                        
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={form.es_publico ?? false}
+                      onChange={(e) => handleChange('es_publico', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-neutral-600 rounded-full peer peer-checked:bg-green-600 transition-colors"></div>
+                    <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-5 shadow"></div>
+                  </div>
+                </label>
+                <p className="text-xs text-neutral-500 mt-2">
+                  {form.es_publico 
+                    ? 'Visible para todos en la agenda pública.'
+                    : 'Solo los participantes podrán ver este evento.'}
+                </p>
               </div>
+            </div>
             </div>
           </div>
 
@@ -691,6 +742,22 @@ const endDateTime = form.fecha_hora_fin ? new Date(form.fecha_hora_fin + 'Z') : 
         esExito={modalState.esExito}
         onClose={handleCloseModal}
         onAceptar={handleAceptarModal}
+        />
+        {/* Modal de selección de participantes */}
+      <ModalSeleccionarParticipantes
+      isOpen={mostrarModalParticipantes}
+      onClose={() => setMostrarModalParticipantes(false)}
+      perfilesDisponibles={perfilesVisibles}
+      participantesActuales={participantes.map(p => p.id_perfil)}
+      onAgregar={handleAgregarDesdeModal}
+    />
+
+          <ModalSeleccionarLugar
+        isOpen={mostrarModalLugar}
+        onClose={() => setMostrarModalLugar(false)}
+        lugaresDisponibles={lugaresVisibles}
+        lugarActualId={form.id_lugar ?? null} // Aseguramos que sea null si no hay lugar seleccionado
+        onSeleccionar={handleSeleccionarLugar}
       />
     </>
   );

@@ -18,13 +18,13 @@ import {
 import ModalPreguntasFrecuentes from './ModalPreguntasFrecuentes';
 import ModalGestionUsuarios from './ModalGestionUsuarios';
 import { FaUserAstronaut } from 'react-icons/fa6';
-import { TipoSeccion } from '@/types/profile';
+import { TipoSeccion, User } from '@/types/profile';
 import ModalGestionCategorias from './ModalGestionCategorias';
 import ModalGestorPermisos from './ModalGestorPermisos';
 import { RiPassValidLine } from 'react-icons/ri';
 
 interface ConfiguracionContentProps {
-  userData:UserData[];
+  userData:User[];
 }
 
 
