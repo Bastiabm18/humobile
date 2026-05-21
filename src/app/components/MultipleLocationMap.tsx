@@ -183,7 +183,7 @@ export default function LugareCercanosMap() {
         lat: -36.820135,
         lng: -73.044265,
         name: "Concepción",
-        type: "place",
+        type: "Lugar",
         address: "Edificio Millenium, Angol 436, Concepción, Chile",
         imagen_url:''
       },
