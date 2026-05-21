@@ -454,10 +454,10 @@ export async function actualizarCategoriaPerfil(
   try {
     const supabaseAdmin = getSupabaseAdmin();
     
-    console.log('📝 Actualizando categoría:', id, updates);
+    console.log(' Actualizando categoría:', id, updates);
     
     const updateData: any = {
-      updated_at: new Date().toISOString()
+      updatedAt: new Date().toISOString()
     };
     
     if (updates.nombre_categoria !== undefined) updateData.categoria = updates.nombre_categoria;
