@@ -626,7 +626,9 @@ export const getCategoriasPerfilActivas = async (tipo_perfil: string): Promise<c
      *
     `)
     .eq('tipo', tipo_perfil)
-    .eq('estado', true);
+    .eq('estado', true)
+    .order('categoria' ,{ascending:true});
+
 
   // Manejo de errores
   if (error) {

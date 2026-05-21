@@ -1487,7 +1487,9 @@ export const getCategoriasVisibles = async (): Promise<categoriaEvento[]> => {
     .select(`
       * 
     `)
-    .eq('estado', 'activo');
+    .eq('estado', 'activo')
+    .order('nombre', { ascending: true }); // orden 
+
 
   // Manejo de errores
   if (errorCategoria ) {
