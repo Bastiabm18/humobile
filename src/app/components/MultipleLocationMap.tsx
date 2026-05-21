@@ -182,7 +182,7 @@ export default function LugareCercanosMap() {
       {
         lat: -36.820135,
         lng: -73.044265,
-        name: "Casa de la Música",
+        name: "Concepción",
         type: "place",
         address: "Caupolicán 1235, Concepción",
         imagen_url:''
