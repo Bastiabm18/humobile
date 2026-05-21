@@ -184,7 +184,7 @@ export default function LugareCercanosMap() {
         lng: -73.044265,
         name: "Concepción",
         type: "place",
-        address: "Caupolicán 1235, Concepción",
+        address: "Edificio Millenium, Angol 436, Concepción, Chile",
         imagen_url:''
       },
       
