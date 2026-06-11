@@ -205,7 +205,7 @@ export async function GET(): Promise<NextResponse> {
     const user = {
       uid,
       email: userRecord.email || decoded.email, // ← email
-      role: userRecord.role || 'ADMIN', // ← role
+      role: userRecord.role || 'USER', // ← role
       name: decoded.user_metadata?.full_name || decoded.email?.split('@')[0] || 'Usuario',
       membresia: {
         id: userRecord.membership_id,

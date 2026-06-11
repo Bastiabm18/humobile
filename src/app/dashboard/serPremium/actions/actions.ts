@@ -14,7 +14,7 @@ export async function insertMembresia(
     const { data: membershipData, error: membershipError } = await supabaseAdmin
       .from('Membership')
       .select('id_membership, duracion_dias')
-      .eq('nombre', 'PREMIUM')
+      .eq('nombre', membershipType)
       .single();
     
     if (membershipError || !membershipData) {

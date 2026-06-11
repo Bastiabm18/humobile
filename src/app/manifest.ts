@@ -14,7 +14,7 @@ export default function manifest(): MetadataRoute.Manifest {
         src: '/desk_slide_4.png',
         sizes: '192x192',
         type: 'image/png',
-        purpose: 'maskable',
+        purpose: 'any',
       },
       {
         src: '/desk_slide_4.png',

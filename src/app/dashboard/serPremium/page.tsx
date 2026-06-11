@@ -23,7 +23,7 @@ export default async function SerPremiumPage() {
     if (!res.ok) throw new Error('No session');
     const data = await res.json();
     userData = data.user;
-    console.log(data);
+  //  console.log(data);
 
   } catch (error) {
     redirect('/login');
