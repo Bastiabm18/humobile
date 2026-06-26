@@ -24,7 +24,8 @@ const parser = new Parser({
       ['venue', 'venue'],
       ['address', 'address'],
       ['dateTime', 'dateTime'],
-      ['artist', 'artist']
+      ['artist', 'artist'],
+      ['imgUrl', 'imgUrl'] // <-- NUEVO CAMPO AGREGADO
     ],
   }
 });
@@ -37,7 +38,7 @@ export default async function EventosExternosPage({ params }: PageProps) {
   const { slug } = await params;
 
   const rssUrls: Record<string, string> = {
-    'keai': 'https://www.portaldisc.com/keai',
+    'keai': 'https://www.portaldisc.com/humobile',
   };
 
   const url = rssUrls[slug];
@@ -71,23 +72,42 @@ export default async function EventosExternosPage({ params }: PageProps) {
           {feed.items.map((item: any, index: number) => (
             <div 
               key={item.event_id || index} 
-              className="group flex flex-col bg-neutral-800/40 backdrop-blur-sm border border-neutral-700 rounded-2xl overflow-hidden hover:border-neutral-500 transition-all duration-300 shadow-xl"
+              className="group relative flex flex-col rounded-2xl overflow-hidden border border-neutral-700 hover:border-neutral-500 transition-all duration-300 shadow-xl h-full"
             >
-              {/* Cuerpo de la tarjeta */}
-              <div className="p-6 flex-1">
+              
+              {/* FONDO: Imagen del evento */}
+              {item.imgUrl ? (
+                <img 
+                  src={item.imgUrl} 
+                  alt={item.title} 
+                  className="absolute inset-0 w-full h-full object-cover z-0"
+                />
+              ) : (
+                /* Fondo de emergencia por si el RSS viejo no tiene imagen */
+                <div className="absolute inset-0 bg-neutral-800/40 backdrop-blur-sm z-0" />
+              )}
+
+              {/* CAPA SEMITRANSPARENTE (Overlay) */}
+              {/* Usé neutral-900/60 para garantizar legibilidad sobre cualquier imagen. 
+                  Si quieres exactamente el que pediste, cámbialo a: bg-neutral-800/40 */}
+              <div className={`absolute inset-0 z-10 ${item.imgUrl ? 'bg-neutral-900/60' : ''}`} />
+
+              {/* CONTENIDO: Información del evento */}
+              <div className="relative z-20 p-6 flex-1 flex flex-col text-white">
+                
                 <div className="flex justify-between items-start mb-4">
-                  <span className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-[10px] font-bold uppercase tracking-widest border border-blue-500/30">
+                  <span className="px-3 py-1 bg-white/10 text-white rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20 backdrop-blur-sm">
                     {item.city}
                   </span>
-                  <FaMusic className="text-neutral-600 group-hover:text-red-500 transition-colors" />
+                  <FaMusic className="text-white/40 group-hover:text-red-400 transition-colors" />
                 </div>
 
-                <h2 className="text-xl font-bold text-white mb-3 leading-tight min-h-[3.5rem] line-clamp-2">
+                <h2 className="text-xl font-bold text-white mb-3 leading-tight min-h-[3.5rem] line-clamp-2 drop-shadow-lg">
                   {item.title}
                 </h2>
 
                 <div className="space-y-3 mb-6">
-                  <div className="flex items-center gap-3 text-neutral-300">
+                  <div className="flex items-center gap-3 text-neutral-200">
                     <FaCalendarAlt className="text-red-400 w-4" />
                     <span className="text-sm font-medium">
                       {item.dateTime ? new Date(item.dateTime.replace(' ', 'T')).toLocaleDateString('es-ES', {
@@ -96,31 +116,31 @@ export default async function EventosExternosPage({ params }: PageProps) {
                     </span>
                   </div>
 
-                  <div className="flex items-start gap-3 text-neutral-400">
+                  <div className="flex items-start gap-3 text-neutral-300">
                     <MdLocationOn className="text-green-400 w-4 mt-1" />
                     <div className="text-sm">
-                      <p className="text-neutral-200 font-semibold">{item.venue}</p>
-                      <p className="text-xs line-clamp-1">{item.address}</p>
+                      <p className="text-white font-semibold">{item.venue}</p>
+                      <p className="text-xs text-neutral-300 line-clamp-1">{item.address}</p>
                     </div>
                   </div>
                 </div>
 
-                <p className="text-sm text-neutral-500 line-clamp-3 italic">
+                <p className="text-sm text-neutral-300 line-clamp-3 italic">
                   {item.description?.replace(/<[^>]*>?/gm, '')}
                 </p>
               </div>
               
-              {/* Footer de la tarjeta con Precio y Botón */}
-              <div className="p-6 pt-0 mt-auto">
-                <div className="flex items-center justify-between mb-4 pt-4 border-t border-neutral-700/50">
+              {/* FOOTER: Precio y Botón */}
+              <div className="relative z-20 p-6 pt-0 mt-auto">
+                <div className="flex items-center justify-between mb-4 pt-4 border-t border-white/10">
                   <div>
-                    <p className="text-[10px] text-neutral-500 uppercase font-bold">Desde</p>
-                    <p className="text-lg font-black text-white">
+                    <p className="text-[10px] text-neutral-300 uppercase font-bold">Desde</p>
+                    <p className="text-lg font-black text-white drop-shadow-md">
                       {Number(item.minPrice).toLocaleString('es-CL', { style: 'currency', currency: item.currency })}
                     </p>
                   </div>
-                  <div className="p-2 bg-neutral-700/50 rounded-lg">
-                    <FaTicketAlt className="text-yellow-500" />
+                  <div className="p-2 bg-black/30 backdrop-blur-sm rounded-lg border border-white/10">
+                    <FaTicketAlt className="text-yellow-400" />
                   </div>
                 </div>
 

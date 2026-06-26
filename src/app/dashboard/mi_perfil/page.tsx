@@ -26,7 +26,7 @@ export default async function MiPerfilPage() {
     if (res.ok) {
       const data = await res.json();
       userData = data.user;
-      console.log('DASHBOARD: UserData →', userData);
+    //  console.log('DASHBOARD: UserData →', userData);
     }
 
      try{

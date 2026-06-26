@@ -11,7 +11,17 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
-  /* Tus opciones de configuración aquí */
+  /* Tus opciones de configuración aquí SI ES IMAGENES REPETIR EL PATRON DE ABAJO */
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.portaldisc.com",
+        port: "",
+        pathname: "/**", // Permite cualquier ruta interna dentro de ese dominio
+      },
+    ],
+  },
   // Añadimos esto para calmar a Next.js 16
   transpilePackages: ["@serwist/next", "@serwist/sw", "@serwist/precaching"],
 };
