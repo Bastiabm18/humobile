@@ -83,7 +83,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ post }) => {
           <p className="text-gray-700 tracking-wide dark:text-gray-300 text-base line-clamp-2">{post.descripcion}</p>
         </div>
         <motion.a 
-          href={`/projects?id=${post.id}`}
+          href={`/noticias?id=${post.id}`}
           onMouseEnter={() => setIsLinkHovered(true)}
           onMouseLeave={() => setIsLinkHovered(false)}
           className="relative flex justify-between items-center w-full mt-6 font-bold text-primary-light dark:text-secondary-dark h-12 rounded-md"

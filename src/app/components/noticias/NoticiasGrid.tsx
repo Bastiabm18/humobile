@@ -112,8 +112,8 @@ const fadeInUp = (delay: number = 0) => ({
 
       {/* Link de "Ver más proyectos" */}
       <div className="w-full max-w-[90vw] mt-16">
-        <Link href={`/projects?id=`} >
-          <motion.a
+        <Link href={`/noticias?id=`} >
+          <motion.p
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             className="relative flex justify-between items-center w-full h-12 font-bold text-primary-light dark:text-secondary-dark rounded-md"
@@ -158,7 +158,7 @@ const fadeInUp = (delay: number = 0) => ({
               ver más Noticias
               <FaArrowRight className="inline-block ml-2" />
             </motion.span>
-          </motion.a>
+          </motion.p>
         </Link>
       </div>
     </section>
