@@ -235,7 +235,7 @@ function ProjectPageContent() {
   if (loading) {
     return (
       <div className="w-full min-h-screen flex items-center justify-center bg-primary-light dark:bg-background-dark">
-        <FaSpinner className="text-4xl animate-spin text-secondary-dark" />
+        <NeonSign />
       </div>
     );
   }
