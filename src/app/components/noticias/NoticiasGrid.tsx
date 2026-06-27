@@ -25,7 +25,7 @@ const Sparks = () => {
       {Array.from({ length: 30 }).map((_, i) => (
         <motion.div
           key={i}
-          className="absolute w-1.5 h-1.5 rounded-full bg-primary-light dark:bg-secondary-dark"
+          className="absolute w-1.5 h-1.5 rounded-full "
           style={{
             boxShadow: "0 0 10px 2px",
           }}
@@ -118,7 +118,7 @@ const fadeInUp = (delay: number = 0) => ({
             onMouseLeave={() => setIsHovered(false)}
             className="relative flex justify-between items-center w-full h-12 font-bold text-primary-light dark:text-secondary-dark rounded-md"
           >
-            <div className="flex-grow h-[2px] relative bg-primary-light/20 dark:bg-secondary-dark/20">
+            <div className="flex-grow h-[2px] relative ">
               <motion.div
                 className="absolute top-0 left-0 w-full h-full bg-green-600"
                 initial={{ x: "-100%" }}

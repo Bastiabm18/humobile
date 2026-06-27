@@ -24,7 +24,7 @@ export default function GridClient({ posts }: { posts: Post[] }) {
       {Array.from({ length: 30 }).map((_, i) => (
         <motion.div
           key={i}
-          className="absolute w-1.5 h-1.5 rounded-full bg-primary-light dark:bg-secondary-dark"
+          className="absolute w-1.5 h-1.5 rounded-full "
           style={{ boxShadow: "0 0 10px 2px" }}
           initial={{ y: 0, x: 0, scale: 0.5 }}
           animate={{
@@ -45,7 +45,7 @@ export default function GridClient({ posts }: { posts: Post[] }) {
   return (
     <section 
       id="proyectos" 
-      className="w-screen min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 bg-gray-100 dark:bg-background-dark"
+      className="w-screen min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 "
     >
       <motion.div
         className="w-full max-w-[90vw] items-center justify-center p-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
@@ -63,11 +63,11 @@ export default function GridClient({ posts }: { posts: Post[] }) {
           <motion.p
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="relative flex justify-between items-center w-full h-12 font-bold text-primary-light dark:text-secondary-dark rounded-md"
+            className="relative flex justify-between items-center w-full h-12 font-bold text-primary-light "
           >
-            <div className="flex-grow h-[2px] relative bg-primary-light/20 dark:bg-secondary-dark/20">
+            <div className="flex-grow h-[2px] relative ">
               <motion.div
-                className="absolute top-0 left-0 w-full h-full bg-primary-light dark:bg-secondary-dark"
+                className="absolute top-0 left-0 w-full h-full "
                 initial={{ x: "-100%" }}
                 animate={{ x: isHovered ? "0%" : "-100%" }}
                 transition={{ duration: 1.0, ease: [0.7, 0, 0.3, 1] }}
@@ -77,7 +77,7 @@ export default function GridClient({ posts }: { posts: Post[] }) {
                     {isHovered && (
                       <>
                         <motion.div
-                          className="w-3 h-3 rounded-full bg-primary-light dark:bg-secondary-dark"
+                          className="w-3 h-3 rounded-full "
                           style={{ boxShadow: "0 0 25px 10px" }}
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
@@ -92,7 +92,7 @@ export default function GridClient({ posts }: { posts: Post[] }) {
               </motion.div>
             </div>
             <motion.span
-              className="ml-4 pr-2 z-10 text-3xl text-primary-light dark:text-gray-300 cursor-pointer"
+              className="ml-4 pr-2 z-10 text-3xl cursor-pointer"
               variants={{
                 rest: { x: 0 },
                 hover: { x: [-3, 3, -3, 3, 0] }

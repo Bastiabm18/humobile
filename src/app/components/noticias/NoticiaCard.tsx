@@ -18,7 +18,7 @@ const Sparks = () => {
       {Array.from({ length: 30 }).map((_, i) => (
         <motion.div
           key={i}
-          className="absolute w-1.5 h-1.5 rounded-full bg-primary-dark dark:bg-primary-light"
+          className="absolute w-1.5 h-1.5 rounded-full "
           style={{ boxShadow: "0 0 10px 2px " }}
           initial={{ y: 0, x: 0, scale: 0.5 }}
           animate={{
@@ -49,7 +49,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ post }) => {
 
   return (
     <motion.div 
-      className="relative flex flex-col rounded-lg overflow-hidden shadow-lg bg-primary-light/90 dark:bg-background-dark_alt"
+      className="relative flex flex-col rounded-lg overflow-hidden shadow-lg bg-green-900/10 "
       onMouseEnter={() => setIsCardHovered(true)}
       onMouseLeave={() => setIsCardHovered(false)}
    
@@ -78,17 +78,17 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ post }) => {
       )}
       <div className="flex-grow p-6 flex flex-col justify-between">
         <div>
-          <h3 className="text-xl font-bold tracking-widest text-gray-800 dark:text-white mb-1">{post.titulo}</h3>
-          <p className="text-sm tracking-wider font-semibold text-primary-light_alt dark:text-primary-dark/80  mb-4 line-clamp-1">{post.subtitulo}</p>
-          <p className="text-gray-700 tracking-wide dark:text-gray-300 text-base line-clamp-2">{post.descripcion}</p>
+          <h3 className="text-xl font-bold tracking-widest  mb-1">{post.titulo}</h3>
+          <p className="text-sm tracking-wider font-semibold text-neutral-300  mb-4 line-clamp-1">{post.subtitulo}</p>
+          <p className="text-gray-300 tracking-wide  text-base line-clamp-2">{post.descripcion}</p>
         </div>
         <motion.a 
           href={`/noticias?id=${post.id}`}
           onMouseEnter={() => setIsLinkHovered(true)}
           onMouseLeave={() => setIsLinkHovered(false)}
-          className="relative flex justify-between items-center w-full mt-6 font-bold text-primary-light dark:text-secondary-dark h-12 rounded-md"
+          className="relative flex justify-between items-center w-full mt-6 font-bold text-neutral-300 h-12 rounded-md"
         >
-          <div className="flex-grow h-[2px] relative bg-primary-light/20 dark:bg-primary-light/20">
+          <div className="flex-grow h-[2px] relative ">
             <motion.div
               className="absolute top-0 left-0 w-full h-full bg-green-600"
               initial={{ x: "-100%" }}
