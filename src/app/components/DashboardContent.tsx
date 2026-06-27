@@ -10,7 +10,8 @@ import {
   FaQuestion, 
   FaUserCircle,
   FaChevronRight,
-  FaCrown
+  FaCrown,
+  FaRegNewspaper
 } from 'react-icons/fa';
 import { 
   BsSignpostSplit, 
@@ -118,6 +119,7 @@ const menuItems = MENU_ITEMS.filter(item => {
       'explorar': <TbWorldSearch className="text-neutral-400/30 text-4xl" />,
       'representante': <GrUserManager className="text-neutral-400/30 text-4xl" />,
       'productor': <GiTakeMyMoney className="text-neutral-400/30 text-4xl" />,
+      'noticias': <FaRegNewspaper  className="text-neutral-400/30 text-4xl" />,
       'salir': <BsBackspace className="text-neutral-400/30 text-4xl" />,
 
     };

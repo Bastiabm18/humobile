@@ -20,6 +20,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**", // Permite cualquier ruta interna dentro de ese dominio
       },
+      {
+        protocol:'https',
+        hostname:'udnekzbelqkszrqqmkrw.supabase.co',
+        port:"",
+        pathname:"/**",
+      },
     ],
   },
   // Añadimos esto para calmar a Next.js 16

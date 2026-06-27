@@ -16,6 +16,7 @@ import {  UserRole } from '@/types/role';
 import { TbMessageQuestion, TbWorldSearch } from 'react-icons/tb';
 import { GrUserManager } from 'react-icons/gr';
 import { GiTakeMyMoney } from 'react-icons/gi';
+import { FaRegNewspaper } from 'react-icons/fa6';
 
 export interface MenuItem {
   name: string;
@@ -37,5 +38,6 @@ export const MENU_ITEMS: MenuItem[] = [
   { name: 'Representante',           path: 'dashboard/representante',    descripcion:'Panel Representante', icon: <GrUserManager  className='text-4xl text-teal-500/80'  />,                       role: ['ADMIN','user'], membresia:['PREMIUM']          },
   { name: 'Productor',           path: 'dashboard/productor',    descripcion:' Panel Productor', icon: <GiTakeMyMoney className='text-4xl text-yellow-500/80'  />,                                 role: ['ADMIN','user'], membresia:['PREMIUM']          },
   { name: 'Configuracion',         path: 'dashboard/Configuracion',   descripcion:'Panel Admin', icon: <AiFillSetting className='text-4xl text-blue-500/80' />,                                    role: ['ADMIN']       , membresia:['PREMIUM']          },
+  { name: 'Noticias',         path: 'dashboard/noticias',   descripcion:'Panel Noticias', icon: <FaRegNewspaper  className='text-4xl text-purple-500/80' />,                                    role: ['ADMIN']       , membresia:['PREMIUM']          },
   { name: 'Salir',                 path: '/',                        descripcion:' Salida ', icon: <BsBackspace className='text-4xl text-red-500/80' />,                                             role: ['ADMIN','user'], membresia:['GRATIS']           },
 ];

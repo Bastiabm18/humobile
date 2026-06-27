@@ -12,6 +12,7 @@ import PreguntaFrecuente from "./components/Pregunta_frecuente";
 import Contacto from "./components/Contacto";
 import IrAlExplorador from "./components/IrAlExplorador";
 import Planes from "./components/Planes";
+import NoticiasGrid from "./components/noticias/NoticiasGrid";
 
 export default function Home() {
 
@@ -27,6 +28,9 @@ export default function Home() {
 <section id="HeroSlider" className="w-full h-full flex ">
     <HeroSlider />
 
+</section>
+<section id="noticias" className="w-full h-full flex ">
+    <NoticiasGrid/>
 </section>
 <section>
   <LugareCercanosMap/>

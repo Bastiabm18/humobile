@@ -720,3 +720,23 @@ export type TipoSeccion =
   valor_limite: number;
 }
 
+export interface PostImage {
+  url: string;
+  path: string;
+}
+
+export interface Post {
+  id: string;
+  titulo: string;
+  subtitulo: string;
+  descripcion: string;
+  contenido?: string; 
+  fecha: string; // Se guarda como string ISO desde el frontend
+  imagenes: PostImage[];
+}
+
+export interface FormState {
+  success: boolean;
+  message: string;
+  post?: Post; // Opcional porque al eliminar no devuelve el post
+}
