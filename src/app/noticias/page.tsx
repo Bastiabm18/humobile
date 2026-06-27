@@ -113,7 +113,7 @@ function ProjectDetailView({ post }: { post: Post }) {
       onClick={() => router.push(`/noticias?id=`)} 
         className="flex text-right items-center justify-end w-full gap-2 mt-8 text-secondary-dark font-bold"
       >
-        <FaPlus /> Ver Más Proyectos
+        <FaPlus /> Ver Más Noticias
       </motion.button>
     </motion.div>
   );
@@ -234,7 +234,7 @@ function ProjectPageContent() {
 
   if (loading) {
     return (
-      <div className="w-full min-h-screen flex items-center justify-center bg-primary-light dark:bg-background-dark">
+      <div className="w-full min-h-screen flex items-center justify-center ">
         <NeonSign />
       </div>
     );
@@ -243,7 +243,7 @@ function ProjectPageContent() {
   if (error) {
      return (
       <div className="w-full min-h-screen flex flex-col items-center justify-center bg-primary-light dark:bg-background-dark">
-        <p className="text-xl text-gray-700 dark:text-gray-300">Post no encontrado o ID inválido.</p>
+        <p className="text-xl text-gray-700 dark:text-gray-300">Noticia no encontrada o ID inválido.</p>
         <button onClick={() => window.location.href=`/noticias?id=`} className="mt-4 flex items-center gap-2 px-4 py-2 bg-secondary-dark text-white rounded-md hover:bg-opacity-80">
           <FaArrowLeft /> Volver
         </button>
