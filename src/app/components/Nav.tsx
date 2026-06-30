@@ -45,7 +45,7 @@ const handleLogout = async () => {
   ? [
       ...links.slice(0, 6), // Inicio,noticias ,Quiénes Somos, Contacto, Agenda
       { name: 'Mi Humobile', href: '/dashboard' },
-      ...links.slice(6) // Login
+      ...links.slice(7) // Login
     ]
   : links;
 
