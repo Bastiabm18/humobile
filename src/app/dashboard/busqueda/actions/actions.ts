@@ -252,9 +252,9 @@ function transformarEventoRSS(item: any, mapaComunas: Map<string, {lat: string, 
   const coordsComuna = mapaComunas.get(nombreCity);
   
   if (coordsComuna) {
-    console.log(` Comuna encontrada: ${item.city} → lat: ${coordsComuna.lat}, lon: ${coordsComuna.lon}`);
+   // console.log(` Comuna encontrada: ${item.city} → lat: ${coordsComuna.lat}, lon: ${coordsComuna.lon}`);
   } else {
-    console.log(` Comuna NO encontrada: ${item.city}`);
+   // console.log(` Comuna NO encontrada: ${item.city}`);
   }
 
   return {
