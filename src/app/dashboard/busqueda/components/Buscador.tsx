@@ -246,6 +246,7 @@ export default function Buscador({ onBuscar, tipo, onTipoChange, comunas }: Busc
                   <option value="concierto">Concierto</option>
                   <option value="festival">Festival</option>
                   <option value="show">Show</option>
+                    <option value="Externo">Externo (PortalDisc)</option>
                   <option value="privado">Privado</option>
                 </select>
               </div>
