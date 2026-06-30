@@ -13,7 +13,8 @@ import {
   FaCalendarAlt,
   FaFileAlt,
   FaShieldAlt,
-  FaCreditCard
+  FaCreditCard,
+  FaCrown
 } from 'react-icons/fa';
 import ModalPreguntasFrecuentes from './ModalPreguntasFrecuentes';
 import ModalGestionUsuarios from './ModalGestionUsuarios';
@@ -22,6 +23,7 @@ import { TipoSeccion, User } from '@/types/profile';
 import ModalGestionCategorias from './ModalGestionCategorias';
 import ModalGestorPermisos from './ModalGestorPermisos';
 import { RiPassValidLine } from 'react-icons/ri';
+import ModalGestionPrecioMembresia from './ModalGestionPrecioMembresia';
 
 interface ConfiguracionContentProps {
   userData:User[];
@@ -46,7 +48,7 @@ export default function ConfiguracionContent({
   const [mostrarModalGestionUsuario, setMostrarModalGestionUsuario] = useState(false);
   const [mostrarModalGestorPerfil, setMostrarModalGestorPerfil] = useState(false);
   const [mostrarModalGestorPermisos, setMostrarModalGestorPermisos] = useState(false);
-
+  const [mostrarModalMembresia, setMostrarModalMembresia] = useState(false);
 
   const secciones = [
     {
@@ -139,6 +141,13 @@ export default function ConfiguracionContent({
       icono: <FaCreditCard />,
       colorIcono: 'text-lime-600 hover:text-lime-700',
       colorFondo: 'hover:bg-lime-900/20'
+    },
+       {
+      id: 'precios_membresia' as TipoSeccion, 
+      titulo: 'Precios Membresía',
+      icono: <FaCrown />,
+      colorIcono: 'text-yellow-500 hover:text-yellow-400',
+      colorFondo: 'hover:bg-yellow-900/20'
     }
   ];
 
@@ -148,6 +157,9 @@ export default function ConfiguracionContent({
     // Ejemplo: Para la sección de preguntas frecuentes, abrir modal
     if (seccionId === 'preguntas_frecuentes') {
       setMostrarModalPreguntas(true);
+    }
+        if (seccionId === 'precios_membresia') {
+      setMostrarModalMembresia(true);
     }
     
   
@@ -262,6 +274,14 @@ export default function ConfiguracionContent({
       <ModalGestorPermisos
         estaAbierto={mostrarModalGestorPermisos}
         alCerrar={cerrarModalGestorPermisos}
+      />
+
+        <ModalGestionPrecioMembresia
+        estaAbierto={mostrarModalMembresia}
+        alCerrar={() => {
+          setMostrarModalMembresia(false);
+          setSeccionActiva(null);
+        }}
       />
     </div>
   );

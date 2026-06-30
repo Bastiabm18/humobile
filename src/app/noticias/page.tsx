@@ -32,17 +32,7 @@ function ProjectDetailView({ post }: { post: Post }) {
       </motion.button>
       
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
-        {/* Columna Izquierda: Detalles */}
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="lg:col-span-2 flex flex-col pt-8"
-        >
-          <h1 className="text-4xl sm:text-5xl font-bold text-neutral-300 leading-tight">{post.titulo}</h1>
-          <p className="mt-4 text-xl font-semibold text-neutral-300">{post.subtitulo}</p>
-          <div className="mt-8 text-neutral-600 text-base leading-relaxed whitespace-pre-wrap">{post.descripcion}</div>
-        </motion.div>
+    
 
         {/* Columna Derecha: Galería */}
         <motion.div 
@@ -89,6 +79,18 @@ function ProjectDetailView({ post }: { post: Post }) {
               ))}
             </div>
           )}
+        </motion.div>
+
+            {/* Columna Izquierda: Detalles */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="lg:col-span-2 flex flex-col pt-8"
+        >
+          <h1 className="text-4xl sm:text-5xl font-bold text-neutral-300 leading-tight">{post.titulo}</h1>
+          <p className="mt-4 text-xl font-semibold text-neutral-300">{post.subtitulo}</p>
+          <div className="mt-8 text-neutral-600 text-base leading-relaxed whitespace-pre-wrap">{post.descripcion}</div>
         </motion.div>
       </div>
 
@@ -185,7 +187,7 @@ function ProjectsGridView({ allPosts }: { allPosts: Post[] }) {
           </AnimatePresence>
         </div>
         {filteredPosts.length === 0 && (
-            <p className="text-center text-neutral-500 mt-12">No se encontraron proyectos con ese título.</p>
+            <p className="text-center text-neutral-500 mt-12">No se encontraron Noticias con ese título.</p>
         )}
       </motion.div>
     );

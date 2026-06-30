@@ -706,7 +706,8 @@ export type TipoSeccion =
   | 'seguridad'
   | 'gestor_perfil'
   | 'gestor_permisos'
-  | 'pagos';
+  | 'pagos'
+  | 'precios_membresia';
 
   export interface PermisoUsuario {
   id_permiso: string;           // UUID

@@ -522,7 +522,7 @@ export async function cambiarEstadoCategoriaPerfil(
   }
 }
 
-// ELIMINAR categoría 
+
 export async function eliminarCategoriaPerfil(id: number): Promise<void> {
   try {
     const supabaseAdmin = getSupabaseAdmin();
@@ -564,7 +564,7 @@ export async function eliminarCategoriaPerfil(id: number): Promise<void> {
   }
 }
 
-// OBTENER categorías por tipo
+
 export async function getCategoriasPorTipo(tipo: string): Promise<categoria_perfil[]> {
   try {
     const supabaseAdmin = getSupabaseAdmin();
@@ -957,6 +957,62 @@ export async function getPerfilesByUsuario_2(supabase_id: string): Promise<Perfi
     
   } catch (error: any) {
     console.error('Error getPerfilesByUsuario:', error.message);
+    throw error;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// OBTENER TODAS LAS MEMBRESÍAS
+// ═══════════════════════════════════════════════════════════════
+export async function obtenerMembresias() {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    const { data, error } = await supabaseAdmin
+      .from('Membership')
+      .select('*')
+      .order('precio_mensual', { ascending: true });
+
+    if (error) {
+      console.error('Error al obtener membresías:', error);
+      throw new Error(`Error al obtener membresías: ${error.message}`);
+    }
+
+    return data || [];
+  } catch (error: any) {
+    console.error('Error en obtenerMembresias:', error);
+    throw error;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ACTUALIZAR PRECIO Y DURACIÓN DE MEMBRESÍA
+// ═══════════════════════════════════════════════════════════════
+export async function actualizarMembresia(
+  id: string, 
+  precioMensual: number, 
+  duracionDias: number | null
+) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    const { error } = await supabaseAdmin
+      .from('Membership')
+      .update({ 
+        precio_mensual: precioMensual, 
+        duracion_dias: duracionDias 
+      })
+      .eq('id_membership', id);
+
+    if (error) {
+      console.error('Error al actualizar membresía:', error);
+      throw new Error(`Error al actualizar membresía: ${error.message}`);
+    }
+
+    console.log('Membresía actualizada:', id);
+    
+  } catch (error: any) {
+    console.error('Error en actualizarMembresia:', error);
     throw error;
   }
 }
