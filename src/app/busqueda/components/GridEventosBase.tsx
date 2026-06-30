@@ -87,6 +87,18 @@ export default function GridEventosBase({
   }
 
   const handleEventClick = (evento: EventoCalendario) => {
+
+     // ═══════════════════════════════════════════════════════════════
+  // SI ES EVENTO RSS → ABRIR LINK EXTERNO EN NUEVA PESTAÑA
+  // ═══════════════════════════════════════════════════════════════
+  if (evento.id.startsWith('rss_')) {
+    if (evento.tickets_evento) {
+      window.open(evento.tickets_evento, '_blank', 'noopener,noreferrer');
+    } else {
+      console.warn('Evento RSS sin link de tickets');
+    }
+    return;
+  }
     if (onEventClick) {
       onEventClick(evento);
     } else {

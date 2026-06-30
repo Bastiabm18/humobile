@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import Buscador from './components/Buscador';
 import NeonSign from '@/app/components/NeonSign';
 import { EventoCalendario, FiltrosEventos, FiltrosPerfiles, Profile } from '@/types/profile';
-import { obtenerComunasBusqueda, obtenerEventosBusqueda, obtenerPerfilesBusqueda } from './actions/actions'
+import { obtenerComunasBusqueda, obtenerEventosBusqueda, obtenerEventosRSS, obtenerPerfilesBusqueda } from './actions/actions'
 import CarruselBase from '@/app/components/CarruselBase';
 import CarruselEvento from '@/app/components/CarruselEvento';
 import CarruselEventosBase from '@/app/components/CarruselEventosBase';
@@ -13,6 +13,20 @@ import GridEventosBase from './components/GridEventosBase';
 import GridPerfil from './components/GridPerfil';
 
 
+// ═══════════════════════════════════════════════════════════════
+// FÓRMULA DE HAVERSINE (Calcula distancia en km entre 2 puntos) 
+// ═══════════════════════════════════════════════════════════════
+function calcularDistanciaKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Radio de la Tierra en km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
 
 export default function BusquedaPage( ) {
   // STATE 1: Controla si estamos buscando eventos o perfiles
@@ -31,7 +45,17 @@ export default function BusquedaPage( ) {
             const cargarEventos = async () => {
               try {
                 setLoading(true);
-                const eventos = await obtenerEventosBusqueda();
+                //const eventos = await obtenerEventosBusqueda();
+                const [eventosDB, eventosRSS] = await Promise.all([
+                  obtenerEventosBusqueda(),
+                  obtenerEventosRSS()
+                ]);
+                const eventos =[...eventosDB, ...eventosRSS]
+                      .sort((a, b) => {
+                        const fechaA = new Date(a.inicio).getTime();
+                        const fechaB = new Date(b.inicio).getTime();
+                        return fechaA - fechaB; // Más cercanos primero
+                      });
                 setTodosEventos(eventos);
                 setEventosFiltrados(eventos);
                 setError(null);
@@ -99,7 +123,28 @@ export default function BusquedaPage( ) {
              setLoading(true);
              // Llamamos a tu acción con los parámetros de ubicación
              const eventosCercanos = await obtenerEventosBusqueda(filtrosEventos.lat, filtrosEventos.lon,filtrosEventos.radio);
-             dataParaFiltrar = eventosCercanos;
+                // 2️ FILTRAR EVENTOS RSS CERCANOS (desde memoria usando Haversine)
+             const eventosRssCercanos = todosEventos
+               .filter(e => 
+                 e.id.startsWith('rss_') && 
+                 e.lat_lugar && 
+                 e.lon_lugar
+               )
+               .filter(e => {
+                 const distancia = calcularDistanciaKm(
+                   filtrosEventos.lat!,
+                   filtrosEventos.lon!,
+                   parseFloat(e.lat_lugar!),
+                   parseFloat(e.lon_lugar!)
+                 );
+                 
+                 // Guardamos la distancia por si la quieres mostrar después
+                 e.distancia = Math.round(distancia * 10) / 10; 
+                 
+                 return distancia <= (filtrosEventos.radio || 50);
+               });
+            
+                     dataParaFiltrar = [...eventosCercanos, ...eventosRssCercanos];
            } catch (err) {
              console.error('Error filtrando por ubicación:', err);
            } finally {
