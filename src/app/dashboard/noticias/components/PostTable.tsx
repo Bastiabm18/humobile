@@ -103,10 +103,10 @@ export default function PostsTable({ posts, onEdit, onPostDeleted }: PostsTableP
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: -20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-background-dark rounded-lg shadow-xl p-6 w-full max-w-md"
+              className="bg-neutral-800 rounded-lg shadow-xl p-6 w-full max-w-md"
             >
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Confirmar Eliminación</h3>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+              <h3 className="text-lg font-bold text-neutral-300 ">Confirmar Eliminación</h3>
+              <p className="mt-2 text-sm text-gray-300">
                 ¿Estás seguro de que quieres eliminar esta publicación? Esta acción no se puede deshacer.
               </p>
               <div className="mt-6 flex justify-end gap-4">
