@@ -78,7 +78,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ post }) => {
       )}
       <div className="flex-grow p-6 flex flex-col justify-between">
         <div>
-          <h3 className="text-xl font-bold tracking-widest  mb-1">{post.titulo}</h3>
+          <h3 className="text-xl font-bold tracking-widest  text-neutral-200 mb-1">{post.titulo}</h3>
           <p className="text-sm tracking-wider font-semibold text-neutral-300  mb-4 line-clamp-1">{post.subtitulo}</p>
           <p className="text-gray-300 tracking-wide  text-base line-clamp-2">{post.descripcion}</p>
         </div>
