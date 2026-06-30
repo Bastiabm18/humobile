@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import CarruselEventosBase from './CarruselEventosBase';
 import { CalendarEvent, EventoCalendario } from '@/types/profile';
-import { getEventosConfirmados, getEventsByProfile, getEventsPorEstado } from '@/app/actions/actions';
+import { getEventosConfirmados, getEventsByProfile, getEventsPorEstado,obtenerEventosRSS } from '@/app/actions/actions';
 import NeonSign from '@/app/components/NeonSign';
 import { Router } from 'next/router';
 import { useRouter } from 'next/navigation';
@@ -28,7 +28,17 @@ export default function EventosCarrusel() {
       setLoading(true);
       setError(null);
       try {
-        const eventosData = await getEventosConfirmados();
+      //  const eventosData = await getEventosConfirmados();
+         const [eventosDB, eventosRSS] = await Promise.all([
+                  getEventosConfirmados(),
+                  obtenerEventosRSS()
+                ]);
+                const eventosData =[...eventosDB, ...eventosRSS]
+                      .sort((a, b) => {
+                        const fechaA = new Date(a.inicio).getTime();
+                        const fechaB = new Date(b.inicio).getTime();
+                        return fechaA - fechaB; // Más cercanos primero
+                      });
         setEventos(eventosData);
         setLoading(false);
         

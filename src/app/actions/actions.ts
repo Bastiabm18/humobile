@@ -4,6 +4,25 @@ import { getSupabaseAdmin } from '@/lib/supabase/supabase-admin';
 import { ArtistData, BandData, PlaceData, ProfileType, GeoData, Profile, CalendarEvent, EventoCalendario, ArtistaEnBanda, IntegranteBandaEvento, PermisoUsuario } from '@/types/profile'; 
 import { pregunta_frecuente } from '@/types/externo';
 import { lugarMapa } from '@/types/mapa';
+import Parser from 'rss-parser';
+
+const parserRSS = new Parser({
+  customFields: {
+    item: [
+      ['event_id', 'event_id'],
+      ['ticketLink', 'ticketLink'],
+      ['minPrice', 'minPrice'],
+      ['currency', 'currency'],
+      ['city', 'city'],
+      ['region', 'region'],
+      ['venue', 'venue'],
+      ['address', 'address'],
+      ['dateTime', 'dateTime'],
+      ['artist', 'artist'],
+      ['imgUrl', 'imgUrl']
+    ],
+  }
+});
 // ===========================================
 // 1. CARGA DE DATOS GEOGRÁFICOS (PAÍS, REGIÓN, COMUNA)
 // ===========================================
@@ -605,4 +624,133 @@ try {
 
 
 
+}
+
+// ═══════════════════════════════════════════════════════════════
+// OBTENER TODAS LAS COMUNAS COMO MAPA (para geolocalizar RSS asociamos la comuna con el tag <city> de la rss)
+// ═══════════════════════════════════════════════════════════════
+export async function obtenerMapaComunas(): Promise<Map<string, {lat: string, lon: string}>> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    const { data, error } = await supabaseAdmin
+      .from('Comuna')
+      .select('nombre_comuna, lat, lon');
+    
+    if (error || !data) {
+      console.error('Error obteniendo mapa de comunas:', error);
+      return new Map();
+    }
+    
+    // Crear mapa con key en minúsculas para búsqueda case-insensitive
+    const mapa = new Map<string, {lat: string, lon: string}>();
+    data.forEach(c => {
+      mapa.set(c.nombre_comuna.toLowerCase().trim(), { 
+        lat: c.lat, 
+        lon: c.lon 
+      });
+    });
+    
+    console.log(`Mapa de comunas cargado: ${mapa.size} comunas`);
+    return mapa;
+    
+  } catch (error) {
+    console.error('Error en obtenerMapaComunas:', error);
+    return new Map();
+  }
+}
+
+function transformarEventoRSS(item: any, mapaComunas: Map<string, {lat: string, lon: string}>): EventoCalendario {
+  // Limpiar HTML de la descripción
+  const descripcionLimpia = item.description?.replace(/<[^>]*>?/gm, '') || '';
+  
+  // Parsear la fecha
+  const fechaInicio = item.dateTime 
+    ? new Date(item.dateTime.replace(' ', 'T')) 
+    : new Date();
+  
+  //  BUSCAR LAT/LON POR NOMBRE DE COMUNA
+  const nombreCity = item.city?.toLowerCase().trim() || '';
+  const coordsComuna = mapaComunas.get(nombreCity);
+  
+  if (coordsComuna) {
+    console.log(` Comuna encontrada: ${item.city} → lat: ${coordsComuna.lat}, lon: ${coordsComuna.lon}`);
+  } else {
+    console.log(` Comuna NO encontrada: ${item.city}`);
+  }
+
+  return {
+    id: `rss_${item.event_id}`,
+    titulo: item.title || 'Sin título',
+    descripcion: descripcionLimpia,
+    inicio: fechaInicio,
+    fin: fechaInicio,
+    id_categoria: '',
+    nombre_categoria: 'Externo',
+    flyer_url: item.imgUrl || null,
+    video_url: '',
+    id_creador: '',
+    nombre_creador: item.artist || 'Artista externo',
+    tipo_perfil_creador: 'externo',
+    id_lugar: '',
+    nombre_lugar: item.venue || 'Lugar por confirmar',
+    direccion_lugar: item.address || '',
+    
+    
+    lat_lugar: coordsComuna?.lat || '',
+    lon_lugar: coordsComuna?.lon || '',
+    
+    id_productor: '',
+    nombre_productor: item.region || null,
+    
+    // 
+    tickets_evento: item.ticketLink || '',
+    
+    es_publico: true,
+    es_bloqueo: false,
+    motivo_bloqueo: '',
+    created_at: fechaInicio,
+    updated_at: fechaInicio,
+    participantes: [],
+    total_participantes: 1,
+    pendientes: 0,
+    confirmados: 1,
+    rechazados: 0,
+    porcentaje_aprobacion: 100,
+    estado_participacion: '',
+    es_evento_integrante: false,
+    es_evento_banda: false,
+    distancia: 0,
+  };
+}
+
+export async function obtenerEventosRSS(): Promise<EventoCalendario[]> {
+  try {
+    //  PASO 1: Obtener mapa de comunas para geolocalizar
+    const mapaComunas = await obtenerMapaComunas();
+    
+    //  PASO 2: Parsear RSS
+    const RSS_URL = 'https://www.portaldisc.com/humobile';
+    const feed = await parserRSS.parseURL(RSS_URL);
+    
+    if (!feed.items || feed.items.length === 0) {
+      console.log('RSS sin items');
+      return [];
+    }
+
+    //  PASO 3: Transformar con geolocalización
+    const eventosTransformados = feed.items.map(item => 
+      transformarEventoRSS(item, mapaComunas)
+    );
+    
+    //  ESTADÍSTICAS
+    const conCoords = eventosTransformados.filter(e => e.lat_lugar && e.lon_lugar).length;
+    console.log(` ${eventosTransformados.length} eventos RSS | ${conCoords} con coordenadas`);
+    
+    return eventosTransformados;
+    
+  } catch (error: any) {
+    console.error(' Error obteniendo eventos RSS:', error);
+    return [];
+  }
 }
