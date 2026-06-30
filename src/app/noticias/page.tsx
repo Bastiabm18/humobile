@@ -90,7 +90,7 @@ function ProjectDetailView({ post }: { post: Post }) {
         >
           <h1 className="text-4xl sm:text-5xl font-bold text-neutral-300 leading-tight">{post.titulo}</h1>
           <p className="mt-4 text-xl font-semibold text-neutral-300">{post.subtitulo}</p>
-          <div className="mt-8 text-neutral-600 text-base leading-relaxed whitespace-pre-wrap">{post.descripcion}</div>
+          <div className="mt-8 text-neutral-400 text-base leading-relaxed whitespace-pre-wrap">{post.descripcion}</div>
         </motion.div>
       </div>
 
