@@ -90,22 +90,22 @@ export default function PostForm({ editingPost, onCancelEdit, onPostSaved }: Pos
         
         <div>
           <label htmlFor="titulo" className="block text-sm font-medium text-gray-400">Título</label>
-          <input type="text" name="titulo" id="titulo" defaultValue={editingPost?.titulo} required className="mt-1 block w-full px-3 py-2 bg-neutral-800 border border-neutral-200 rounded-md shadow-sm focus:outline-none "/>
+          <input type="text" name="titulo" id="titulo" defaultValue={editingPost?.titulo} required className="text-neutral-300 mt-1 block w-full px-3 py-2 bg-neutral-800 border border-neutral-200 rounded-md shadow-sm focus:outline-none "/>
         </div>
 
         <div>
           <label htmlFor="subtitulo" className="block text-sm font-medium text-gray-400">Subtítulo</label>
-          <input type="text" name="subtitulo" id="subtitulo" defaultValue={editingPost?.subtitulo} required className="mt-1 block w-full px-3 py-2 bg-neutral-800 border border-neutral-200 rounded-md shadow-sm focus:outline-none "/>
+          <input type="text" name="subtitulo" id="subtitulo" defaultValue={editingPost?.subtitulo} required className="text-neutral-300 mt-1 block w-full px-3 py-2 bg-neutral-800 border border-neutral-200 rounded-md shadow-sm focus:outline-none "/>
         </div>
 
         <div>
           <label htmlFor="descripcion" className="block text-sm font-medium text-gray-400">Descripción</label>
-          <textarea name="descripcion" id="descripcion" rows={4} defaultValue={editingPost?.descripcion} required className="mt-1 block w-full px-3 py-2 bg-neutral-800 border border-neutral-200 rounded-md shadow-sm focus:outline-none "></textarea>
+          <textarea name="descripcion" id="descripcion" rows={10} defaultValue={editingPost?.descripcion} required className="text-neutral-300 mt-1 block w-full px-3 py-2 bg-neutral-800 border border-neutral-200 rounded-md shadow-sm focus:outline-none "></textarea>
         </div>
 
         <div>
           <label htmlFor="contenido" className="block text-sm font-medium text-gray-400">Enlace</label>
-          <input  name="contenido" id="contenido" defaultValue={editingPost?.contenido}  className="mt-1 block w-full px-3 py-2  border rounded-md shadow-sm focus:outline-none bg-neutral-800 border-neutral-200"/>
+          <input  name="contenido" id="contenido" defaultValue={editingPost?.contenido}  className="text-neutral-300 mt-1 block w-full px-3 py-2  border rounded-md shadow-sm focus:outline-none bg-neutral-800 border-neutral-200"/>
         </div>
 
         <div>

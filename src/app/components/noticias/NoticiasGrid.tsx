@@ -71,8 +71,8 @@ export default function NoticiasGrid() {
   // Muestra un spinner mientras los datos están cargando
   if (loading) {
     return (
-      <section className="w-screen min-h-screen flex justify-center items-center bg-gray-100 dark:bg-background-dark">
-        <FaSpinner className="animate-spin text-4xl text-primary-dark dark:text-primary-light" />
+      <section className="w-screen min-h-screen flex justify-center items-center ">
+        <FaSpinner className="animate-spin text-4xl " />
       </section>
     );
   }
@@ -116,33 +116,10 @@ const fadeInUp = (delay: number = 0) => ({
           <motion.p
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="relative flex justify-between items-center w-full h-12 font-bold text-primary-light dark:text-secondary-dark rounded-md"
+            className="relative flex justify-between items-center w-full h-12 font-bold  rounded-md"
           >
             <div className="flex-grow h-[2px] relative ">
-              <motion.div
-                className="absolute top-0 left-0 w-full h-full bg-green-600"
-                initial={{ x: "-100%" }}
-                animate={{ x: isHovered ? "0%" : "-100%" }}
-                transition={{ duration: 1.0, ease: [0.7, 0, 0.3, 1] }}
-              >
-                <div className="absolute right-0 top-1/2 -translate-y-1/2">
-                  <AnimatePresence>
-                    {isHovered && (
-                      <>
-                        <motion.div
-                          className="w-3 h-3 rounded-full bg-green-700"
-                          style={{ boxShadow: "0 0 25px 10px" }}
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          exit={{ scale: 0 }}
-                          transition={{ duration: 0.2 }}
-                        />
-                        <Sparks />
-                      </>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </motion.div>
+             
             </div>
             <motion.span
               className="ml-4 pr-2 z-10 text-3xl text-green-700 cursor-pointer"
