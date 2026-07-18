@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             try {
               const perms = await getPermisosUser(fetchedUser.membresia.id);
               setPermisos(perms);
-             // console.error("Permisos cargados:", perms);
+              console.error("Permisos cargados:", perms);
             } catch (errorPerm) {
               console.error("Error cargando permiso:", errorPerm);
               setPermisos(null);

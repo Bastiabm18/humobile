@@ -115,19 +115,28 @@ const [error, setError] = useState('');
                 />
               </div>
 
-              <div className="flex flex-col">
+                  <div className="flex flex-col">
                 <label htmlFor="password" className="text-sm text-gray-400 mb-1">
                   Contraseña
                 </label>
                 <input
                   id="password"
                   type="password"
-                  value={password} // ← Vincular estado
-                  onChange={(e) => setPassword(e.target.value)} // ← Actualizar estado
-                  required // ← Hacerlo requerido
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                   placeholder="••••••••"
                   className="px-4 py-3 bg-gray-700 placeholder:bg-gray-700 text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
+                {/* ---> ENLACE AGREGADO AQUÍ <--- */}
+                <div className="text-right mt-2">
+                  <Link 
+                    href="/recuperarPass" 
+                    className="text-sm text-blue-500 hover:text-blue-400 transition-colors"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </Link>
+                </div>
               </div>
 
               {/* Botones */}
