@@ -52,7 +52,7 @@ export default function Planes() {
               <h3 className="text-2xl font-black text-white mb-1 uppercase">{plan.nombre}</h3>
               <div className="flex items-baseline gap-1 mb-6">
                 <span className="text-4xl font-black text-white">${Number(plan.precio_mensual).toLocaleString('es-CL')}</span>
-                <span className="text-neutral-500 text-[10px] font-bold uppercase">Neto</span>
+                <span className="text-neutral-500 text-[10px] font-bold uppercase">IVA incluido</span>
               </div>
 
               <ul className="space-y-4 border-t border-neutral-800 pt-6">
