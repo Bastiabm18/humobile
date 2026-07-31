@@ -52,7 +52,7 @@ export default function Planes() {
               <h3 className="text-2xl font-black text-white mb-1 uppercase">{plan.nombre}</h3>
               <div className="flex items-baseline gap-1 mb-6">
                 <span className="text-4xl font-black text-white">${Number(plan.precio_mensual).toLocaleString('es-CL')}</span>
-                <span className="text-neutral-500 text-[10px] font-bold uppercase">Neto / Mes</span>
+                <span className="text-neutral-500 text-[10px] font-bold uppercase">Neto</span>
               </div>
 
               <ul className="space-y-4 border-t border-neutral-800 pt-6">
@@ -85,13 +85,10 @@ export default function Planes() {
                   <span>Plan Mensual {selectedPlan.nombre}</span>
                   <span>${Number(selectedPlan.precio_mensual).toLocaleString('es-CL')}</span>
                 </div>
-                <div className="flex justify-between text-emerald-500 font-bold italic">
-                  <span>IVA (19%)</span>
-                  <span>+ ${(Number(selectedPlan.precio_mensual) * 0.19).toLocaleString('es-CL')}</span>
-                </div>
+     
                 <div className="pt-3 border-t border-neutral-800 flex justify-between text-2xl font-black text-white">
                   <span>Total</span>
-                  <span className="text-blue-500">${(Number(selectedPlan.precio_mensual) * 1.19).toLocaleString('es-CL')}</span>
+                  <span className="text-blue-500">${(Number(selectedPlan.precio_mensual)).toLocaleString('es-CL')}</span>
                 </div>
               </div>
 
