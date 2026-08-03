@@ -79,7 +79,7 @@ export default function Contacto({}: ContactoProps) {
     { 
       icon: <FaWhatsapp />, 
       label: 'WhatsApp', 
-      url: 'https://wa.me/15551234567', 
+      url: 'https://wa.me/+569 8420 1584', 
       iconColor: 'text-emerald-400'
     }
   ];
