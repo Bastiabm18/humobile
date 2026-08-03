@@ -117,6 +117,7 @@ export const getProfile = async (id_perfil: string, tipo?: string): Promise<Prof
             Pais(nombre_pais),
             Region(nombre_region),
             Comuna(nombre_comuna),
+            categoria_perfil(categoria),
             integrante!integrante_id_artista_fkey (
               id_banda,
               tipo,
@@ -178,7 +179,7 @@ export const getProfile = async (id_perfil: string, tipo?: string): Promise<Prof
       lat: p.lat,
       lon: p.lon,
       direccion: p.direccion,
-      // Asignamos el array mapeado
+      nombre_categoria_perfil: p.categoria_perfil?.categoria || '',
       pertenece_a_grupo: pertenece_a_grupo,
       descripcion_perfil: p.descripcion_perfil || '',
     };

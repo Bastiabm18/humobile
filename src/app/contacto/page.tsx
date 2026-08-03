@@ -22,6 +22,7 @@ import { GiSparkPlug } from "react-icons/gi";
 import { BsFillSendFill, BsStars } from "react-icons/bs";
 import { TbMessages } from "react-icons/tb";
 import { useRouter } from 'next/navigation';
+import { enviarCorreoContacto } from './actions/actions';
 
 export default function ContactPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -84,23 +85,22 @@ export default function ContactPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Formulario enviado:', formData);
-      alert('¡Mensaje enviado correctamente!');
-      setIsModalOpen(false);
-      setFormData({ email: '', subject: '', message: '' });
-    } catch (error) {
-      console.error('Error al enviar:', error);
-      alert('Hubo un error al enviar el mensaje');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+
+  try {
+    await enviarCorreoContacto(formData.email, formData.subject, formData.message);
+    setIsModalOpen(false);
+    setFormData({ email: '', subject: '', message: '' });
+   // alert('¡Mensaje enviado correctamente!');
+  } catch (error: any) {
+    console.error('Error al enviar:', error);
+    alert('Hubo un error al enviar el mensaje. Intenta nuevamente.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleCall = () => {
     window.location.href = `tel:${contactInfo.phone.replace(/\D/g, '')}`;

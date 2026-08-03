@@ -151,22 +151,32 @@ export default function PresentacionPerfil({ perfil }: PresentacionPerfilProps) 
 
       {/* Contenido */}
       <div className="relative z-10 h-full flex flex-col justify-between p-6">
-        {/* Encabezado - Tipo y ubicación */}
-        <div className="flex justify-between items-start">
+      {/* Encabezado - Tipo, categoría y ubicación */}
+      <div className="flex flex-wrap justify-between items-start gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Badge de tipo */}
           <div className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border ${getTypeColor()}`}>
             {getTypeIcon()}
             <span className="font-medium">{getTypeLabel()}</span>
           </div>
-          
-          {/* Ubicación */}
-          {location && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-black/50 rounded-full backdrop-blur-sm border border-neutral-600/50">
-              <FaMapMarkerAlt className="w-4 h-4 text-neutral-400" />
-              <span className="text-sm text-neutral-300">{location}</span>
+
+          {/* Badge de categoría */}
+          {perfil.nombre_categoria_perfil && (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border bg-amber-600/15 text-amber-400 border-amber-500/30">
+             
+              <span className="font-medium capitalize">{perfil.nombre_categoria_perfil}</span>
             </div>
           )}
         </div>
+        
+        {/* Ubicación */}
+        {location && (
+          <div className="flex items-center gap-2 px-4 py-2 bg-black/50 rounded-full backdrop-blur-sm border border-neutral-600/50">
+            <FaMapMarkerAlt className="w-4 h-4 text-neutral-400" />
+            <span className="text-sm text-neutral-300">{location}</span>
+          </div>
+        )}
+      </div>
 
         {/* Información principal */}
         <div className="space-y-4">
