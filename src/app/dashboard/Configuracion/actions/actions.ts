@@ -988,31 +988,147 @@ export async function obtenerMembresias() {
 // ═══════════════════════════════════════════════════════════════
 // ACTUALIZAR PRECIO Y DURACIÓN DE MEMBRESÍA
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// ACTUALIZAR MEMBRESÍA (nombre, precio y duración)
+// ═══════════════════════════════════════════════════════════════
 export async function actualizarMembresia(
-  id: string, 
-  precioMensual: number, 
-  duracionDias: number | null
+  id: string,
+  precioMensual: number,
+  duracionDias: number | null,
+  nombre?: string
 ) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    
+
+    const updateData: any = {
+      precio_mensual: precioMensual,
+      duracion_dias: duracionDias
+    };
+
+    // Solo actualizar nombre si se proporciona
+    if (nombre !== undefined && nombre.trim() !== '') {
+      updateData.nombre = nombre.trim();
+    }
+
     const { error } = await supabaseAdmin
       .from('Membership')
-      .update({ 
-        precio_mensual: precioMensual, 
-        duracion_dias: duracionDias 
-      })
+      .update(updateData)
       .eq('id_membership', id);
 
     if (error) {
+      if (error.code === '23505') {
+        throw new Error('Ya existe una membresía con ese nombre');
+      }
       console.error('Error al actualizar membresía:', error);
       throw new Error(`Error al actualizar membresía: ${error.message}`);
     }
 
     console.log('Membresía actualizada:', id);
-    
+
   } catch (error: any) {
     console.error('Error en actualizarMembresia:', error);
+    throw error;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CREAR NUEVA MEMBRESÍA
+// ═══════════════════════════════════════════════════════════════
+export async function crearMembresia(
+  nombre: string,
+  precioMensual: number,
+  duracionDias: number | null
+) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const { data, error } = await supabaseAdmin
+      .from('Membership')
+      .insert([{
+        nombre: nombre,
+        precio_mensual: precioMensual,
+        duracion_dias: duracionDias
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      // Manejar violación de unique en nombre
+      if (error.code === '23505') {
+        throw new Error('Ya existe una membresía con ese nombre');
+      }
+      console.error('Error al crear membresía:', error);
+      throw new Error(`Error al crear membresía: ${error.message}`);
+    }
+
+    console.log('Membresía creada:', data.id_membership);
+    return data;
+
+  } catch (error: any) {
+    console.error('Error en crearMembresia:', error);
+    throw error;
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// ELIMINAR MEMBRESÍA
+// ═══════════════════════════════════════════════════════════════
+export async function eliminarMembresia(id: string): Promise<void> {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+
+    // Verificar si hay usuarios con esta membresía activa
+    const { data: usuariosConMembresia, error: err1 } = await supabaseAdmin
+      .from('MembershipState')
+      .select('id_state')
+      .eq('membership_id', id)
+      .eq('estado', 'ACTIVO')
+      .limit(1);
+
+    if (err1) throw new Error(`Error al verificar membresía: ${err1.message}`);
+
+    if (usuariosConMembresia && usuariosConMembresia.length > 0) {
+      throw new Error('No se puede eliminar porque hay usuarios con esta membresía activa');
+    }
+
+    // Verificar si tiene permisos asignados
+    const { data: permisosAsignados, error: err2 } = await supabaseAdmin
+      .from('membership_permiso')
+      .select('id_membership')
+      .eq('id_membership', id)
+      .limit(1);
+
+    if (err2) throw new Error(`Error al verificar permisos: ${err2.message}`);
+
+    if (permisosAsignados && permisosAsignados.length > 0) {
+      // Eliminar permisos vinculados primero
+      const { error: err3 } = await supabaseAdmin
+        .from('membership_permiso')
+        .delete()
+        .eq('id_membership', id);
+
+      if (err3) throw new Error(`Error al eliminar permisos vinculados: ${err3.message}`);
+    }
+
+    // Eliminar la membresía
+    const { error } = await supabaseAdmin
+      .from('Membership')
+      .delete()
+      .eq('id_membership', id);
+
+    if (error) {
+      if (error.message.includes('foreign key') || error.code === '23503') {
+        throw new Error('No se puede eliminar la membresía porque tiene datos asociados');
+      }
+      console.error('Error al eliminar membresía:', error);
+      throw new Error(`Error al eliminar membresía: ${error.message}`);
+    }
+
+    console.log('Membresía eliminada:', id);
+
+  } catch (error: any) {
+    console.error('Error en eliminarMembresia:', error);
     throw error;
   }
 }

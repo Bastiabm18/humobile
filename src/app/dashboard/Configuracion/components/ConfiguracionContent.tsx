@@ -144,7 +144,7 @@ export default function ConfiguracionContent({
     },
        {
       id: 'precios_membresia' as TipoSeccion, 
-      titulo: 'Precios Membresía',
+      titulo: 'Membresías',
       icono: <FaCrown />,
       colorIcono: 'text-yellow-500 hover:text-yellow-400',
       colorFondo: 'hover:bg-yellow-900/20'
