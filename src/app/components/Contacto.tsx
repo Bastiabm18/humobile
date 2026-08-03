@@ -41,7 +41,7 @@ export default function Contacto({}: ContactoProps) {
   const contactInfo = {
     phone: '+569 8420 1584',
     email: 'contacto@humobile.cl',
-    hours: 'Lun-Vie: 9:00 AM - 6:00 PM',
+    hours: 'Lun-Vie: 9:00 AM - 18:00 PM',
     address: 'Angol 436 OF 1004, Concepcion, Chile'
   };
 
