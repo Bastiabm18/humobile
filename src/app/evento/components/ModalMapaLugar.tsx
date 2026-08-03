@@ -73,7 +73,7 @@ export default function ModalMapaLugar({
     return [-36.827, -73.050] as [number, number]; // Fallback a Concepción
   }, [latitud, longitud]);
 
-  const accessToken = 'pk.eyJ1IjoiYXZlZ2FwNDEiLCJhIjoiY2tibWtpdGttMGl1NjJybjhjNTVxaGtpcyJ9.dLbDgSiWkdlq8SyzhREO7A';
+  const accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
   const tileUrl = `https://api.mapbox.com/styles/v1/mapbox/navigation-night-v1/tiles/{z}/{x}/{y}?access_token=${accessToken}`;
 
   // Si no tenemos coordenadas válidas, mostramos mensaje
