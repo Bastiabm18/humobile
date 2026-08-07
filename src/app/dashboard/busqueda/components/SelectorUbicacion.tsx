@@ -15,7 +15,7 @@ export default function SelectorUbicacion({
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [seleccionado, setSeleccionado] = useState(false);
-  const [radio, setRadio] = useState(50);
+  const [radio, setRadio] = useState(5);
   const [coords, setCoords] = useState<{lat: number, lon: number} | null>(null);
 
   // Función para encontrar y seleccionar la comuna más cercana
@@ -137,7 +137,7 @@ export default function SelectorUbicacion({
           </div>
           <input
             type="range"
-            min="10"
+            min="5"
             max="150"
             step="5"
             value={radio}
