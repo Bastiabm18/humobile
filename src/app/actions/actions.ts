@@ -79,6 +79,7 @@ export const getProfilesPublic = async (): Promise<Profile[]> => {
       Region(nombre_region),
       Comuna(nombre_comuna)
     `)
+    .eq('perfil_visible', true)
     .in('tipo_perfil', ['artista', 'banda', 'lugar'])
     .order('creado_en', { ascending: false });
 
